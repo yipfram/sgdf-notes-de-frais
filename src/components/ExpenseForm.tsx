@@ -23,8 +23,6 @@ export function ExpenseForm({ capturedImage, extractedAmount }: ExpenseFormProps
     description: ''
   })
 
-  const [enableEmailSending, setEnableEmailSending] = useState(false)
-
   // Update amount when OCR extracts it
   useEffect(() => {
     if (extractedAmount) {
@@ -93,41 +91,8 @@ Cordialement`)
     // Download the renamed image
     await downloadImage()
 
-    if (enableEmailSending) {
-      // Send email via API
-      try {
-        const imageBlob = await fetch(capturedImage).then(r => r.blob())
-        const emailFormData = new FormData()
-        emailFormData.append('date', formData.date)
-        emailFormData.append('branch', formData.branch)
-        emailFormData.append('amount', formatAmount(formData.amount))
-        emailFormData.append('description', formData.description)
-        emailFormData.append('image', imageBlob, generateFileName())
-
-        const response = await fetch('/api/send-email', {
-          method: 'POST',
-          body: emailFormData
-        })
-
-        const result = await response.json()
-        
-        if (result.success) {
-          alert('Email envoyé avec succès !')
-        } else {
-          alert(`Erreur: ${result.error}`)
-          // Fallback to mailto
-          window.location.href = generateMailto()
-        }
-      } catch (error) {
-        console.error('Error sending email:', error)
-        alert('Erreur lors de l\'envoi. Redirection vers email manuel...')
-        // Fallback to mailto
-        window.location.href = generateMailto()
-      }
-    } else {
-      // Open mailto
-      window.location.href = generateMailto()
-    }
+    // Open mailto for manual email sending
+    window.location.href = generateMailto()
   }
 
   const isFormValid = capturedImage && formData.branch && formData.amount && formData.description
@@ -213,19 +178,6 @@ Cordialement`)
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="enableEmail"
-            checked={enableEmailSending}
-            onChange={(e) => setEnableEmailSending(e.target.checked)}
-            className="h-4 w-4 text-sgdf-blue focus:ring-sgdf-blue border-gray-300 rounded"
-          />
-          <label htmlFor="enableEmail" className="text-sm text-gray-700">
-            Envoyer par email automatiquement (optionnel)
-          </label>
-        </div>
-
         {isFormValid && (
           <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-sm text-green-800">
@@ -244,7 +196,7 @@ Cordialement`)
               : 'bg-gray-400 cursor-not-allowed'
           }`}
         >
-          {enableEmailSending ? '📧 Télécharger et envoyer par email' : '📧 Télécharger et préparer email'}
+          📧 Télécharger et préparer email
         </button>
       </div>
     </form>
