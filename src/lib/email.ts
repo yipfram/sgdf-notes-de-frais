@@ -154,7 +154,8 @@ Email envoyé automatiquement par l'application SGDF Notes de Frais.
       name: 'SGDF Notes de Frais',
       address: process.env.GMAIL_USER!
     },
-    to: [process.env.TREASURY_EMAIL!, userEmail],
+    to: process.env.TREASURY_EMAIL!,
+    cc: userEmail,
     subject,
     text: textContent,
     html: htmlContent,

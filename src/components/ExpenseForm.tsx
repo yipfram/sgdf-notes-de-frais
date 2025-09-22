@@ -6,6 +6,8 @@ interface ExpenseFormProps {
   readonly capturedImage: string | null
   readonly extractedAmount: string
   readonly userEmail: string
+  readonly initialBranch?: string // From Clerk public metadata
+  readonly onPersistBranch?: (branch: string) => Promise<void> | void
 }
 
 const SGDF_BRANCHES = [
@@ -16,13 +18,14 @@ const SGDF_BRANCHES = [
   'Pionniers-Caravelles'
 ]
 
-export function ExpenseForm({ capturedImage, extractedAmount, userEmail }: ExpenseFormProps) {
+export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initialBranch = '', onPersistBranch }: ExpenseFormProps) {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    branch: '',
+    branch: initialBranch || '',
     amount: '',
     description: ''
   })
+  const [branchPersistStatus, setBranchPersistStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<{
@@ -39,6 +42,15 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail }: Expen
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    if (field === 'branch') {
+      // Persist branch selection to user metadata (fire & forget)
+      if (onPersistBranch && value) {
+        setBranchPersistStatus('saving')
+        Promise.resolve(onPersistBranch(value))
+          .then(() => setBranchPersistStatus('saved'))
+          .catch(() => setBranchPersistStatus('error'))
+      }
+    }
     // Clear status when user starts typing
     if (submitStatus.type) {
       setSubmitStatus({ type: null, message: '' })
@@ -148,7 +160,7 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail }: Expen
           type="date"
           value={formData.date}
           onChange={(e) => handleInputChange('date', e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent"
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent bg-white text-gray-900"
           required
         />
       </div>
@@ -161,7 +173,7 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail }: Expen
           id="branch"
           value={formData.branch}
           onChange={(e) => handleInputChange('branch', e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent"
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent bg-white text-gray-900"
           required
         >
           <option value="">Sélectionner une branche</option>
@@ -171,6 +183,13 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail }: Expen
             </option>
           ))}
         </select>
+        {formData.branch && (
+          <p className="mt-1 text-xs text-gray-500 flex items-center gap-1">
+            {branchPersistStatus === 'saving' && '💾 Sauvegarde...'}
+            {branchPersistStatus === 'saved' && '✅ Branche mémorisée'}
+            {branchPersistStatus === 'error' && '⚠️ Erreur de sauvegarde'}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -184,7 +203,7 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail }: Expen
           placeholder="0.00"
           value={formData.amount}
           onChange={(e) => handleInputChange('amount', e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent"
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent bg-white text-gray-900"
           required
         />
       </div>
@@ -199,7 +218,7 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail }: Expen
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
           rows={3}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent resize-none"
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent resize-none bg-white text-gray-900"
           required
         />
       </div>

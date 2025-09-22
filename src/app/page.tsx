@@ -85,6 +85,22 @@ export default function Home() {
             capturedImage={capturedImage}
             extractedAmount={extractedAmount}
             userEmail={user?.emailAddresses[0]?.emailAddress || ''}
+            initialBranch={(user?.publicMetadata?.branch as string) || ''}
+            onPersistBranch={async (branch: string) => {
+              try {
+                const res = await fetch('/api/update-branch', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ branch })
+                })
+                if (!res.ok) {
+                  const data = await res.json().catch(() => ({}))
+                  throw new Error(data.error || 'Erreur API')
+                }
+              } catch (e) {
+                console.error('Erreur de sauvegarde de la branche dans Clerk', e)
+              }
+            }}
           />
         </div>
       </div>
