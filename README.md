@@ -7,7 +7,7 @@ Application web mobile-first pour la gestion des notes de frais du groupe SGDF L
 - 📸 **Capture de justificatifs** : Prise de photo ou import de fichiers
 - 🔍 **OCR automatique** : Détection automatique des montants sur les justificatifs
 - 📝 **Saisie des informations** : Date, branche SGDF, montant et description
-- 🏷️ **Renommage automatique** : Génération du nom de fichier au format `YYYY-MM-DD - Branche - Montant.jpg`
+- 🏷️ **Renommage automatique** : Génération du nom de fichier au format `YYYY-MM-DD - Branche -  - Montant.jpg`
 - 💾 **Téléchargement local** : Sauvegarde et copie du fichier renommé sur votre appareil
 - 📧 **Email pré-rempli** : Génération automatique d'un email avec les informations (vous attachez manuellement le fichier téléchargé)
 
