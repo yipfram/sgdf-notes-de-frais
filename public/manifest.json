@@ -1,0 +1,39 @@
+{
+	"name": "SGDF Notes de Frais",
+	"short_name": "Notes SGDF",
+	"description": "Application de gestion des notes de frais pour SGDF La Guillotière",
+	"lang": "fr-FR",
+	"id": "/",
+	"start_url": "/?source=pwa",
+	"scope": "/",
+	"display": "standalone",
+	"display_override": ["standalone", "window-controls-overlay"],
+	"orientation": "portrait",
+	"background_color": "#1E3A8A",
+	"theme_color": "#1E3A8A",
+	"categories": ["productivity", "finance"],
+	"dir": "ltr",
+	"prefer_related_applications": false,
+	"icons": [
+		{
+			"src": "/SGDF_symbole_RVB.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		},
+		{
+			"src": "/SGDF_symbole_blanc.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable any"
+		}
+	],
+	"shortcuts": [
+		{
+			"name": "Nouvelle note",
+			"short_name": "Nouvelle",
+			"description": "Créer une nouvelle note de frais",
+			"url": "/?action=new",
+			"icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+		}
+	]
+}

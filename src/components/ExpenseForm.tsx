@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getBranchColor } from '@/lib/branches'
 import Image from 'next/image'
 
 interface ExpenseFormProps {
@@ -24,7 +23,7 @@ const SGDF_BRANCHES = [
   'Compagnons'
 ]
 
-export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange }: ExpenseFormProps) {
+export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, isOnline = true }: ExpenseFormProps & { isOnline?: boolean }) {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     branch: initialBranch || '',
@@ -320,11 +319,17 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
           </div>
         )}
 
+        {!isOnline && (
+          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+            ⚠️ Vous êtes hors ligne. Vous pouvez préparer la note mais l&apos;envoi ne fonctionnera qu&apos;une fois reconnecté.
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={!isFormValid || isSubmitting}
+          disabled={!isFormValid || isSubmitting || !isOnline}
           className={`w-full p-4 rounded-lg font-semibold text-white transition-colors ${
-            isFormValid && !isSubmitting
+            isFormValid && !isSubmitting && isOnline
               ? 'bg-sgdf-blue hover:bg-blue-700'
               : 'bg-gray-400 cursor-not-allowed'
           }`}

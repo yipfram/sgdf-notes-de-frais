@@ -13,34 +13,47 @@ Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. Features
 - `src/middleware.ts` - Clerk middleware protecting routes and API endpoints
 - `src/lib/email.ts` - Gmail SMTP email sending utilities
 - `src/app/api/send-expense/route.ts` - Protected API route for email sending
+# SGDF Notes de Frais - Developer Instructions
+
+## Project Overview
+Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. The app uses Clerk for authentication and sends expense emails server-side via Gmail SMTP. There is no central database: emails are delivered directly to the treasury and the user.
+
+## Core Architecture
+
+### Component Structure
+- `src/app/page.tsx` - Main authenticated page with Clerk user management and state coordination
+- `src/app/sign-in/page.tsx` & `src/app/sign-up/page.tsx` - Clerk authentication pages
+- `src/components/PhotoCapture.tsx` - Image capture / upload UI (no OCR processing)
+- `src/components/ExpenseForm.tsx` - Form with SGDF branch selection, validation, and API submission
+- `src/middleware.ts` - Clerk middleware protecting routes and API endpoints
+- `src/lib/email.ts` - Gmail SMTP email sending utilities
+- `src/app/api/send-expense/route.ts` - Protected API route for email sending
 
 ### Data Flow Pattern
-1. **Authentication** → Clerk middleware validates user session
-2. **Image Capture** → `PhotoCapture` captures image and extracts amount via OCR
-3. **State Lifting** → Data flows up to `page.tsx` then down to `ExpenseForm`
-4. **Form Submission** → POST to `/api/send-expense` with base64 image
-5. **Email Generation** → Server converts base64 to buffer and sends via Gmail SMTP
-6. **Dual Delivery** → Email sent to both treasury (`sgdf.tresolaguillotiere@gmail.com`) and user
+1. Authentication → Clerk middleware validates user session
+2. Image capture → user captures or uploads a photo (no OCR)
+3. State lifting → data flows up to `page.tsx` then down to `ExpenseForm`
+4. Form submission → POST to `/api/send-expense` with base64 image
+5. Email generation → server converts base64 to buffer and sends via Gmail SMTP
+6. Dual delivery → email sent to both treasury (configured via `TREASURY_EMAIL`) and user
 
 ### Key Technical Decisions
-- **Authentication**: Clerk for seamless Google/Email auth (no custom user management)
-- **Email Service**: Gmail SMTP with app passwords (free, reliable for association use)
-- **Image Handling**: Base64 encoding/decoding between client and server
-- **Validation**: Server-side validation with specific error messages
-- **State Management**: React useState with loading/success/error states
-- **OCR Language**: Tesseract configured for French (`'fra'`) to match receipt text
-- **Amount Regex**: `/(\d+[.,]\d{2})\s*€?/g` captures European currency format
-- **Mobile Camera**: File input uses `capture="environment"` for rear camera
-- **Webpack Config**: Disables Node.js polyfills for client-side Tesseract.js compatibility
+- Authentication: Clerk for Google/Email auth (no custom user management)
+- Email Service: Gmail SMTP with app passwords (simple and reliable for association use)
+- Image Handling: Base64 encoding/decoding between client and server
+- Validation: Server-side validation with specific error messages
+- State Management: React useState with loading/success/error states
+- Mobile Camera: File input uses `capture="environment"` for rear camera
+- Webpack Config: Disables Node.js polyfills for client-side compatibility when needed
 
 ## Development Workflow
 
 ### Essential Commands
 ```bash
-pnpm install       # Install dependencies (Clerk, nodemailer, Tesseract.js)
-pnpm dev          # Development server on localhost:3000
-pnpm build        # Production build (serverless deployment)
-pnpm lint         # ESLint + Next.js built-in linting
+pnpm install       # Install dependencies (Clerk, nodemailer)
+pnpm dev           # Development server on localhost:3000
+pnpm build         # Production build (serverless deployment)
+pnpm lint          # ESLint + Next.js built-in linting
 ```
 
 ### Environment Setup
@@ -55,12 +68,11 @@ cp .env.example .env.local
 ```
 
 ### Testing Requirements
-- **Authentication flow**: Test Clerk sign-in/sign-up with Google and email
-- **Manual mobile testing**: Use browser dev tools mobile view or real device
-- **Camera functionality**: Test both photo capture and file upload on mobile
-- **OCR validation**: Test with French receipts containing "€" amounts
-- **Email delivery**: Verify emails arrive at both treasury and user addresses
-- **Error handling**: Test invalid Gmail credentials, network failures, malformed data
+- Authentication flow: Test Clerk sign-in/sign-up with Google and email
+- Manual mobile testing: Use browser dev tools mobile view or real device
+- Camera functionality: Test photo capture and file upload on mobile
+- Email delivery: Verify emails arrive at both treasury and user addresses
+- Error handling: Test invalid Gmail credentials, network failures, malformed data
 
 ## SGDF-Specific Business Logic
 
@@ -75,23 +87,18 @@ Format: `YYYY-MM-DD - Branch - Amount.jpg`
 - Example: `2024-03-15 - Scouts - 12.50.jpg`
 
 ### Email Template Structure
-- **Recipients**: Treasury + authenticated user
-- **Subject**: `Note de frais - {Branch} - {Date}`
-- **Content**: Structured HTML table with SGDF branding
-- **Attachment**: JPEG image with formatted filename
-
-### OCR Processing Pattern
-- French language Tesseract worker: `await createWorker('fra')`
-- Amount extraction regex targets European format: `(\d+[.,]\d{2})\s*€?`
-- **Critical**: Always terminate worker after use to prevent memory leaks
+- Recipients: Treasury + authenticated user
+- Subject: `Note de frais - {Branch} - {Date}`
+- Content: Structured HTML table with SGDF branding
+- Attachment: JPEG image with formatted filename
 
 ## Authentication & Security
 
 ### Clerk Integration
-- **Middleware Protection**: `src/middleware.ts` protects `/` and `/api/send-expense`
-- **User Context**: `useUser()` hook provides email for form pre-population
-- **Session Management**: Automatic token refresh and logout handling
-- **Route Protection**: Automatic redirects for unauthenticated users
+- Middleware Protection: `src/middleware.ts` protects `/` and `/api/send-expense`
+- User Context: `useUser()` hook provides email for form pre-population
+- Session Management: Automatic token refresh and logout handling
+- Route Protection: Automatic redirects for unauthenticated users
 
 ### Server-Side Validation
 ```typescript
@@ -104,54 +111,48 @@ Format: `YYYY-MM-DD - Branch - Amount.jpg`
 ```
 
 ### Gmail SMTP Security
-- **App Passwords**: Dedicated password for SMTP (not main account password)
-- **TLS Encryption**: Port 587 with STARTTLS
-- **Rate Limiting**: Gmail's 500 emails/day limit (sufficient for association)
-- **Error Handling**: Specific error messages for auth failures vs connection issues
+- App Passwords: Dedicated password for SMTP (not main account password)
+- TLS Encryption: Port 587 with STARTTLS
+- Rate Limiting: Gmail's 500 emails/day limit (sufficient for association)
+- Error Handling: Specific error messages for auth failures vs connection issues
 
 ## Common Issues & Solutions
 
 ### Authentication Problems
-- **"Non autorisé"**: Check Clerk keys in `.env.local` and dashboard configuration
-- **Redirect loops**: Verify middleware route matching patterns
-- **User context undefined**: Ensure ClerkProvider wraps the app in `layout.tsx`
+- "Non autorisé": Check Clerk keys in `.env.local` and dashboard configuration
+- Redirect loops: Verify middleware route matching patterns
+- User context undefined: Ensure ClerkProvider wraps the app in `layout.tsx`
 
 ### Email Sending Issues
-- **"Configuration SMTP invalide"**: Verify Gmail app password and 2FA enabled
-- **"Invalid login"**: Regenerate Gmail app password (16-character format)
-- **"Erreur de connexion SMTP"**: Check Gmail account isn't blocked/suspended
-- **Large attachments**: Gmail SMTP supports up to 25MB (photos are typically <5MB)
-
-### OCR & Image Processing
-- **"Worker failed"**: Check network for Tesseract.js CDN loading
-- **Wrong language detection**: Verify French worker loads correctly
-- **Performance**: OCR takes 3-10 seconds on mobile - always show loading state
-- **Memory leaks**: Always call `worker.terminate()` after OCR completion
+- "Configuration SMTP invalide": Verify Gmail app password and 2FA enabled
+- "Invalid login": Regenerate Gmail app password (16-character format)
+- "Erreur de connexion SMTP": Check Gmail account isn't blocked/suspended
+- Large attachments: Gmail SMTP supports up to 25MB (photos are typically <5MB)
 
 ### Mobile Camera Issues
-- **No camera access**: Ensure HTTPS in production (required for `getUserMedia`)
-- **Wrong camera**: `capture="environment"` targets rear camera
-- **File format**: Accept only `image/*` to prevent non-image uploads
-- **Base64 conversion**: Handle both data URLs and direct base64 strings
+- No camera access: Ensure HTTPS in production (required for `getUserMedia`)
+- Wrong camera: `capture="environment"` targets rear camera
+- File format: Accept only `image/*` to prevent non-image uploads
+- Base64 conversion: Handle both data URLs and direct base64 strings
 
 ### Build Configuration
-- **Webpack errors**: Next.js config disables Node.js polyfills for client compatibility
-- **Serverless deployment**: No static export (API routes require server runtime)
-- **Environment variables**: All secrets must be in `.env.local` (gitignored)
+- Webpack errors: Next.js config disables Node.js polyfills for client compatibility
+- Serverless deployment: No static export (API routes require server runtime)
+- Environment variables: All secrets must be in `.env.local` (gitignored)
 
 ## Deployment Notes
 
 ### Vercel Configuration
-- **Runtime**: Node.js (not static export)
-- **Environment Variables**: Copy all from `.env.local` to Vercel dashboard
-- **Build Command**: `pnpm build` (includes API routes)
-- **Security Headers**: Configured in `vercel.json`
+- Runtime: Node.js (not static export)
+- Environment Variables: Copy all from `.env.local` to Vercel dashboard
+- Build Command: `pnpm build` (includes API routes)
+- Security Headers: Configured in `vercel.json`
 
 ### Development vs Production
-- **Local**: Use `.env.local` for development
-- **Production**: Environment variables set in hosting platform
-- **HTTPS Required**: Camera access needs secure context
-- **Domain Configuration**: Update Clerk dashboard with production domain
+- Local: Use `.env.local` for development
+- Production: Environment variables set in hosting platform
+- HTTPS Required: Camera access needs secure context
+- Domain Configuration: Update Clerk dashboard with production domain
 
 ## Code Patterns & Conventions
 
@@ -185,7 +186,7 @@ const [submitStatus, setSubmitStatus] = useState<{
 ### Form Validation
 ```typescript
 // Client-side validation before API call
-const isFormValid = capturedImage && formData.branch && formData.amount && formData.description
+const isFormValid = /* ... */ formData.branch && formData.amount && formData.description
 
 // Server-side validation with specific error messages
 if (!emailRegex.test(userEmail)) {
@@ -194,7 +195,7 @@ if (!emailRegex.test(userEmail)) {
 ```
 
 ### Email Template
-- **Responsive HTML**: Works on mobile and desktop email clients
-- **SGDF Branding**: Blue (#1E3A8A) and gold (#FBB042) color scheme
-- **Structured Data**: Table format for consistent rendering
-- **Fallback Text**: Plain text version for accessibility
+- Responsive HTML: Works on mobile and desktop email clients
+- SGDF Branding: Blue (#1E3A8A) and gold (#FBB042) color scheme
+- Structured Data: Table format for consistent rendering
+- Fallback Text: Plain text version for accessibility
