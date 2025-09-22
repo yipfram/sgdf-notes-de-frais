@@ -74,7 +74,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!capturedImage || !formData.branch || !formData.expenseType || !formData.amount || !formData.description) {
+    if (!capturedImage || !formData.branch || !formData.expenseType || !formData.amount) {
       setSubmitStatus({
         type: 'error',
         message: 'Veuillez remplir tous les champs obligatoires et capturer une image.'
@@ -136,7 +136,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
   }
 
   // Validation complète (inclut type de dépense)
-  const isFormValid = capturedImage && formData.branch && formData.expenseType && formData.amount && formData.description
+  const isFormValid = capturedImage && formData.branch && formData.expenseType && formData.amount
 
   const handleNewNote = () => {
     // Clear form (keep branch), clear status, notify parent to reset image & OCR amount
@@ -266,7 +266,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
 
       <div className="space-y-2">
         <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-          Description *
+          Description (optionnel)
         </label>
         <textarea
           id="description"
@@ -275,7 +275,6 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
           onChange={(e) => handleInputChange('description', e.target.value)}
           rows={3}
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent resize-none bg-white text-gray-900"
-          required
         />
       </div>
 

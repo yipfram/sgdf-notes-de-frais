@@ -15,7 +15,7 @@ function validateEnv() {
 
 function validateBody(body: any): { emailData?: EmailData; error?: NextResponse } {
   const { userEmail, date, branch, expenseType, amount, description, imageBase64, fileName } = body || {}
-  if (!userEmail || !date || !branch || !expenseType || !amount || !description || !imageBase64 || !fileName) {
+  if (!userEmail || !date || !branch || !expenseType || !amount || !imageBase64 || !fileName) {
     return { error: jsonError('Données manquantes', 400) }
   }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -27,7 +27,7 @@ function validateBody(body: any): { emailData?: EmailData; error?: NextResponse 
     return { error: jsonError('Montant invalide', 400) }
   }
   return {
-    emailData: { userEmail, date, branch, expenseType, amount, description, imageBase64, fileName }
+    emailData: { userEmail, date, branch, expenseType, amount, description: description || '', imageBase64, fileName }
   }
 }
 

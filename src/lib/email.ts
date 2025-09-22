@@ -7,7 +7,7 @@ export interface EmailData {
   branch: string
   expenseType: string
   amount: string
-  description: string
+  description?: string
   imageBase64: string
   fileName: string
 }
@@ -126,10 +126,11 @@ export const sendExpenseEmail = async (data: EmailData) => {
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Demandeur :</td>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${userEmail}</td>
             </tr>
+            ${description ? `
             <tr>
               <td style="padding: 10px 0; font-weight: bold; color: #374151; vertical-align: top;">Description :</td>
               <td style="padding: 10px 0; color: #374151;">${description}</td>
-            </tr>
+            </tr>` : ''}
           </table>
         </div>
         
@@ -154,7 +155,7 @@ Branche : ${branch}
 Type : ${expenseType}
 Montant : ${amount} €
 Demandeur : ${userEmail}
-Description : ${description}
+${description ? `Description : ${description}` : ''}
 
 Justificatif en pièce jointe : ${fileName}
 

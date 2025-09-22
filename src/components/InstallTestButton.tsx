@@ -40,7 +40,7 @@ export function InstallTestButton() {
         </button>
       </div>
       {result && <p className="mt-2 text-xs text-gray-600">{result}</p>}
-      <p className="mt-1 text-[11px] text-gray-500 leading-snug">Le bouton n'est actif que si le navigateur a émis <code>beforeinstallprompt</code>.</p>
+  <p className="mt-1 text-[11px] text-gray-500 leading-snug">Le bouton n&apos;est actif que si le navigateur a émis <code>beforeinstallprompt</code>.</p>
     </div>
   )
 }
