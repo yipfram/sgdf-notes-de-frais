@@ -106,7 +106,6 @@ export default function Home() {
 
           <ExpenseForm
             capturedImage={capturedImage}
-            extractedAmount={''}
             userEmail={user?.emailAddresses[0]?.emailAddress || ''}
             initialBranch={initialBranch}
             onCreateNewNote={() => {

@@ -91,8 +91,6 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [compressedInfo, setCompressedInfo] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  // Plus d'OCR: suppression du worker pour alléger la mémoire
-
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -119,8 +117,6 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
       setErrorMsg('Erreur de lecture du fichier image.')
       return
     }
-
-    // OCR désactivé – aucune extraction automatique
   }
 
   const handleCameraCapture = () => {
@@ -168,8 +164,6 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
           {errorMsg}
         </div>
       )}
-
-      {/* OCR supprimé : aucun état de traitement */}
     </div>
   )
 }

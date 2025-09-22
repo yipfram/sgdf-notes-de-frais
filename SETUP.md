@@ -82,7 +82,7 @@ C'est gratuit !!
 
    1. L'utilisateur se connecte via Clerk
    2. L'utilisateur capture ou importe une photo du justificatif
-   3. L'utilisateur complète manuellement la date, le montant, la branche et la description (aucune OCR automatique)
+   3. L'utilisateur complète manuellement la date, le type, le montant, la branche et la description
    4. Le frontend envoie les données et l'image en base64 à l'API route `/api/send-expense`
    5. Le serveur valide les données, construit l'email et envoie via Gmail SMTP à :
       - Trésorerie (`TREASURY_EMAIL`)

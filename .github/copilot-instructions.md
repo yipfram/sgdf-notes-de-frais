@@ -1,14 +1,14 @@
 # SGDF Notes de Frais - Developer Instructions
 
 ## Project Overview
-Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. Features client-side OCR, Clerk authentication, and server-side email sending via Gmail SMTP. **No database** - authentication via Clerk, emails sent directly to recipients.
+Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. Features Clerk authentication, and server-side email sending via Gmail SMTP. **No database** - authentication via Clerk, emails sent directly to recipients.
 
 ## Core Architecture
 
 ### Component Structure
 - `src/app/page.tsx` - Main authenticated page with Clerk user management and state coordination
 - `src/app/sign-in/page.tsx` & `src/app/sign-up/page.tsx` - Clerk authentication pages
-- `src/components/PhotoCapture.tsx` - Image capture/upload + Tesseract.js OCR processing
+- `src/components/PhotoCapture.tsx` - Image capture/upload
 - `src/components/ExpenseForm.tsx` - Form with SGDF branch selection, validation, and API submission
 - `src/middleware.ts` - Clerk middleware protecting routes and API endpoints
 - `src/lib/email.ts` - Gmail SMTP email sending utilities
@@ -23,7 +23,7 @@ Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. The app 
 ### Component Structure
 - `src/app/page.tsx` - Main authenticated page with Clerk user management and state coordination
 - `src/app/sign-in/page.tsx` & `src/app/sign-up/page.tsx` - Clerk authentication pages
-- `src/components/PhotoCapture.tsx` - Image capture / upload UI (no OCR processing)
+- `src/components/PhotoCapture.tsx` - Image capture / upload UI
 - `src/components/ExpenseForm.tsx` - Form with SGDF branch selection, validation, and API submission
 - `src/middleware.ts` - Clerk middleware protecting routes and API endpoints
 - `src/lib/email.ts` - Gmail SMTP email sending utilities
@@ -31,7 +31,7 @@ Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. The app 
 
 ### Data Flow Pattern
 1. Authentication → Clerk middleware validates user session
-2. Image capture → user captures or uploads a photo (no OCR)
+2. Image capture → user captures or uploads a photo
 3. State lifting → data flows up to `page.tsx` then down to `ExpenseForm`
 4. Form submission → POST to `/api/send-expense` with base64 image
 5. Email generation → server converts base64 to buffer and sends via Gmail SMTP

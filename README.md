@@ -5,7 +5,6 @@ Application web mobile-first pour la gestion des notes de frais du groupe SGDF L
 ## Fonctionnalités
 
 - 📸 **Capture de justificatifs** : Prise de photo ou import de fichiers
-- 🔍 **OCR automatique** : Détection automatique des montants sur les justificatifs
 - 📝 **Saisie des informations** : Date, branche SGDF, montant, type et description
 - ✉️ **Envoi email automatique** : Transmission à la trésorerie + copie à l'utilisateur avec la photo en pièce jointe
 - 🏷️ **Nom de fichier structuré** : `YYYY-MM-DD - Branche - Type - Montant.jpg`
@@ -38,13 +37,12 @@ Application web mobile-first pour la gestion des notes de frais du groupe SGDF L
 ## Fonctionnalités principales
 
 - 📸 **Capture de justificatifs** : prise de photo ou import de fichiers depuis le mobile ou le bureau
-- 📝 **Saisie guidée** : l'utilisateur saisit manuellement la date, la branche, le montant et la description (l'application ne réalise plus d'OCR)
+- 📝 **Saisie guidée** : l'utilisateur saisit manuellement la date, la branche, le montant et la description
 - ✉️ **Envoi email automatique** : transmission à la trésorerie + copie à l'utilisateur avec la photo en pièce jointe
 - 🏷️ **Nom de fichier structuré** : `YYYY-MM-DD - Branche - Montant.jpg`
 - 📲 **Installation PWA** : ajout possible à l'écran d'accueil (Android / iOS / Desktop)
 - ⚡ **Mode hors ligne partiel** : consultation et préparation possible sans réseau (l'envoi nécessite la connexion)
 
-L'application privilégie la simplicité : la lecture automatique (OCR) a été retirée pour fiabiliser les montants et laisser le contrôle à l'utilisateur.
 
 ## PWA & expérience mobile
 

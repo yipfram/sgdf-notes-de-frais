@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 
 interface ExpenseFormProps {
   readonly capturedImage: string | null
-  readonly extractedAmount: string
   readonly userEmail: string
   readonly initialBranch?: string // From Clerk public metadata
   readonly onPersistBranch?: (branch: string) => Promise<void> | void
@@ -23,7 +22,7 @@ const SGDF_BRANCHES = [
   'Compagnons'
 ]
 
-export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, isOnline = true }: ExpenseFormProps & { isOnline?: boolean }) {
+export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, isOnline = true }: ExpenseFormProps & { isOnline?: boolean }) {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     branch: initialBranch || '',
@@ -39,12 +38,7 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
     message: string
   }>({ type: null, message: '' })
 
-  // Update amount when OCR extracts it
-  useEffect(() => {
-    if (extractedAmount) {
-      setFormData(prev => ({ ...prev, amount: extractedAmount }))
-    }
-  }, [extractedAmount])
+
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
