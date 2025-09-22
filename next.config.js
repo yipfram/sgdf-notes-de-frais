@@ -11,6 +11,8 @@ const nextConfig = {
     }
     return config;
   },
+  // Désactiver l'export statique pour permettre les API routes
+  // output: 'export'
 };
 
 module.exports = nextConfig;
