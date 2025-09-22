@@ -34,7 +34,7 @@ export default function Home() {
           </div>
           <div className="p-6 text-center">
             <p className="text-gray-600 mb-6">
-              Connectez-vous pour accéder à l'application de gestion des notes de frais.
+              Connectez-vous pour accéder à l&apos;application de gestion des notes de frais.
             </p>
             <SignInButton mode="modal">
               <button className="w-full bg-sgdf-blue text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">

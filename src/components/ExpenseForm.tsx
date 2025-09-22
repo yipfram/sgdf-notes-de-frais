@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 interface ExpenseFormProps {
   readonly capturedImage: string | null
@@ -155,10 +156,12 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
           <label htmlFor="image-preview" className="block text-sm font-medium text-gray-700">
             Aperçu du justificatif
           </label>
-          <img 
+          <Image 
             id="image-preview"
             src={capturedImage} 
             alt="Justificatif" 
+            width={500} 
+            height={200} 
             className="w-full h-48 object-cover rounded-lg border"
           />
         </div>
