@@ -4,10 +4,14 @@ import { useState } from 'react'
 import { useUser, UserButton, SignInButton } from '@clerk/nextjs'
 import { ExpenseForm } from '@/components/ExpenseForm'
 import { PhotoCapture } from '@/components/PhotoCapture'
+import { getBranchColor } from '@/lib/branches'
 
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser()
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
+  const initialBranch = (user?.publicMetadata?.branch as string) || ''
+  const [activeBranch, setActiveBranch] = useState<string>(initialBranch)
+  const branchColor = getBranchColor(activeBranch)
 
   // Afficher un loader pendant le chargement de l'état d'authentification
   if (!isLoaded) {
@@ -47,20 +51,25 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen p-4">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
-        <div className="bg-sgdf-blue text-white p-6">
+    <main
+      className="min-h-screen p-4 transition-colors"
+      style={{
+        backgroundColor: activeBranch ? branchColor : undefined
+      }}
+    >
+      <div className="max-w-md mx-auto bg-white/95 backdrop-blur rounded-lg shadow-xl overflow-hidden border border-white/40">
+        <div className="text-white p-6" style={{ backgroundColor: branchColor }}>
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold">
                 📝 Notes de Frais SGDF
               </h1>
-              <p className="text-blue-100 mt-2">
+              <p className="text-white/80 mt-2">
                 La Guillotière
               </p>
             </div>
             <div className="flex items-center space-x-3">
-              <span className="text-sm text-blue-100">
+              <span className="text-sm text-white/80">
                 {user?.emailAddresses[0]?.emailAddress}
               </span>
               <UserButton 
@@ -83,7 +92,7 @@ export default function Home() {
             capturedImage={capturedImage}
             extractedAmount={''}
             userEmail={user?.emailAddresses[0]?.emailAddress || ''}
-            initialBranch={(user?.publicMetadata?.branch as string) || ''}
+            initialBranch={initialBranch}
             onCreateNewNote={() => {
               setCapturedImage(null)
             }}
@@ -102,6 +111,7 @@ export default function Home() {
                 console.error('Erreur de sauvegarde de la branche dans Clerk', e)
               }
             }}
+            onBranchChange={(b) => setActiveBranch(b)}
           />
         </div>
       </div>

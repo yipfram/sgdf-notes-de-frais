@@ -19,7 +19,9 @@ export async function POST(req: Request) {
       'Jeannettes',
       'Scouts',
       'Guides',
-      'Pionniers-Caravelles'
+      'Pionniers-Caravelles',
+      'Compagnons',
+      'Farfadets'
     ]
 
     if (!ALLOWED.includes(branch)) {
