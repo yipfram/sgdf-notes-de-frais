@@ -31,7 +31,6 @@ L'application est maintenant une **Progressive Web App** :
 
 ## Branches SGDF supportées
 
-````markdown
 # SGDF Notes de Frais
 
 Application web mobile-first pour la gestion des notes de frais du groupe SGDF La Guillotière.
@@ -142,4 +141,3 @@ Fonctionne bien sur Vercel ou toute plateforme supportant les API routes Next.js
 ---
 
 Pour toute amélioration ou besoin spécifique (ex: sauvegarde locale des brouillons), ouvrir une issue ou proposer une PR.
-````
