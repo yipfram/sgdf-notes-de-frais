@@ -1,14 +1,24 @@
 'use client'
 
 import { useState, useRef } from 'react'
+
+// Helper pour convertir un fichier image en data URL base64
+async function fileToDataUrl(file: File): Promise<string> {
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(new Error('FILE_READER_ERROR'))
+    reader.readAsDataURL(file)
+  })
+}
 import { createWorker } from 'tesseract.js'
 
 interface PhotoCaptureProps {
-  onImageCapture: (imageUrl: string) => void
-  onAmountExtracted: (amount: string) => void
+  readonly onImageCapture: (imageUrl: string) => void
+  readonly onAmountExtracted: (amount: string) => void
 }
 
-export function PhotoCapture({ onImageCapture, onAmountExtracted }: PhotoCaptureProps) {
+export function PhotoCapture({ onImageCapture, onAmountExtracted }: Readonly<PhotoCaptureProps>) {
   const [isProcessing, setIsProcessing] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -16,8 +26,16 @@ export function PhotoCapture({ onImageCapture, onAmountExtracted }: PhotoCapture
     const file = event.target.files?.[0]
     if (!file) return
 
-    const imageUrl = URL.createObjectURL(file)
-    onImageCapture(imageUrl)
+    // Convertir le fichier en data URL (base64) pour envoi serveur
+    let dataUrl: string
+    try {
+      dataUrl = await fileToDataUrl(file)
+    } catch (e) {
+      console.error('Erreur conversion image en base64:', e)
+      return
+    }
+
+    onImageCapture(dataUrl)
 
     // Perform OCR to extract amounts
     setIsProcessing(true)
