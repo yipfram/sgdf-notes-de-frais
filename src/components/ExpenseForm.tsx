@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getBranchColor } from '@/lib/branches'
 import Image from 'next/image'
 
 interface ExpenseFormProps {
@@ -10,17 +11,20 @@ interface ExpenseFormProps {
   readonly initialBranch?: string // From Clerk public metadata
   readonly onPersistBranch?: (branch: string) => Promise<void> | void
   readonly onCreateNewNote?: () => void
+  readonly onBranchChange?: (branch: string) => void
 }
 
 const SGDF_BRANCHES = [
+  'Farfadets',
   'Louveteaux',
   'Jeannettes',
   'Scouts',
   'Guides',
-  'Pionniers-Caravelles'
+  'Pionniers-Caravelles',
+  'Compagnons'
 ]
 
-export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote }: ExpenseFormProps) {
+export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange }: ExpenseFormProps) {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     branch: initialBranch || '',
@@ -46,6 +50,9 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     if (field === 'branch') {
+      if (onBranchChange) {
+        onBranchChange(value)
+      }
       // Persist branch selection to user metadata (fire & forget)
       if (onPersistBranch && value) {
         setBranchPersistStatus('saving')
@@ -238,11 +245,13 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
           ))}
         </select>
         {formData.branch && (
-          <p className="mt-1 text-xs text-gray-500 flex items-center gap-1">
-            {branchPersistStatus === 'saving' && '💾 Sauvegarde...'}
-            {branchPersistStatus === 'saved' && '✅ Branche mémorisée'}
-            {branchPersistStatus === 'error' && '⚠️ Erreur de sauvegarde'}
-          </p>
+          <div className="mt-1 flex items-center justify-between">
+            <p className="text-xs text-gray-500 flex items-center gap-1">
+              {branchPersistStatus === 'saving' && '💾 Sauvegarde...'}
+              {branchPersistStatus === 'saved' && '✅ Branche mémorisée'}
+              {branchPersistStatus === 'error' && '⚠️ Erreur de sauvegarde'}
+            </p>
+          </div>
         )}
       </div>
 

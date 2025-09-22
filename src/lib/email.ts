@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { getBranchColor } from './branches'
 
 export interface EmailData {
   userEmail: string
@@ -88,15 +89,20 @@ export const sendExpenseEmail = async (data: EmailData) => {
   }
 
   const subject = `Note de frais - ${branch} - ${date}`
+  const primaryColor = getBranchColor(branch)
+  // Accent: If the primary color is a warm tone, keep gold, else use a light variant
+  const accentColor = '#FBB042'
+  const textOnPrimary = '#ffffff'
+
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <div style="background-color: #1E3A8A; color: white; padding: 20px; text-align: center;">
+      <div style="background-color: ${primaryColor}; color: ${textOnPrimary}; padding: 20px; text-align: center;">
         <h1 style="margin: 0; font-size: 24px;">📝 Note de Frais SGDF</h1>
         <p style="margin: 10px 0 0 0; opacity: 0.9;">La Guillotière</p>
       </div>
       
       <div style="padding: 30px; background-color: #f9f9f9;">
-        <h2 style="color: #1E3A8A; margin-top: 0;">Nouvelle note de frais</h2>
+        <h2 style="color: ${primaryColor}; margin-top: 0;">Nouvelle note de frais</h2>
         
         <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <table style="width: 100%; border-collapse: collapse;">
@@ -113,8 +119,8 @@ export const sendExpenseEmail = async (data: EmailData) => {
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${expenseType}</td>
             </tr>
             <tr>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Montant :</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151; font-weight: bold; font-size: 18px;">${amount} €</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: ${primaryColor};">Montant :</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: ${primaryColor}; font-weight: bold; font-size: 18px;">${amount} €</td>
             </tr>
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Demandeur :</td>
@@ -127,7 +133,7 @@ export const sendExpenseEmail = async (data: EmailData) => {
           </table>
         </div>
         
-        <div style="background-color: #FBB042; color: #1E3A8A; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <div style="background-color: ${accentColor}; color: ${primaryColor}; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <strong>📎 Justificatif en pièce jointe :</strong> ${fileName}
         </div>
         
