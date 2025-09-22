@@ -5,6 +5,8 @@ import { useUser, UserButton, SignInButton } from '@clerk/nextjs'
 import { ExpenseForm } from '@/components/ExpenseForm'
 import { PhotoCapture } from '@/components/PhotoCapture'
 import { getBranchColor } from '@/lib/branches'
+import { useOnlineStatus } from '@/lib/useOnlineStatus'
+import { InstallPrompt } from '@/components/InstallPrompt'
 
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser()
@@ -12,6 +14,7 @@ export default function Home() {
   const initialBranch = (user?.publicMetadata?.branch as string) || ''
   const [activeBranch, setActiveBranch] = useState<string>(initialBranch)
   const branchColor = getBranchColor(activeBranch)
+  const isOnline = useOnlineStatus()
 
   // Update activeBranch when user metadata loads
   useEffect(() => {
@@ -90,6 +93,12 @@ export default function Home() {
           </div>
         </div>
         
+        {!isOnline && (
+          <div className="bg-amber-500 text-white text-center text-sm py-2">
+            ⚠️ Hors ligne - certaines fonctionnalités sont limitées
+          </div>
+        )}
+
         <div className="p-6 space-y-6">
           <PhotoCapture
             onImageCapture={setCapturedImage}
@@ -119,9 +128,11 @@ export default function Home() {
               }
             }}
             onBranchChange={(b) => setActiveBranch(b)}
+            isOnline={isOnline}
           />
         </div>
       </div>
+      <InstallPrompt />
     </main>
   )
 }
