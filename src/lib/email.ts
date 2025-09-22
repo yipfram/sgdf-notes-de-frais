@@ -171,6 +171,13 @@ Email envoyé automatiquement par l'application SGDF Notes de Frais.
     subject,
     text: textContent,
     html: htmlContent,
+  // Mark the message as important/high priority for most email clients
+  priority: 'high' as const,
+    headers: {
+      Importance: 'High',
+      'X-Priority': '1 (Highest)',
+      'X-MSMail-Priority': 'High'
+    },
     attachments: [
       {
         filename: fileName,
@@ -181,9 +188,11 @@ Email envoyé automatiquement par l'application SGDF Notes de Frais.
   }
 
   try {
-    const info = await transporter.sendMail(mailOptions)
-    console.log('Email envoyé avec succès:', info.messageId)
-    return { success: true, messageId: info.messageId }
+    // Some nodemailer typings present overloads that make the return type awkward;
+    // cast to any so we can access messageId reliably at runtime.
+    const info: any = await transporter.sendMail(mailOptions)
+    console.log('Email envoyé avec succès:', info?.messageId)
+    return { success: true, messageId: info?.messageId }
   } catch (error) {
     console.error('Erreur lors de l\'envoi de l\'email:', error)
     throw error
