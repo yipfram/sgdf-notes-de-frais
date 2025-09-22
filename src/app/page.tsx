@@ -8,7 +8,6 @@ import { PhotoCapture } from '@/components/PhotoCapture'
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser()
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
-  const [extractedAmount, setExtractedAmount] = useState<string>('')
 
   // Afficher un loader pendant le chargement de l'état d'authentification
   if (!isLoaded) {
@@ -76,19 +75,17 @@ export default function Home() {
         </div>
         
         <div className="p-6 space-y-6">
-          <PhotoCapture 
+          <PhotoCapture
             onImageCapture={setCapturedImage}
-            onAmountExtracted={setExtractedAmount}
           />
-          
-          <ExpenseForm 
+
+          <ExpenseForm
             capturedImage={capturedImage}
-            extractedAmount={extractedAmount}
+            extractedAmount={''}
             userEmail={user?.emailAddresses[0]?.emailAddress || ''}
             initialBranch={(user?.publicMetadata?.branch as string) || ''}
             onCreateNewNote={() => {
               setCapturedImage(null)
-              setExtractedAmount('')
             }}
             onPersistBranch={async (branch: string) => {
               try {

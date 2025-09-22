@@ -24,6 +24,7 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     branch: initialBranch || '',
+    expenseType: '',
     amount: '',
     description: ''
   })
@@ -64,15 +65,16 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
   }
 
   const generateFileName = () => {
-    const { date, branch, amount } = formData
+    const { date, branch, amount, expenseType } = formData
     const formattedAmount = formatAmount(amount)
-    return `${date} - ${branch} - ${formattedAmount}.jpg`
+    const typeShort = expenseType ? expenseType.replace(/\s+/g, ' ').trim() : ''
+    return `${date} - ${branch}${typeShort ? ' - ' + typeShort : ''} - ${formattedAmount}.jpg`
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!capturedImage || !formData.branch || !formData.amount || !formData.description) {
+    if (!capturedImage || !formData.branch || !formData.expenseType || !formData.amount || !formData.description) {
       setSubmitStatus({
         type: 'error',
         message: 'Veuillez remplir tous les champs obligatoires et capturer une image.'
@@ -93,6 +95,7 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
           userEmail,
           date: formData.date,
           branch: formData.branch,
+          expenseType: formData.expenseType,
           amount: formatAmount(formData.amount),
           description: formData.description,
           imageBase64: capturedImage,
@@ -111,6 +114,7 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
         setFormData(prev => ({
           date: new Date().toISOString().split('T')[0],
           branch: prev.branch,
+          expenseType: '',
           amount: '',
             description: ''
         }))
@@ -131,13 +135,15 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
     }
   }
 
-  const isFormValid = capturedImage && formData.branch && formData.amount && formData.description
+  // Validation complète (inclut type de dépense)
+  const isFormValid = capturedImage && formData.branch && formData.expenseType && formData.amount && formData.description
 
   const handleNewNote = () => {
     // Clear form (keep branch), clear status, notify parent to reset image & OCR amount
     setFormData(prev => ({
       date: new Date().toISOString().split('T')[0],
       branch: prev.branch,
+      expenseType: '',
       amount: '',
       description: ''
     }))
@@ -156,16 +162,48 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
           <label htmlFor="image-preview" className="block text-sm font-medium text-gray-700">
             Aperçu du justificatif
           </label>
-          <Image 
+          <Image
             id="image-preview"
-            src={capturedImage} 
-            alt="Justificatif" 
-            width={500} 
-            height={200} 
+            src={capturedImage}
+            alt="Justificatif"
+            width={500}
+            height={200}
             className="w-full h-48 object-cover rounded-lg border"
           />
         </div>
       )}
+
+      <div className="space-y-2">
+        <label htmlFor="expenseType" className="block text-sm font-medium text-gray-700">
+          Type de dépense *
+        </label>
+        <select
+          id="expenseType"
+          value={formData.expenseType}
+          onChange={(e) => handleInputChange('expenseType', e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent bg-white text-gray-900"
+          required
+        >
+          <option value="">Sélectionner un type</option>
+          {[
+            'Alimentation, Intendance',
+            'Achat Petit Materiel',
+            'Achat Materiel PÈdagogique',
+            'Transport collectif Train',
+            'Transport collectif : en Autocar',
+            'Transport collectif en commun (RER, metro, Tram, bus, etc.)',
+            'Medecin, Pharmacie',
+            'Hebergement',
+            'Achat Gros Materiel',
+            'Participation Activites',
+            'Carburants',
+            'Peage-Parking',
+            'Autres'
+          ].map(type => (
+            <option key={type} value={type}>{type}</option>
+          ))}
+        </select>
+      </div>
 
       <div className="space-y-2">
         <label htmlFor="date" className="block text-sm font-medium text-gray-700">

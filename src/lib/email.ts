@@ -4,6 +4,7 @@ export interface EmailData {
   userEmail: string
   date: string
   branch: string
+  expenseType: string
   amount: string
   description: string
   imageBase64: string
@@ -36,7 +37,7 @@ export const sendExpenseEmail = async (data: EmailData) => {
     throw new Error('Configuration SMTP invalide')
   }
 
-  const { userEmail, date, branch, amount, description, imageBase64, fileName } = data
+  const { userEmail, date, branch, expenseType, amount, description, imageBase64, fileName } = data
 
   // Helper pour extraire le buffer depuis une data URL ou une chaîne base64 brute
   const extractImageBuffer = (input: string) => {
@@ -108,6 +109,10 @@ export const sendExpenseEmail = async (data: EmailData) => {
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${branch}</td>
             </tr>
             <tr>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Type :</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${expenseType}</td>
+            </tr>
+            <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Montant :</td>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151; font-weight: bold; font-size: 18px;">${amount} €</td>
             </tr>
@@ -140,6 +145,7 @@ Nouvelle note de frais
 
 Date : ${date}
 Branche : ${branch}
+Type : ${expenseType}
 Montant : ${amount} €
 Demandeur : ${userEmail}
 Description : ${description}
