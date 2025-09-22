@@ -86,6 +86,10 @@ export default function Home() {
             extractedAmount={extractedAmount}
             userEmail={user?.emailAddresses[0]?.emailAddress || ''}
             initialBranch={(user?.publicMetadata?.branch as string) || ''}
+            onCreateNewNote={() => {
+              setCapturedImage(null)
+              setExtractedAmount('')
+            }}
             onPersistBranch={async (branch: string) => {
               try {
                 const res = await fetch('/api/update-branch', {
