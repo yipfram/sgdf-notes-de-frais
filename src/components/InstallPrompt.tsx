@@ -56,8 +56,8 @@ export function InstallPrompt() {
           <div className="flex-1 text-sm text-gray-700 space-y-1">
             <p className="font-medium text-gray-900">Installer sur votre iPhone / iPad</p>
             <ol className="list-decimal list-inside text-xs space-y-1">
-              <li>Appuyez sur l'icône <span className="inline-block px-1 py-0.5 border rounded">Partager</span> en bas de Safari.</li>
-              <li>Sélectionnez « Ajouter à l'écran d'accueil ».</li>
+              <li>Appuyez sur l&apos;icône <span className="inline-block px-1 py-0.5 border rounded">Partager</span> en bas de Safari.</li>
+              <li>Sélectionnez « Ajouter à l&apos;écran d&apos;accueil ».</li>
               <li>Confirmez en appuyant sur « Ajouter ».</li>
             </ol>
           </div>
