@@ -8,6 +8,7 @@ interface ExpenseFormProps {
   readonly userEmail: string
   readonly initialBranch?: string // From Clerk public metadata
   readonly onPersistBranch?: (branch: string) => Promise<void> | void
+  readonly onCreateNewNote?: () => void
 }
 
 const SGDF_BRANCHES = [
@@ -18,7 +19,7 @@ const SGDF_BRANCHES = [
   'Pionniers-Caravelles'
 ]
 
-export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initialBranch = '', onPersistBranch }: ExpenseFormProps) {
+export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote }: ExpenseFormProps) {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     branch: initialBranch || '',
@@ -105,13 +106,13 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
           type: 'success',
           message: 'Email envoyé avec succès ! La note de frais a été transmise à la trésorerie et une copie vous a été envoyée.'
         })
-        // Reset form
-        setFormData({
+        // Reset only variable fields but keep branch (souvent même branche pour plusieurs notes)
+        setFormData(prev => ({
           date: new Date().toISOString().split('T')[0],
-          branch: '',
+          branch: prev.branch,
           amount: '',
-          description: ''
-        })
+            description: ''
+        }))
       } else {
         setSubmitStatus({
           type: 'error',
@@ -130,6 +131,18 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
   }
 
   const isFormValid = capturedImage && formData.branch && formData.amount && formData.description
+
+  const handleNewNote = () => {
+    // Clear form (keep branch), clear status, notify parent to reset image & OCR amount
+    setFormData(prev => ({
+      date: new Date().toISOString().split('T')[0],
+      branch: prev.branch,
+      amount: '',
+      description: ''
+    }))
+    setSubmitStatus({ type: null, message: '' })
+    if (onCreateNewNote) onCreateNewNote()
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -225,14 +238,23 @@ export function ExpenseForm({ capturedImage, extractedAmount, userEmail, initial
 
       {/* Status messages */}
       {submitStatus.type && (
-        <div className={`p-4 rounded-lg ${
-          submitStatus.type === 'success' 
-            ? 'bg-green-50 border border-green-200 text-green-800' 
+        <div className={`p-4 rounded-lg space-y-3 ${
+          submitStatus.type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-800'
             : 'bg-red-50 border border-red-200 text-red-800'
         }`}>
           <p className="text-sm">
             {submitStatus.type === 'success' ? '✅' : '❌'} {submitStatus.message}
           </p>
+          {submitStatus.type === 'success' && (
+            <button
+              type="button"
+              onClick={handleNewNote}
+              className="w-full p-3 rounded-lg font-medium bg-sgdf-blue text-white hover:bg-blue-700 transition-colors"
+            >
+              ➕ Nouvelle note de frais
+            </button>
+          )}
         </div>
       )}
 
