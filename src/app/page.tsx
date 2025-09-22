@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useUser, UserButton, SignInButton } from '@clerk/nextjs'
 import { ExpenseForm } from '@/components/ExpenseForm'
 import { PhotoCapture } from '@/components/PhotoCapture'
@@ -12,6 +12,13 @@ export default function Home() {
   const initialBranch = (user?.publicMetadata?.branch as string) || ''
   const [activeBranch, setActiveBranch] = useState<string>(initialBranch)
   const branchColor = getBranchColor(activeBranch)
+
+  // Update activeBranch when user metadata loads
+  useEffect(() => {
+    if (user?.publicMetadata?.branch) {
+      setActiveBranch(user.publicMetadata.branch as string)
+    }
+  }, [user?.publicMetadata?.branch])
 
   // Afficher un loader pendant le chargement de l'état d'authentification
   if (!isLoaded) {
