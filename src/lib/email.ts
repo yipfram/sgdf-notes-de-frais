@@ -97,7 +97,7 @@ export const sendExpenseEmail = async (data: EmailData) => {
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background-color: ${primaryColor}; color: ${textOnPrimary}; padding: 20px; text-align: center;">
-  <h1 style="margin: 0; font-size: 24px;">� Facture carte procurement SGDF</h1>
+  <h1 style="margin: 0; font-size: 24px;">📜 Facture carte procurement SGDF</h1>
         <p style="margin: 10px 0 0 0; opacity: 0.9;">La Guillotière</p>
       </div>
       
