@@ -1,7 +1,18 @@
 {
   "name": "sgdf-notes-de-frais",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
+  "description": "Application de gestion des notes de frais pour les Scouts et Guides de France",
+  "license": "Apache-2.0",
+  "homepage": "https://treso.romain-rochas.fr",
+  "author": {
+    "name": "Yipfram",
+    "email": "romain@romain-rochas.fr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yipfram/sgdf-notes-de-frais.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -21,7 +32,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
-  "@tailwindcss/postcss": "^4.1.13",
+    "@tailwindcss/postcss": "^4.1.13",
     "eslint": "^9.36.0",
     "eslint-config-next": "15.5.3",
     "postcss": "^8",
