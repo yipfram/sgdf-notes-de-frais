@@ -1,4 +1,4 @@
-# SGDF Notes de Frais - Developer Instructions
+# Factures carte procurement SGDF - Developer Instructions
 
 ## Project Overview
 Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. Features Clerk authentication, and server-side email sending via Gmail SMTP. **No database** - authentication via Clerk, emails sent directly to recipients.
@@ -13,10 +13,8 @@ Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. Features
 - `src/middleware.ts` - Clerk middleware protecting routes and API endpoints
 - `src/lib/email.ts` - Gmail SMTP email sending utilities
 - `src/app/api/send-expense/route.ts` - Protected API route for email sending
-# SGDF Notes de Frais - Developer Instructions
-
 ## Project Overview
-Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. The app uses Clerk for authentication and sends expense emails server-side via Gmail SMTP. There is no central database: emails are delivered directly to the treasury and the user.
+Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. The app uses Clerk for authentication and sends invoice emails server-side via Gmail SMTP. There is no central database: emails are delivered directly to the treasury and the user.
 
 ## Core Architecture
 
@@ -88,7 +86,7 @@ Format: `YYYY-MM-DD - Branch - Amount.jpg`
 
 ### Email Template Structure
 - Recipients: Treasury + authenticated user
-- Subject: `Note de frais - {Branch} - {Date}`
+- Subject: `Facture carte procurement - {Branch} - {Date}`
 - Content: Structured HTML table with SGDF branding
 - Attachment: JPEG image with formatted filename
 

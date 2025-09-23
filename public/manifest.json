@@ -1,7 +1,7 @@
 {
-	"name": "SGDF Notes de Frais",
-	"short_name": "Notes SGDF",
-	"description": "Application de gestion des notes de frais pour SGDF La Guillotière",
+	"name": "Factures carte procurement SGDF",
+	"short_name": "Factures SGDF",
+	"description": "Application de gestion des factures carte procurement pour SGDF La Guillotière",
 	"lang": "fr-FR",
 	"id": "/",
 	"start_url": "/?source=pwa",
@@ -29,9 +29,9 @@
 	],
 	"shortcuts": [
 		{
-			"name": "Nouvelle note",
+			"name": "Nouvelle facture",
 			"short_name": "Nouvelle",
-			"description": "Créer une nouvelle note de frais",
+			"description": "Créer une nouvelle facture carte",
 			"url": "/?action=new",
 			"icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
 		}

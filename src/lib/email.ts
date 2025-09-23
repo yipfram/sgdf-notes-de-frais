@@ -88,7 +88,7 @@ export const sendExpenseEmail = async (data: EmailData) => {
     throw e
   }
 
-  const subject = `Note de frais - ${branch} - ${date}`
+  const subject = `Facture carte procurement - ${branch} - ${date}`
   const primaryColor = getBranchColor(branch)
   // Accent: If the primary color is a warm tone, keep gold, else use a light variant
   const accentColor = '#FBB042'
@@ -97,12 +97,12 @@ export const sendExpenseEmail = async (data: EmailData) => {
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background-color: ${primaryColor}; color: ${textOnPrimary}; padding: 20px; text-align: center;">
-        <h1 style="margin: 0; font-size: 24px;">📝 Note de Frais SGDF</h1>
+  <h1 style="margin: 0; font-size: 24px;">� Facture carte procurement SGDF</h1>
         <p style="margin: 10px 0 0 0; opacity: 0.9;">La Guillotière</p>
       </div>
       
       <div style="padding: 30px; background-color: #f9f9f9;">
-        <h2 style="color: ${primaryColor}; margin-top: 0;">Nouvelle note de frais</h2>
+  <h2 style="color: ${primaryColor}; margin-top: 0;">Nouvelle facture</h2>
         
         <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <table style="width: 100%; border-collapse: collapse;">
@@ -139,16 +139,16 @@ export const sendExpenseEmail = async (data: EmailData) => {
         </div>
         
         <p style="color: #6B7280; font-size: 14px; margin-top: 30px;">
-          Email envoyé automatiquement par l'application SGDF Notes de Frais.
+          Email envoyé automatiquement par l'application Factures carte procurement SGDF.
         </p>
       </div>
     </div>
   `
 
   const textContent = `
-Note de Frais SGDF - La Guillotière
+Facture carte procurement SGDF - La Guillotière
 
-Nouvelle note de frais
+Nouvelle facture
 
 Date : ${date}
 Branche : ${branch}
@@ -159,12 +159,12 @@ ${description ? `Description : ${description}` : ''}
 
 Justificatif en pièce jointe : ${fileName}
 
-Email envoyé automatiquement par l'application SGDF Notes de Frais.
+Email envoyé automatiquement par l'application Factures carte procurement SGDF.
   `
 
   const mailOptions = {
     from: {
-      name: 'SGDF Notes de Frais',
+  name: 'Factures carte procurement SGDF',
       address: process.env.GMAIL_USER!
     },
     to: process.env.TREASURY_EMAIL!,

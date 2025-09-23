@@ -1,6 +1,6 @@
-# SGDF Notes de Frais
+# Factures carte procurement SGDF
 
-Application web mobile-first pour la gestion des notes de frais du groupe SGDF La Guillotière.
+Application web mobile-first pour la gestion des factures carte procurement du groupe SGDF La Guillotière.
 
 ## Fonctionnalités
 
@@ -30,9 +30,9 @@ L'application est maintenant une **Progressive Web App** :
 
 ## Branches SGDF supportées
 
-# SGDF Notes de Frais
+# Factures carte procurement SGDF
 
-Application web mobile-first pour la gestion des notes de frais du groupe SGDF La Guillotière.
+Application web mobile-first pour la gestion des factures carte procurement du groupe SGDF La Guillotière.
 
 ## Fonctionnalités principales
 

@@ -1,139 +1,128 @@
-# Configuration SGDF Notes de Frais
+# Configuration Factures carte procurement SGDF
 
 ## ⚙️ Configuration requise
 
-### 1. Configuration Clerk (Authentification)
-C'est gratuit !!
+Le projet utilise Clerk pour l'authentification et envoie les justificatifs par email via Gmail SMTP. Il n'y a pas de stockage centralisé des factures.
 
-1. Créez un compte sur [Clerk Dashboard](https://dashboard.clerk.com/)
+### 1. Configuration Clerk (authentification)
+
+1. Créez un compte sur https://dashboard.clerk.com/
 2. Créez une nouvelle application
-3. Activez les providers de connexion :
-   ````markdown
-   # Configuration SGDF Notes de Frais
+3. Activez les providers souhaités : Email (recommandé), Google (optionnel)
+4. Copiez les clés dans `.env.local` :
 
-   ## ⚙️ Configuration requise
+```bash
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+```
 
-   Le projet utilise Clerk pour l'authentification et envoie les justificatifs par email via Gmail SMTP. Il n'y a pas de stockage centralisé des notes.
+### 2. Configuration Gmail SMTP (envoi d'emails côté serveur)
 
-   ### 1. Configuration Clerk (authentification)
+1. Activez l'authentification à 2 facteurs sur le compte Gmail utilisé pour l'envoi
+2. Générez un mot de passe d'application (Google Account → Security → App passwords)
+3. Ajoutez ces variables d'environnement :
 
-   1. Créez un compte sur https://dashboard.clerk.com/
-   2. Créez une nouvelle application
-   3. Activez les providers souhaités : Email (recommandé), Google (optionnel)
-   4. Copiez les clés dans `.env.local` :
+```bash
+GMAIL_USER=sgdf.tresolaguillotiere@gmail.com
+GMAIL_APP_PASSWORD=xxxxxxxxxxxxxxxx
+TREASURY_EMAIL=sgdf.tresolaguillotiere@gmail.com
+```
 
-   ```bash
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-   CLERK_SECRET_KEY=sk_test_...
-   NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-   NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-   ```
+Remarque : utilisez un mot de passe d'application (16 caractères) et ne committez jamais `.env.local`.
 
-   ### 2. Configuration Gmail SMTP (envoi d'emails côté serveur)
+### 3. Fichier `.env.local`
 
-   1. Activez l'authentification à 2 facteurs sur le compte Gmail utilisé pour l'envoi
-   2. Générez un mot de passe d'application (Google Account → Security → App passwords)
-   3. Ajoutez ces variables d'environnement :
+Copiez `.env.example` → `.env.local` et remplissez les valeurs ci-dessus.
 
-   ```bash
-   GMAIL_USER=sgdf.tresolaguillotiere@gmail.com
-   GMAIL_APP_PASSWORD=xxxxxxxxxxxxxxxx
-   TREASURY_EMAIL=sgdf.tresolaguillotiere@gmail.com
-   ```
+### 4. PWA (Progressive Web App)
 
-   Remarque : utilisez un mot de passe d'application (16 caractères) et ne committez jamais `.env.local`.
+Déjà configurée :
 
-   ### 3. Fichier `.env.local`
+- `public/manifest.json` : nom, couleurs, icônes
+- `public/sw.js` : cache shell + stratégies runtime
+- Icônes : `SGDF_symbole_RVB.png` & `SGDF_symbole_blanc.png`
+- Enregistrement du SW dans `app/layout.tsx`
+- Invite d'installation personnalisée (`InstallPrompt.tsx`)
 
-   Copiez `.env.example` → `.env.local` et remplissez les valeurs ci-dessus.
+Limitations hors ligne :
 
-   ### 4. PWA (Progressive Web App)
+- L'envoi d'email nécessite une connexion
+- Pas de persistance locale des brouillons par défaut
 
-   Déjà configurée :
+## 🚀 Installation et lancement
 
-   - `public/manifest.json` : nom, couleurs, icônes
-   - `public/sw.js` : cache shell + stratégies runtime
-   - Icônes : `SGDF_symbole_RVB.png` & `SGDF_symbole_blanc.png`
-   - Enregistrement du SW dans `app/layout.tsx`
-   - Invite d'installation personnalisée (`InstallPrompt.tsx`)
+```powershell
+# Installation
+pnpm install
 
-   Limitations hors ligne :
+# Lancement en développement
+pnpm dev
 
-   - L'envoi d'email nécessite une connexion
-   - Pas de persistance locale des brouillons par défaut
+# Build pour production
+pnpm build
 
-   ## 🚀 Installation et lancement
+# Lancer en production (si déployé localement)
+pnpm start
+```
 
-   ```powershell
-   # Installation
-   pnpm install
+## 📧 Fonctionnement de l'envoi d'email
 
-   # Lancement en développement
-   pnpm dev
+1. L'utilisateur se connecte via Clerk
+2. L'utilisateur capture ou importe une photo du justificatif
+3. L'utilisateur complète manuellement la date, le type, le montant, la branche et la description
+4. Le frontend envoie les données et l'image en base64 à l'API route `/api/send-expense`
+5. Le serveur valide les données, construit l'email et envoie via Gmail SMTP à :
+   - Trésorerie (`TREASURY_EMAIL`)
+   - Utilisateur (email Clerk)
 
-   # Build pour production
-   pnpm build
+L'email contient un HTML lisible, un fallback texte et la photo en pièce jointe avec un nom formatté `YYYY-MM-DD - Branche - Montant.jpg`.
 
-   # Lancer en production (si déployé localement)
-   pnpm start
-   ```
+## 🔒 Sécurité
 
-   ## 📧 Fonctionnement de l'envoi d'email
+- Authentification obligatoire (Clerk)
+- Variables sensibles dans `.env.local` (ignoré par Git)
+- Validation côté serveur avant envoi
+- HTTPS requis en production pour l'accès caméra
 
-   1. L'utilisateur se connecte via Clerk
-   2. L'utilisateur capture ou importe une photo du justificatif
-   3. L'utilisateur complète manuellement la date, le type, le montant, la branche et la description
-   4. Le frontend envoie les données et l'image en base64 à l'API route `/api/send-expense`
-   5. Le serveur valide les données, construit l'email et envoie via Gmail SMTP à :
-      - Trésorerie (`TREASURY_EMAIL`)
-      - Utilisateur (email Clerk)
+## Architecture
 
-   L'email contient un HTML lisible, un fallback texte et la photo en pièce jointe avec un nom formatté `YYYY-MM-DD - Branche - Montant.jpg`.
+```
+Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Email delivery
+                      ↓
+               Authentification
+```
 
-   ## 🔒 Sécurité
+## 📱 Déploiement
 
-   - Authentification obligatoire (Clerk)
-   - Variables sensibles dans `.env.local` (ignoré par Git)
-   - Validation côté serveur avant envoi
-   - HTTPS requis en production pour l'accès caméra
+### Vercel (Recommandé)
+1. Connectez le repo GitHub à Vercel
+2. Ajoutez les variables d'environnement dans Vercel Dashboard
+3. Déployez (build automatique)
 
-   ## �️ Architecture
+### Autres plateformes
 
-   ```
-   Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Email delivery
-                         ↓
-                  Authentification
-   ```
+- Assurez-vous que les variables d'environnement sont configurées
+- La plateforme doit supporter les API routes Next.js
+- HTTPS requis pour l'accès caméra
 
-   ## 📱 Déploiement
+## ⚙️ Dépannage
 
-   ### Vercel (Recommandé)
-   1. Connectez le repo GitHub à Vercel
-   2. Ajoutez les variables d'environnement dans Vercel Dashboard
-   3. Déployez (build automatique)
+**"Configuration SMTP invalide"**
 
-   ### Autres plateformes
+- Vérifiez GMAIL_APP_PASSWORD (mot de passe d'application)
+- Vérifiez que le compte n'est pas bloqué par Google
 
-   - Assurez-vous que les variables d'environnement sont configurées
-   - La plateforme doit supporter les API routes Next.js
-   - HTTPS requis pour l'accès caméra
+**"Non autorisé"**
 
-   ## ⚙️ Dépannage
+- Vérifiez les clés Clerk
+- Assurez-vous que l'utilisateur est connecté
 
-   **"Configuration SMTP invalide"**
+**Logs & debug**
 
-   - Vérifiez GMAIL_APP_PASSWORD (mot de passe d'application)
-   - Vérifiez que le compte n'est pas bloqué par Google
+- Console navigateur pour erreurs frontend
+- Logs Vercel / serveur pour erreurs backend
+- Tester l'API `/api/send-expense` en local avec des données minimales
 
-   **"Non autorisé"**
-
-   - Vérifiez les clés Clerk
-   - Assurez-vous que l'utilisateur est connecté
-
-   **Logs & debug**
-
-   - Console navigateur pour erreurs frontend
-   - Logs Vercel / serveur pour erreurs backend
-   - Tester l'API `/api/send-expense` en local avec des données minimales
-
-   ````
+```

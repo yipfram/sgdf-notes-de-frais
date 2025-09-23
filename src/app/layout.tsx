@@ -3,8 +3,8 @@ import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'SGDF Notes de Frais',
-  description: 'Application de gestion des notes de frais pour SGDF La Guillotière',
+  title: 'Factures carte procurement SGDF',
+  description: "Application de gestion des factures carte procurement pour SGDF La Guillotière",
   manifest: '/manifest.json',
   themeColor: '#1E3A8A'
 }

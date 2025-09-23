@@ -39,7 +39,7 @@ export default function Home() {
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
           <div className="bg-sgdf-blue text-white p-6">
             <h1 className="text-2xl font-bold text-center">
-              📝 Notes de Frais SGDF
+              💳 Factures carte procurement SGDF
             </h1>
             <p className="text-center text-blue-100 mt-2">
               La Guillotière
@@ -47,7 +47,7 @@ export default function Home() {
           </div>
           <div className="p-6 text-center">
             <p className="text-gray-600 mb-6">
-              Connectez-vous pour accéder à l&apos;application de gestion des notes de frais.
+              Connectez-vous pour accéder à l&apos;application de gestion des factures carte procurement.
             </p>
             <SignInButton mode="modal">
               <button className="w-full bg-sgdf-blue text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
@@ -72,7 +72,7 @@ export default function Home() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold">
-                📝 Notes de Frais SGDF
+                💳 Factures carte procurement SGDF
               </h1>
               <p className="text-white/80 mt-2">
                 La Guillotière

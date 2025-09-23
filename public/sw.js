@@ -1,4 +1,4 @@
-/* Service Worker for SGDF Notes de Frais PWA */
+/* Service Worker for Factures carte procurement SGDF PWA */
 const CACHE_VERSION = 'v1';
 const APP_SHELL = [
   '/',

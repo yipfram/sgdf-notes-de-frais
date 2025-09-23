@@ -108,7 +108,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
       if (response.ok) {
         setSubmitStatus({
           type: 'success',
-          message: 'Email envoyé avec succès ! La note de frais a été transmise à la trésorerie et une copie vous a été envoyée.'
+          message: 'Email envoyé avec succès ! La facture a été transmise à la trésorerie et une copie vous a été envoyée.'
         })
         // Reset only variable fields but keep branch (souvent même branche pour plusieurs notes)
         setFormData(prev => ({
@@ -294,7 +294,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
               onClick={handleNewNote}
               className="w-full p-3 rounded-lg font-medium bg-sgdf-blue text-white hover:bg-blue-700 transition-colors"
             >
-              ➕ Nouvelle note de frais
+              ➕ Nouvelle facture
             </button>
           )}
         </div>
@@ -336,7 +336,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
               Envoi en cours...
             </span>
           ) : (
-            '📧 Envoyer la note de frais'
+            '📧 Envoyer la facture'
           )}
         </button>
       </div>
