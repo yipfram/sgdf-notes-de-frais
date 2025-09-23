@@ -6,7 +6,18 @@ export const metadata: Metadata = {
   title: 'Factures carte procurement SGDF',
   description: "Application de gestion des factures carte procurement pour SGDF La Guillotière",
   manifest: '/manifest.json',
-  themeColor: '#1E3A8A'
+}
+
+// Provide a generateViewport function so Next can place theme-color metadata correctly
+export function generateViewport(): any {
+  return {
+    // themeColor accepts a string or an array of descriptors; use descriptor form for clarity
+    themeColor: [
+      {
+        color: '#1E3A8A'
+      }
+    ]
+  }
 }
 
 export default function RootLayout({
