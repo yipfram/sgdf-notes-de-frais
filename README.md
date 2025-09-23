@@ -2,6 +2,9 @@
 
 Application web mobile-first pour la gestion des factures carte procurement du groupe SGDF La Guillotière.
 
+> **Avertissement — Non officiel**  
+> Cette application n'est pas affiliée aux Scouts et Guides de France (SGDF) et n'est pas une application officielle.  
+
 ## Fonctionnalités
 
 - 📸 **Capture de justificatifs** : Prise de photo ou import de fichiers
