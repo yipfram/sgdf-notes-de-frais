@@ -36,7 +36,7 @@ export default function RootLayout({
           <link rel="manifest" href="/manifest.json" />
         </head>
         <body className="font-sans">
-          <div className="min-h-screen bg-gradient-to-br from-sgdf-blue to-blue-800">
+          <div className="min-h-screen bg-linear-to-br from-sgdf-blue to-blue-800">
             {children}
           </div>
           <script dangerouslySetInnerHTML={{__html:`if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW registration failed',e));});}`}} />
