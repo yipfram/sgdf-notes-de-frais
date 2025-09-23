@@ -42,6 +42,7 @@ export async function GET() {
     } catch (err) {
       smtpOk = false
       smtpError = err instanceof Error ? err.message : String(err)
+      console.error('Health check: SMTP verify failed:', smtpError)
     }
   } else {
     smtpError = 'Skipping SMTP verify because env variables are missing'
@@ -59,7 +60,8 @@ export async function GET() {
     },
     smtp: {
       ok: smtpOk,
-      error: smtpError,
+      // Too sensitive, might contain secrets
+      // error: smtpError,
       timeoutMs: SMTP_VERIFY_TIMEOUT_MS,
     },
     branches: {
