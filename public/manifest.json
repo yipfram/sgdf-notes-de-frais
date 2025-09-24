@@ -9,8 +9,8 @@
 	"display": "standalone",
 	"display_override": ["standalone", "window-controls-overlay"],
 	"orientation": "portrait",
-	"background_color": "#1E3A8A",
-	"theme_color": "#1E3A8A",
+	"background_color": "#fafafa",
+	"theme_color": "#18181B",
 	"categories": ["productivity", "finance"],
 	"dir": "ltr",
 	"prefer_related_applications": false,
@@ -25,6 +25,11 @@
 			"sizes": "512x512",
 			"type": "image/png",
 			"purpose": "maskable any"
+		},
+		{
+			"src": "/favicon.ico",
+			"sizes": "48x48 32x32 16x16",
+			"type": "image/x-icon"
 		}
 	],
 	"shortcuts": [
@@ -32,8 +37,7 @@
 			"name": "Nouvelle facture",
 			"short_name": "Nouvelle",
 			"description": "Créer une nouvelle facture carte",
-			"url": "/?action=new",
-			"icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+			"url": "/?action=new"
 		}
 	]
 }

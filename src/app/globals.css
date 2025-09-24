@@ -1,38 +1,26 @@
 @import 'tailwindcss';
 
-/* Custom SGDF brand color utilities (fallback if Tailwind config not picked up) */
+/* Neutral theme: prefer white/zinc surfaces; remove brand color utilities */
 @layer utilities {
-  .bg-sgdf-blue { background-color: #1E3A8A; }
-  .bg-sgdf-gold { background-color: #FBB042; }
-  .text-sgdf-blue { color: #1E3A8A; }
-  .text-sgdf-gold { color: #FBB042; }
-  .border-sgdf-blue { border-color: #1E3A8A; }
-  .border-sgdf-gold { border-color: #FBB042; }
+  /* Intentionally blank: brand utility classes removed for a neutral palette */
 }
 
 @layer utilities {
   :root {
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 214, 219, 220;
-    --background-end-rgb: 255, 255, 255;
+    --foreground-rgb: 17, 17, 17; /* zinc-900 */
+    --background-rgb: 250, 250, 250; /* zinc-50 */
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --foreground-rgb: 255, 255, 255;
-      --background-start-rgb: 0, 0, 0;
-      --background-end-rgb: 0, 0, 0;
+      --foreground-rgb: 250, 250, 250; /* zinc-50 */
+      --background-rgb: 9, 9, 11; /* zinc-950 */
     }
   }
 
   body {
     color: rgb(var(--foreground-rgb));
-    background: linear-gradient(
-        to bottom,
-        transparent,
-        rgb(var(--background-end-rgb))
-      )
-      rgb(var(--background-start-rgb));
+    background-color: rgb(var(--background-rgb));
   }
 }
 

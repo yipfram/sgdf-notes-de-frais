@@ -4,16 +4,15 @@ import { useState, useEffect } from 'react'
 import { useUser, UserButton, SignInButton } from '@clerk/nextjs'
 import { ExpenseForm } from '@/components/ExpenseForm'
 import { PhotoCapture } from '@/components/PhotoCapture'
-import { getBranchColor } from '@/lib/branches'
 import { useOnlineStatus } from '@/lib/useOnlineStatus'
 import { InstallPrompt } from '@/components/InstallPrompt'
+import Image from 'next/image'
 
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser()
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const initialBranch = (user?.publicMetadata?.branch as string) || ''
   const [activeBranch, setActiveBranch] = useState<string>(initialBranch)
-  const branchColor = getBranchColor(activeBranch)
   const isOnline = useOnlineStatus()
 
   // Update activeBranch when user metadata loads
@@ -26,8 +25,8 @@ export default function Home() {
   // Afficher un loader pendant le chargement de l'état d'authentification
   if (!isLoaded) {
     return (
-      <main className="min-h-screen p-4 flex items-center justify-center">
-        <div className="text-white text-xl">Chargement...</div>
+      <main className="min-h-screen p-4 flex items-center justify-center bg-zinc-50">
+        <div className="text-zinc-600 text-sm">Chargement…</div>
       </main>
     )
   }
@@ -35,22 +34,23 @@ export default function Home() {
   // Afficher la page de connexion si l'utilisateur n'est pas connecté
   if (!isSignedIn) {
     return (
-      <main className="min-h-screen p-4 flex items-center justify-center">
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
-          <div className="bg-sgdf-blue text-white p-6">
-            <h1 className="text-2xl font-bold text-center">
-              💳 Factures carte procurement SGDF
-            </h1>
-            <p className="text-center text-blue-100 mt-2">
+      <main className="min-h-screen p-4 flex items-center justify-center bg-zinc-50">
+        <div className="max-w-md mx-auto bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
+          <div className="bg-white text-zinc-900 p-6 border-b border-zinc-200">
+            <div className="flex items-center justify-center gap-2">
+              <Image src="/SGDF_symbole_RVB.png" alt="SGDF" width={24} height={24} className="rounded-sm" />
+              <h1 className="text-2xl font-semibold text-center">Factures carte procurement SGDF</h1>
+            </div>
+            <p className="text-center text-zinc-500 mt-2">
               La Guillotière
             </p>
           </div>
           <div className="p-6 text-center">
-            <p className="text-gray-600 mb-6">
+            <p className="text-zinc-600 mb-6">
               Connectez-vous pour accéder à l&apos;application de gestion des factures carte procurement.
             </p>
             <SignInButton mode="modal">
-              <button className="w-full bg-sgdf-blue text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+              <button className="w-full bg-zinc-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors">
                 Se connecter
               </button>
             </SignInButton>
@@ -61,27 +61,18 @@ export default function Home() {
   }
 
   return (
-    <main
-      className="min-h-screen p-4 transition-colors"
-      style={{
-        backgroundColor: activeBranch ? branchColor : undefined
-      }}
-    >
-      <div className="max-w-md mx-auto bg-white/95 backdrop-blur rounded-lg shadow-xl overflow-hidden border border-white/40">
-        <div className="text-white p-6" style={{ backgroundColor: branchColor }}>
+    <main className="min-h-screen p-4 bg-zinc-50">
+      <div className="max-w-md mx-auto bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
+        <div className="bg-white p-6 border-b border-zinc-200">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold">
-                💳 Factures carte procurement SGDF
-              </h1>
-              <p className="text-white/80 mt-2">
-                La Guillotière
-              </p>
+              <div className="flex items-center gap-2">
+                <Image src="/SGDF_symbole_RVB.png" alt="SGDF" width={28} height={28} className="rounded-sm" />
+                <h1 className="text-2xl font-semibold text-zinc-900">Factures carte procurement SGDF</h1>
+              </div>
+              <p className="text-zinc-500 mt-2">La Guillotière</p>
             </div>
             <div className="flex items-center space-x-3">
-              <span className="text-sm text-white/80">
-                {user?.emailAddresses[0]?.emailAddress}
-              </span>
               <UserButton 
                 appearance={{
                   elements: {
@@ -94,8 +85,8 @@ export default function Home() {
         </div>
         
         {!isOnline && (
-          <div className="bg-amber-500 text-white text-center text-sm py-2">
-            ⚠️ Hors ligne - certaines fonctionnalités sont limitées
+          <div className="bg-amber-50 border-t border-b border-amber-200 text-amber-800 text-center text-sm py-2">
+            Hors ligne - certaines fonctionnalités sont limitées
           </div>
         )}
 

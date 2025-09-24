@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { ClipboardDocumentListIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
 
 interface ExpenseFormProps {
   readonly capturedImage: string | null
@@ -153,13 +154,14 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-lg font-semibold text-gray-800">
-        📋 Informations de la dépense
+      <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+        <ClipboardDocumentListIcon className="w-5 h-5 text-zinc-700" aria-hidden="true" />
+        Informations de la dépense
       </h2>
 
       {capturedImage && (
         <div className="space-y-2">
-          <label htmlFor="image-preview" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="image-preview" className="block text-sm font-medium text-zinc-700">
             Aperçu du justificatif
           </label>
           <Image
@@ -168,20 +170,20 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
             alt="Justificatif"
             width={500}
             height={200}
-            className="w-full h-48 object-cover rounded-lg border"
+            className="w-full h-48 object-cover rounded-lg border border-zinc-200"
           />
         </div>
       )}
 
       <div className="space-y-2">
-        <label htmlFor="expenseType" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="expenseType" className="block text-sm font-medium text-zinc-700">
           Type de dépense *
         </label>
         <select
           id="expenseType"
           value={formData.expenseType}
           onChange={(e) => handleInputChange('expenseType', e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent bg-white text-gray-900"
+          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         >
           <option value="">Sélectionner un type</option>
@@ -206,7 +208,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="date" className="block text-sm font-medium text-zinc-700">
           Date *
         </label>
         <input
@@ -214,20 +216,20 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
           type="date"
           value={formData.date}
           onChange={(e) => handleInputChange('date', e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent bg-white text-gray-900"
+          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         />
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="branch" className="block text-sm font-medium text-zinc-700">
           Branche *
         </label>
         <select
           id="branch"
           value={formData.branch}
           onChange={(e) => handleInputChange('branch', e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent bg-white text-gray-900"
+          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         >
           <option value="">Sélectionner une branche</option>
@@ -239,17 +241,33 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
         </select>
         {formData.branch && (
           <div className="mt-1 flex items-center justify-between">
-            <p className="text-xs text-gray-500 flex items-center gap-1">
-              {branchPersistStatus === 'saving' && '💾 Sauvegarde...'}
-              {branchPersistStatus === 'saved' && '✅ Branche mémorisée'}
-              {branchPersistStatus === 'error' && '⚠️ Erreur de sauvegarde'}
+            <p className="text-xs text-zinc-500 flex items-center gap-1">
+              {branchPersistStatus === 'saving' && (
+                <span className="inline-flex items-center gap-1">
+                  <svg className="animate-spin h-3.5 w-3.5 text-zinc-500" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Sauvegarde…
+                </span>
+              )}
+              {branchPersistStatus === 'saved' && (
+                <span className="inline-flex items-center gap-1 text-emerald-700">
+                  <CheckCircleIcon className="w-4 h-4" aria-hidden="true" /> Branche mémorisée
+                </span>
+              )}
+              {branchPersistStatus === 'error' && (
+                <span className="inline-flex items-center gap-1 text-rose-700">
+                  <ExclamationTriangleIcon className="w-4 h-4" aria-hidden="true" /> Erreur de sauvegarde
+                </span>
+              )}
             </p>
           </div>
         )}
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="amount" className="block text-sm font-medium text-zinc-700">
           Montant (€) *
         </label>
         <input
@@ -259,13 +277,13 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
           placeholder="0.00"
           value={formData.amount}
           onChange={(e) => handleInputChange('amount', e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent bg-white text-gray-900"
+          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         />
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="description" className="block text-sm font-medium text-zinc-700">
           Description (optionnel)
         </label>
         <textarea
@@ -274,7 +292,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
           rows={3}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sgdf-blue focus:border-transparent resize-none bg-white text-gray-900"
+          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 resize-none bg-white text-zinc-900"
         />
       </div>
 
@@ -282,19 +300,26 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
       {submitStatus.type && (
         <div className={`p-4 rounded-lg space-y-3 ${
           submitStatus.type === 'success'
-            ? 'bg-green-50 border border-green-200 text-green-800'
-            : 'bg-red-50 border border-red-200 text-red-800'
+            ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+            : 'bg-rose-50 border border-rose-200 text-rose-800'
         }`}>
-          <p className="text-sm">
-            {submitStatus.type === 'success' ? '✅' : '❌'} {submitStatus.message}
+          <p className="text-sm flex items-start gap-2">
+            {submitStatus.type === 'success' ? (
+              <CheckCircleIcon className="w-5 h-5 flex-none" aria-hidden="true" />
+            ) : (
+              <ExclamationTriangleIcon className="w-5 h-5 flex-none" aria-hidden="true" />
+            )}
+            <span>{submitStatus.message}</span>
           </p>
           {submitStatus.type === 'success' && (
             <button
               type="button"
               onClick={handleNewNote}
-              className="w-full p-3 rounded-lg font-medium bg-sgdf-blue text-white hover:bg-blue-700 transition-colors"
+              className="w-full p-3 rounded-lg font-medium bg-zinc-900 text-white hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
             >
-              ➕ Nouvelle facture
+              <span className="inline-flex items-center justify-center gap-2">
+                <PlusCircleIcon className="w-5 h-5" aria-hidden="true" /> Nouvelle facture
+              </span>
             </button>
           )}
         </div>
@@ -302,29 +327,35 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
 
       <div className="space-y-4">
         {isFormValid && !submitStatus.type && (
-          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>📧 Email sera envoyé à :</strong><br />
+          <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg">
+            <p className="text-sm text-zinc-800">
+              <span className="inline-flex items-center gap-2 font-medium">
+                <PaperAirplaneIcon className="w-4 h-4" aria-hidden="true" /> Email sera envoyé à :
+              </span><br />
               • Trésorerie : sgdf.tresolaguillotiere@gmail.com<br />
               • Vous : {userEmail}<br />
-              <strong>📎 Fichier :</strong> {generateFileName()}
+              <span className="inline-flex items-center gap-2 font-medium">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 5 17 10"/><line x1="12" x2="12" y1="5" y2="20"/></svg>
+                Fichier :
+              </span> {generateFileName()}
             </p>
           </div>
         )}
 
         {!isOnline && (
-          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
-            ⚠️ Vous êtes hors ligne. Vous pouvez préparer la note mais l&apos;envoi ne fonctionnera qu&apos;une fois reconnecté.
+          <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm flex items-start gap-2">
+            <ExclamationTriangleIcon className="w-5 h-5 mt-0.5" aria-hidden="true" />
+            <span>Vous êtes hors ligne. Vous pouvez préparer la note mais l&apos;envoi ne fonctionnera qu&apos;une fois reconnecté.</span>
           </div>
         )}
 
         <button
           type="submit"
           disabled={!isFormValid || isSubmitting || !isOnline}
-          className={`w-full p-4 rounded-lg font-semibold text-white transition-colors ${
+          className={`w-full p-4 rounded-lg font-semibold text-white transition-colors focus:outline-none ${
             isFormValid && !isSubmitting && isOnline
-              ? 'bg-sgdf-blue hover:bg-blue-700'
-              : 'bg-gray-400 cursor-not-allowed'
+              ? 'bg-zinc-900 hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-400'
+              : 'bg-zinc-300 cursor-not-allowed'
           }`}
         >
           {isSubmitting ? (
@@ -336,7 +367,9 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
               Envoi en cours...
             </span>
           ) : (
-            '📧 Envoyer la facture'
+            <span className="inline-flex items-center justify-center gap-2">
+              <PaperAirplaneIcon className="w-5 h-5" aria-hidden="true" /> Envoyer la facture
+            </span>
           )}
         </button>
       </div>

@@ -28,13 +28,13 @@ export function InstallTestButton() {
   }
 
   return (
-    <div className="mt-4 p-3 border border-dashed border-sgdf-blue/40 rounded-lg text-sm bg-white/60">
+    <div className="mt-4 p-3 border border-dashed border-zinc-300 rounded-lg text-sm bg-white/60">
       <div className="flex items-center justify-between gap-3">
         <span className="text-gray-700 font-medium">Test Installation PWA</span>
         <button
           type="button"
           onClick={trigger}
-          className={`px-3 py-1.5 rounded-md text-xs font-semibold text-white ${deferred ? 'bg-sgdf-blue hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
+          className={`px-3 py-1.5 rounded-md text-xs font-semibold text-white ${deferred ? 'bg-zinc-900 hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-400' : 'bg-zinc-300 cursor-not-allowed'}`}
         >
           {deferred ? 'Lancer prompt' : 'Indisponible'}
         </button>

@@ -1,11 +1,12 @@
 /* Service Worker for Factures carte procurement SGDF PWA */
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const APP_SHELL = [
   '/',
   '/manifest.json',
   '/offline.html',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/SGDF_symbole_RVB.png',
+  '/SGDF_symbole_blanc.png',
+  '/favicon.ico'
 ];
 
 self.addEventListener('install', (event) => {
