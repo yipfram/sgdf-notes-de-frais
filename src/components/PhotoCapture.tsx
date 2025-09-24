@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { CameraIcon, ArrowUpOnSquareIcon } from '@heroicons/react/24/outline'
 
 // --- Utilitaires ---
 async function blobToDataUrl(blob: Blob): Promise<string> {
@@ -127,21 +128,23 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-800">📸 Justificatif de dépense</h2>
+      <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
+        <CameraIcon className="w-5 h-5 text-zinc-700" aria-hidden="true" /> Justificatif de dépense
+      </h2>
 
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={handleCameraCapture}
-          className="flex flex-col items-center p-4 bg-sgdf-blue text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex flex-col items-center p-4 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
         >
-          <span className="text-2xl mb-2">📷</span>
+          <CameraIcon className="w-6 h-6 mb-2" aria-hidden="true" />
           <span className="text-sm font-medium">Prendre photo</span>
         </button>
         <button
           onClick={handleCameraCapture}
-          className="flex flex-col items-center p-4 bg-sgdf-gold text-gray-800 rounded-lg hover:bg-yellow-500 transition-colors"
+          className="flex flex-col items-center p-4 bg-white text-zinc-900 rounded-lg border border-zinc-200 hover:bg-zinc-100 transition-colors"
         >
-          <span className="text-2xl mb-2">📁</span>
+          <ArrowUpOnSquareIcon className="w-6 h-6 mb-2 text-zinc-700" aria-hidden="true" />
           <span className="text-sm font-medium">Importer fichier</span>
         </button>
       </div>
@@ -156,11 +159,11 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
       />
 
       {compressedInfo && !errorMsg && (
-        <p className="text-xs text-gray-500">Optimisation: {compressedInfo}</p>
+        <p className="text-xs text-zinc-500">Optimisation: {compressedInfo}</p>
       )}
 
       {errorMsg && (
-        <div className="p-3 rounded-md bg-red-50 border border-red-200 text-red-700 text-sm">
+        <div className="p-3 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-sm">
           {errorMsg}
         </div>
       )}
