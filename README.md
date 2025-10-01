@@ -130,6 +130,11 @@ pnpm start
 
 Fonctionne bien sur Vercel ou toute plateforme supportant les API routes Next.js. Assurez-vous de définir les variables d'environnement (voir `SETUP.md`). HTTPS est requis pour l'accès caméra en production.
 
+### Guides de déploiement
+
+- 📖 **[Guide utilisateur simplifié](./GUIDE_UTILISATEUR.md)** - Installation pas à pas pour non-techniques (Vercel + Clerk + Gmail)
+- 🔧 **[Guide technique (SETUP.md)](./SETUP.md)** - Configuration détaillée pour développeurs
+
 ## Caractéristiques techniques
 
 - ✅ Mobile-first
