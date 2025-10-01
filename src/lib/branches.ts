@@ -7,7 +7,8 @@ export const BRANCH_COLORS: Record<string, string> = {
   'Louveteaux': '#F28C00',
   'Jeannettes': '#F28C00',
   'Compagnons': '#00A19A',
-  'Farfadets': '#6CC24A'
+  'Farfadets': '#6CC24A',
+  'Groupe': '#1E3A8A'
 }
 
 export const ALL_BRANCHES = Object.keys(BRANCH_COLORS)

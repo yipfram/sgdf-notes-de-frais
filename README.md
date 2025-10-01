@@ -78,6 +78,7 @@ L'application est une Progressive Web App (PWA) optimisée pour mobile :
 - Guides
 - Pionniers-Caravelles
 - Compagnons
+- Groupe
 
 ## Technologies utilisées
 

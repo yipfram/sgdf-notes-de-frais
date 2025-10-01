@@ -20,7 +20,8 @@ const SGDF_BRANCHES = [
   'Scouts',
   'Guides',
   'Pionniers-Caravelles',
-  'Compagnons'
+  'Compagnons',
+  'Groupe'
 ]
 
 export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, isOnline = true }: ExpenseFormProps & { isOnline?: boolean }) {
