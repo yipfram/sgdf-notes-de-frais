@@ -10,6 +10,8 @@ Application web mobile-first pour la gestion des factures carte procurement du g
 
 Ce repository est sous license MIT, vous pouvez l'utiliser comme bon vous semble ! Réadaptez le, et, si vous voulez, taggez moi :)
 
+> 🚅**Pour savoir comment le déployer:** [Regarder la documentation](https://github.com/yipfram/sgdf-notes-de-frais/blob/main/SETUP.md)
+
 ## Fonctionnalités
 
 - 📸 **Capture de justificatifs** : Prise de photo ou import de fichiers
