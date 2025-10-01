@@ -21,7 +21,8 @@ export async function POST(req: Request) {
       'Guides',
       'Pionniers-Caravelles',
       'Compagnons',
-      'Farfadets'
+      'Farfadets',
+      'Groupe'
     ]
 
     if (!ALLOWED.includes(branch)) {
