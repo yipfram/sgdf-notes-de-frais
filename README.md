@@ -1,9 +1,14 @@
+## Screenshot
+<img width="350" height="785" alt="image" src="https://github.com/user-attachments/assets/9c01c1a9-5bb7-4c72-95da-a413e1c8be9b" />
+
 # Factures carte procurement SGDF
 
 Application web mobile-first pour la gestion des factures carte procurement du groupe SGDF La Guillotière.
 
 > **Avertissement — Non officiel**  
-> Cette application n'est pas affiliée aux Scouts et Guides de France (SGDF) et n'est pas une application officielle.  
+> Cette application n'est pas affiliée aux Scouts et Guides de France (SGDF) et n'est pas une application officielle.
+
+Ce repository est sous license MIT, vous pouvez l'utiliser comme bon vous semble ! Réadaptez le, et, si vous voulez, taggez moi :)
 
 ## Fonctionnalités
 
