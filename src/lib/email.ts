@@ -10,6 +10,9 @@ export interface EmailData {
   description?: string
   imageBase64: string
   fileName: string
+  groupName?: string
+  treasuryEmail?: string
+  unitEmail?: string | null
 }
 
 // Configuration du transporteur Gmail SMTP
@@ -38,7 +41,19 @@ export const sendExpenseEmail = async (data: EmailData) => {
     throw new Error('Configuration SMTP invalide')
   }
 
-  const { userEmail, date, branch, expenseType, amount, description, imageBase64, fileName } = data
+  const {
+  userEmail,
+  date,
+  branch,
+  expenseType,
+  amount,
+  description,
+  imageBase64,
+  fileName,
+  groupName = 'La Guillotière',
+  treasuryEmail = process.env.TREASURY_EMAIL,
+  unitEmail
+} = data
 
   // Helper pour extraire le buffer depuis une data URL ou une chaîne base64 brute
   const extractImageBuffer = (input: string) => {
@@ -98,7 +113,7 @@ export const sendExpenseEmail = async (data: EmailData) => {
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background-color: ${primaryColor}; color: ${textOnPrimary}; padding: 20px; text-align: center;">
   <h1 style="margin: 0; font-size: 24px;">📜 Facture carte procurement SGDF</h1>
-        <p style="margin: 10px 0 0 0; opacity: 0.9;">La Guillotière</p>
+        <p style="margin: 10px 0 0 0; opacity: 0.9;">${groupName}</p>
       </div>
       
       <div style="padding: 30px; background-color: #f9f9f9;">
@@ -146,7 +161,7 @@ export const sendExpenseEmail = async (data: EmailData) => {
   `
 
   const textContent = `
-Facture carte procurement SGDF - La Guillotière
+Facture carte procurement SGDF - ${groupName}
 
 Nouvelle facture
 
@@ -162,13 +177,21 @@ Justificatif en pièce jointe : ${fileName}
 Email envoyé automatiquement par l'application Factures carte procurement SGDF.
   `
 
+  // Build recipients list
+  const recipients = [treasuryEmail!]
+  const ccList = [userEmail]
+
+  if (unitEmail) {
+    ccList.push(unitEmail)
+  }
+
   const mailOptions = {
     from: {
   name: 'Factures carte procurement SGDF',
       address: process.env.GMAIL_USER!
     },
-    to: process.env.TREASURY_EMAIL!,
-    cc: userEmail,
+    to: recipients,
+    cc: ccList,
     subject,
     text: textContent,
     html: htmlContent,
