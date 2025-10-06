@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { ClipboardDocumentListIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface ExpenseFormProps {
   readonly capturedImage: string | null
@@ -13,21 +14,11 @@ interface ExpenseFormProps {
   readonly onBranchChange?: (branch: string) => void
 }
 
-const SGDF_BRANCHES = [
-  'Farfadets',
-  'Louveteaux',
-  'Jeannettes',
-  'Scouts',
-  'Guides',
-  'Pionniers-Caravelles',
-  'Compagnons',
-  'Groupe'
-]
-
 export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, isOnline = true }: ExpenseFormProps & { isOnline?: boolean }) {
+  const { userBranches, activeBranch, setActiveBranch, isLoading: authLoading } = useAuth()
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    branch: initialBranch || '',
+    branch: initialBranch || (activeBranch?.name || ''),
     expenseType: '',
     amount: '',
     description: ''
@@ -40,7 +31,12 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
     message: string
   }>({ type: null, message: '' })
 
-
+  // Synchroniser avec la branche active depuis le contexte
+  useEffect(() => {
+    if (activeBranch && activeBranch.name !== formData.branch) {
+      setFormData(prev => ({ ...prev, branch: activeBranch.name }))
+    }
+  }, [activeBranch, formData.branch])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -48,6 +44,13 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
       if (onBranchChange) {
         onBranchChange(value)
       }
+
+      // Mettre à jour la branche active dans le contexte
+      const selectedBranch = userBranches.find(branch => branch.name === value)
+      if (selectedBranch) {
+        setActiveBranch(selectedBranch)
+      }
+
       // Persist branch selection to user metadata (fire & forget)
       if (onPersistBranch && value) {
         setBranchPersistStatus('saving')
@@ -234,9 +237,9 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
           required
         >
           <option value="">Sélectionner une branche</option>
-          {SGDF_BRANCHES.map(branch => (
-            <option key={branch} value={branch}>
-              {branch}
+          {userBranches.map(branch => (
+            <option key={branch.id} value={branch.name}>
+              {branch.name}
             </option>
           ))}
         </select>

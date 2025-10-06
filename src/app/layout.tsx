@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
+import { AuthProvider } from '@/contexts/AuthContext'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -38,7 +39,9 @@ export default function RootLayout({
         </head>
         <body className="font-sans">
           <div className="min-h-screen">
-            {children}
+            <AuthProvider>
+              {children}
+            </AuthProvider>
           </div>
           <script dangerouslySetInnerHTML={{__html:`if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW registration failed',e));});}`}} />
         </body>
