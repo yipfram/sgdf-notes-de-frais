@@ -3,9 +3,9 @@
 
 # Factures carte procurement SGDF
 
-Application web mobile-first pour la gestion des factures carte procurement du groupe SGDF La Guillotière.
+Application web mobile-first pour la gestion des factures carte procurement des groupes SGDF. **Maintenant multi-groupes** avec gestion des permissions et accès multi-branches.
 
-> **Avertissement — Non officiel**  
+> **Avertissement — Non officiel**
 > Cette application n'est pas affiliée aux Scouts et Guides de France (SGDF) et n'est pas une application officielle.
 
 Ce repository est sous license MIT, vous pouvez l'utiliser comme bon vous semble ! Réadaptez le, et, si vous voulez, taggez moi :)
@@ -22,6 +22,9 @@ Ce repository est sous license MIT, vous pouvez l'utiliser comme bon vous semble
 - ⚡ **Mode hors ligne partiel** : Consultation et préparation possible sans réseau (l'envoi nécessite la connexion)
 - 🔔 **Bannière d'installation** : Invitation A2HS personnalisée
 - 🌙 **Affichage plein écran** : Expérience proche d'une application native
+- 🏢 **Multi-groupes** : Support de plusieurs groupes SGDF indépendants
+- 🔐 **Contrôle d'accès** : Rôles admin/membre/viewer par branche
+- 🔄 **Changement de branche** : Les utilisateurs peuvent switcher entre leurs branches accessibles
 
 ## PWA & Expérience Mobile
 
@@ -86,6 +89,8 @@ L'application est une Progressive Web App (PWA) optimisée pour mobile :
 - **TypeScript**
 - **Tailwind CSS**
 - **Clerk** (authentification)
+- **Drizzle ORM** (base de données PostgreSQL)
+- **PostgreSQL** (stockage multi-groupes)
 - **Nodemailer / Gmail SMTP** (envoi d'emails côté serveur)
 - **PWA** (manifest + service worker)
 

@@ -1,57 +1,57 @@
 # Factures carte procurement SGDF - Developer Instructions
 
 ## Project Overview
-Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. Features Clerk authentication, and server-side email sending via Gmail SMTP. **No database** - authentication via Clerk, emails sent directly to recipients.
+Multi-group Next.js 15 expense tracking app for SGDF groups. Features Clerk authentication, PostgreSQL database with Drizzle ORM, and multi-branch access control. **Now supports multiple SGDF groups** with role-based permissions and branch management.
 
 ## Core Architecture
 
-### Component Structure
-- `src/app/page.tsx` - Main authenticated page with Clerk user management and state coordination
-- `src/app/sign-in/page.tsx` & `src/app/sign-up/page.tsx` - Clerk authentication pages
-- `src/components/PhotoCapture.tsx` - Image capture/upload
-- `src/components/ExpenseForm.tsx` - Form with SGDF branch selection, validation, and API submission
-- `src/middleware.ts` - Clerk middleware protecting routes and API endpoints
-- `src/lib/email.ts` - Gmail SMTP email sending utilities
-- `src/app/api/send-expense/route.ts` - Protected API route for email sending
-## Project Overview
-Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. The app uses Clerk for authentication and sends invoice emails server-side via Gmail SMTP. There is no central database: emails are delivered directly to the treasury and the user.
-
-## Core Architecture
+### Database Structure
+- `groups` - SGDF groups (La Guillotière, Le Bourg, etc.)
+- `branches` - SGDF branches (Louveteaux, Scouts, etc.) linked to groups
+- `user_branch_roles` - User permissions for branches (admin/member/viewer)
+- `user_sessions` - Active branch tracking per user
 
 ### Component Structure
-- `src/app/page.tsx` - Main authenticated page with Clerk user management and state coordination
-- `src/app/sign-in/page.tsx` & `src/app/sign-up/page.tsx` - Clerk authentication pages
-- `src/components/PhotoCapture.tsx` - Image capture / upload UI
-- `src/components/ExpenseForm.tsx` - Form with SGDF branch selection, validation, and API submission
-- `src/middleware.ts` - Clerk middleware protecting routes and API endpoints
-- `src/lib/email.ts` - Gmail SMTP email sending utilities
-- `src/app/api/send-expense/route.ts` - Protected API route for email sending
+- `src/app/page.tsx` - Main page with multi-branch context
+- `src/app/admin/init-database/page.tsx` - Database initialization interface
+- `src/contexts/AuthContext.tsx` - Multi-branch authentication context
+- `src/components/ExpenseForm.tsx` - Form using dynamic branch data from DB
+- `src/lib/db/` - Database schema, connection, and initialization
+- `src/app/api/user/branches/` - API for user branch access
+- `src/app/api/user/migrate/` - Legacy user migration from Clerk metadata
 
 ### Data Flow Pattern
 1. Authentication → Clerk middleware validates user session
-2. Image capture → user captures or uploads a photo
-3. State lifting → data flows up to `page.tsx` then down to `ExpenseForm`
-4. Form submission → POST to `/api/send-expense` with base64 image
-5. Email generation → server converts base64 to buffer and sends via Gmail SMTP
-6. Dual delivery → email sent to both treasury (configured via `TREASURY_EMAIL`) and user
-
-### Key Technical Decisions
-- Authentication: Clerk for Google/Email auth (no custom user management)
-- Email Service: Gmail SMTP with app passwords (simple and reliable for association use)
-- Image Handling: Base64 encoding/decoding between client and server
-- Validation: Server-side validation with specific error messages
-- State Management: React useState with loading/success/error states
-- Mobile Camera: File input uses `capture="environment"` for rear camera
-- Webpack Config: Disables Node.js polyfills for client-side compatibility when needed
+2. Branch loading → AuthContext fetches user's accessible branches via API
+3. Branch selection → User can switch between authorized branches
+4. Image capture → user captures or uploads a photo
+5. Form submission → POST to `/api/send-expense` with branch context
+6. Email generation → server converts base64 to buffer and sends via Gmail SMTP
+7. Dual delivery → email sent to both treasury (configured via `TREASURY_EMAIL`) and user
 
 ## Development Workflow
 
 ### Essential Commands
 ```bash
-pnpm install       # Install dependencies (Clerk, nodemailer)
-pnpm dev           # Development server on localhost:3000
-pnpm build         # Production build (serverless deployment)
-pnpm lint          # ESLint + Next.js built-in linting
+pnpm install              # Install dependencies (Clerk, Drizzle, PostgreSQL)
+pnpm dev                  # Development server on localhost:3000
+pnpm build                # Production build
+pnpm db:generate          # Generate database migrations
+pnpm db:migrate           # Run database migrations
+pnpm db:push              # Push schema changes to database
+pnpm db:studio            # Open Drizzle Studio for database inspection
+```
+
+### Database Setup
+```bash
+# 1. Set up PostgreSQL database (Coolify recommended)
+# 2. Configure POSTGRES_URL in .env.local
+# 3. Generate and run migrations
+pnpm db:generate
+pnpm db:migrate
+
+# 4. Initialize database with first group
+# Visit /admin/init-database when logged in as admin
 ```
 
 ### Environment Setup
@@ -61,139 +61,203 @@ cp .env.example .env.local
 
 # Required variables (see .env.example):
 # - Clerk keys from https://dashboard.clerk.com/
+# - PostgreSQL connection string
 # - Gmail app password from Google Account settings
 # - Treasury email address
 ```
 
-### Testing Requirements
-- Authentication flow: Test Clerk sign-in/sign-up with Google and email
-- Manual mobile testing: Use browser dev tools mobile view or real device
-- Camera functionality: Test photo capture and file upload on mobile
-- Email delivery: Verify emails arrive at both treasury and user addresses
-- Error handling: Test invalid Gmail credentials, network failures, malformed data
+## Multi-Branch Architecture
 
-## SGDF-Specific Business Logic
-
-### Branch Selection (hardcoded in `ExpenseForm.tsx`)
+### Authentication Context
 ```typescript
-const SGDF_BRANCHES = ['Louveteaux', 'Jeannettes', 'Scouts', 'Guides', 'Pionniers-Caravelles']
+// AuthContext provides:
+const {
+  user,                    // Clerk user object
+  userBranches,            // Array of accessible branches
+  activeBranch,            // Currently selected branch
+  activeBranchRole,        // User's role on active branch
+  setActiveBranch,         // Function to switch branches
+  hasAccessToBranch,       // Check branch access permission
+  isAdmin,                 // Check if admin on active branch
+  isLoading               // Loading state
+} = useAuth()
 ```
 
-### Filename Convention
-Format: `YYYY-MM-DD - Branch - Amount.jpg`
-- Amounts normalized: commas → periods for consistency
-- Example: `2024-03-15 - Scouts - 12.50.jpg`
+### Branch Access Control
+- **Admin**: Full access to branch management and user permissions
+- **Member**: Can submit expenses for the branch
+- **Viewer**: Read-only access to branch data
 
-### Email Template Structure
-- Recipients: Treasury + authenticated user
-- Subject: `Facture carte procurement - {Branch} - {Date}`
-- Content: Structured HTML table with SGDF branding
-- Attachment: JPEG image with formatted filename
+### API Routes
+- `/api/user/branches` - Get user's accessible branches with roles
+- `/api/user/active-branch` - Set/get user's currently active branch
+- `/api/user/migrate` - Migrate legacy users from Clerk metadata
+- `/api/init-database` - Initialize database with first group and branches
 
-## Authentication & Security
+### Migration Strategy
+Legacy users with `publicMetadata.branch` are automatically migrated:
+1. User signs in → no branches found in database
+2. System calls `/api/user/migrate` → creates branch access
+3. User gains access to their original branch as "member" role
+4. Admin can upgrade roles via database management
 
-### Clerk Integration
-- Middleware Protection: `src/middleware.ts` protects `/` and `/api/send-expense`
-- User Context: `useUser()` hook provides email for form pre-population
-- Session Management: Automatic token refresh and logout handling
-- Route Protection: Automatic redirects for unauthenticated users
+## Database Schema
 
-### Server-Side Validation
-```typescript
-// API route validates:
-- Clerk authentication (userId exists)
-- Required environment variables
-- Email format regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-- Amount format (positive number)
-- All required fields present
+### Core Tables
+```sql
+-- Groups (SGDF units)
+CREATE TABLE groups (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  admin_user_id TEXT NOT NULL,  -- Clerk user ID
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT now(),
+  updated_at TIMESTAMP DEFAULT now()
+);
+
+-- Branches (SGDF age groups)
+CREATE TABLE branches (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  group_id UUID NOT NULL REFERENCES groups(id),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT now()
+);
+
+-- User permissions
+CREATE TABLE user_branch_roles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL,        -- Clerk user ID
+  branch_id UUID NOT NULL REFERENCES branches(id),
+  role TEXT NOT NULL,           -- 'admin' | 'member' | 'viewer'
+  is_active BOOLEAN DEFAULT true,
+  granted_by TEXT,              -- Clerk user ID who granted access
+  granted_at TIMESTAMP DEFAULT now(),
+  last_access_at TIMESTAMP
+);
 ```
 
-### Gmail SMTP Security
-- App Passwords: Dedicated password for SMTP (not main account password)
-- TLS Encryption: Port 587 with STARTTLS
-- Rate Limiting: Gmail's 500 emails/day limit (sufficient for association)
-- Error Handling: Specific error messages for auth failures vs connection issues
+## Testing Requirements
+
+### Multi-Branch Testing
+- Branch switching: Test that users can only access authorized branches
+- Role validation: Verify admin/member/viewer permissions work correctly
+- Migration: Test legacy user migration from Clerk metadata
+- Isolation: Ensure users can't access other groups' data
+
+### Authentication Flow
+- Test Clerk sign-in/sign-up with Google and email
+- Verify branch access is correctly loaded after authentication
+- Test unauthorized access attempts to restricted branches
+
+### Email Delivery
+- Verify emails include correct branch information
+- Test email delivery to both treasury and user addresses
+- Validate email templates show active branch context
 
 ## Common Issues & Solutions
 
-### Authentication Problems
-- "Non autorisé": Check Clerk keys in `.env.local` and dashboard configuration
-- Redirect loops: Verify middleware route matching patterns
-- User context undefined: Ensure ClerkProvider wraps the app in `layout.tsx`
+### Database Issues
+- "POSTGRES_URL not set": Configure database connection in .env.local
+- Migration fails: Check database permissions and connection
+- No branches found: Initialize database via /admin/init-database
 
-### Email Sending Issues
-- "Configuration SMTP invalide": Verify Gmail app password and 2FA enabled
-- "Invalid login": Regenerate Gmail app password (16-character format)
-- "Erreur de connexion SMTP": Check Gmail account isn't blocked/suspended
-- Large attachments: Gmail SMTP supports up to 25MB (photos are typically <5MB)
+### Branch Access Issues
+- User sees no branches: Check if database is initialized and user has permissions
+- Branch switching fails: Verify user has role assignments for target branch
+- Admin access missing: Ensure group admin has admin roles on all branches
 
-### Mobile Camera Issues
-- No camera access: Ensure HTTPS in production (required for `getUserMedia`)
-- Wrong camera: `capture="environment"` targets rear camera
-- File format: Accept only `image/*` to prevent non-image uploads
-- Base64 conversion: Handle both data URLs and direct base64 strings
+### Migration Issues
+- Legacy users not migrated: Check Clerk metadata contains branch information
+- Migration API fails: Verify database connection and group initialization
+- Duplicate branch assignments: Migration checks for existing access before creating
 
-### Build Configuration
-- Webpack errors: Next.js config disables Node.js polyfills for client compatibility
-- Serverless deployment: No static export (API routes require server runtime)
-- Environment variables: All secrets must be in `.env.local` (gitignored)
+### Performance Considerations
+- Database queries: All branch data fetched via API routes (no direct DB access from client)
+- Branch switching: Updates user_sessions table for tracking
+- Role validation: Checked server-side in all API routes
 
 ## Deployment Notes
 
-### Vercel Configuration
-- Runtime: Node.js (not static export)
-- Environment Variables: Copy all from `.env.local` to Vercel dashboard
-- Build Command: `pnpm build` (includes API routes)
-- Security Headers: Configured in `vercel.json`
+### Coolify Configuration
+- PostgreSQL database service
+- Node.js runtime for Next.js application
+- Environment variables: Clerk keys, database URL, Gmail settings
+- Database migrations: Run `pnpm db:migrate` during deployment
 
-### Development vs Production
-- Local: Use `.env.local` for development
-- Production: Environment variables set in hosting platform
-- HTTPS Required: Camera access needs secure context
-- Domain Configuration: Update Clerk dashboard with production domain
+### Database Initialization
+1. Deploy application with database connection
+2. Admin user logs in and visits `/admin/init-database`
+3. System creates first group (La Guillotière) and all SGDF branches
+4. Admin receives admin access to all branches
+5. Additional users can be granted access via database management
+
+### Multi-Group Expansion
+- New groups added via database or management interface
+- Each group has isolated branches and users
+- Admin users can manage permissions within their group
+- Cross-group access prevented by design
 
 ## Code Patterns & Conventions
 
-### Error Handling
+### Database Access Pattern
 ```typescript
-// Client-side: User-friendly messages with emoji indicators
-setSubmitStatus({
-  type: 'error',
-  message: 'Erreur de connexion. Veuillez réessayer.'
-})
+// Server-side: Direct Drizzle queries
+const userBranches = await db
+  .select({ branch: branches, role: userBranchRoles.role })
+  .from(userBranchRoles)
+  .innerJoin(branches, eq(userBranchRoles.branchId, branches.id))
+  .where(and(
+    eq(userBranchRoles.userId, userId),
+    eq(userBranchRoles.isActive, true)
+  ))
 
-// Server-side: Specific error types with appropriate HTTP codes
-if (error.message.includes('Invalid login')) {
-  return NextResponse.json(
-    { error: 'Erreur d\'authentification Gmail...' },
-    { status: 500 }
-  )
+// Client-side: API calls through AuthContext
+const response = await fetch('/api/user/branches')
+const data = await response.json()
+```
+
+### Branch Selection Pattern
+```typescript
+// In ExpenseForm.tsx
+const { userBranches, activeBranch, setActiveBranch } = useAuth()
+
+const handleBranchChange = (branchName: string) => {
+  const selectedBranch = userBranches.find(b => b.name === branchName)
+  if (selectedBranch) {
+    setActiveBranch(selectedBranch)
+  }
 }
 ```
 
-### State Management
+### Permission Checking Pattern
 ```typescript
-// Loading/success/error pattern used throughout
-const [isSubmitting, setIsSubmitting] = useState(false)
-const [submitStatus, setSubmitStatus] = useState<{
-  type: 'success' | 'error' | null
-  message: string
-}>({ type: null, message: '' })
-```
+// In API routes
+const userBranchRole = await db
+  .select({ role: userBranchRoles.role })
+  .from(userBranchRoles)
+  .where(and(
+    eq(userBranchRoles.userId, userId),
+    eq(userBranchRoles.branchId, branchId),
+    eq(userBranchRoles.isActive, true)
+  ))
 
-### Form Validation
-```typescript
-// Client-side validation before API call
-const isFormValid = /* ... */ formData.branch && formData.amount && formData.description
-
-// Server-side validation with specific error messages
-if (!emailRegex.test(userEmail)) {
-  return NextResponse.json({ error: 'Format email invalide' }, { status: 400 })
+if (userBranchRole.length === 0) {
+  return NextResponse.json({ error: 'Access denied' }, { status: 403 })
 }
 ```
 
-### Email Template
-- Responsive HTML: Works on mobile and desktop email clients
-- SGDF Branding: Blue (#1E3A8A) and gold (#FBB042) color scheme
-- Structured Data: Table format for consistent rendering
-- Fallback Text: Plain text version for accessibility
+## Future Enhancements
+
+### Session 2 Planned Features
+- Admin interface for branch management
+- User invitation system
+- Group creation workflows
+- Enhanced permission management
+- Activity logging and audit trails
+
+### Database Optimizations
+- Redis for caching frequently accessed branch data
+- Database connection pooling for high traffic
+- Optimized queries for branch listing and permission checking
