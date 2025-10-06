@@ -30,7 +30,7 @@ export async function GET() {
   // Branches check
   const branchesOk = Array.isArray(ALL_BRANCHES) && ALL_BRANCHES.length > 0
 
-  // SMTP check (only if env OK)
+  // SMTP check (only if env OK) - non-critical for application health
   let smtpOk = false
   let smtpError: string | null = null
   if (envOk) {
@@ -42,13 +42,16 @@ export async function GET() {
     } catch (err) {
       smtpOk = false
       smtpError = err instanceof Error ? err.message : String(err)
-      console.error('Health check: SMTP verify failed:', smtpError)
+      // Log as warning instead of error since SMTP is non-critical
+      console.warn('Health check: SMTP verify failed (non-critical):', smtpError)
     }
   } else {
     smtpError = 'Skipping SMTP verify because env variables are missing'
   }
 
-  const allOk = envOk && smtpOk && branchesOk
+  // Consider application healthy if env and branches are OK, even if SMTP fails
+  // SMTP failures should not prevent the application from running
+  const allOk = envOk && branchesOk
 
   const body = {
     ok: allOk,
