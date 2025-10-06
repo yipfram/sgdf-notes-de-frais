@@ -22,17 +22,18 @@
 - [x] Implémenter la migration automatique des utilisateurs existants depuis Clerk metadata vers le nouveau schéma. *Transition transparente des utilisateurs legacy vers le système multi-branche.*
 - [x] Mettre à jour `ExpenseForm` et `layout.tsx` pour utiliser le nouveau AuthContext et les données dynamiques. *Intégration complète avec le nouveau système de permissions.*
 
-## Session 2 — Modèle de données & API (PARTIELLEMENT COMPLÉTÉ)
+## Session 2 — Modèle de données & API ✅ COMPLÉTÉ
 - [x] Introduire Drizzle ORM et le schéma de base : `groups`, `branches`, `userBranchRoles`, `userSessions`. *Base de données multi-groupe avec rôles et permissions.*
 - [x] Créer un client DB partagé `src/lib/db/` et ajouter les scripts d'initialisation. *Accès centralisé à la base et initialisation automatique.*
-- [ ] Créer les routes API restantes :  \
+- [x] Créer les routes API restantes :  \
   - `POST /api/access/request` (enregistre la demande, envoie l'email au trésorier).  *Sert d'entrée publique au parcours chef.*  \
   - `POST /api/access/approve` et `/reject` (met à jour `isApproved` dans Clerk + enregistre `Validation`).  *Expose les actions trésorier via un endpoint sécurisé, réutilisable par l'UI et par les boutons d'email.*  \
   - `POST /api/admin/propositions` (pour email d'unité / nom interne). *Centralise les propositions soumises par les chefs et simplifie leur traitement côté admin.*
-- [ ] Compléter le schéma avec tables avancées : `EmailUnite`, `DemandeAcces`, `Validation`. *Structure complète pour la gestion des accès et validations.*
-- [ ] Mettre à jour `send-expense` pour charger les destinataires dans Postgres (trésorerie, chef, email d'unité validé) et conserver le mode Lite (pas de stockage pièce jointe). *Aligne l'envoi d'emails sur les nouvelles données et retire les dépendances aux variables d'environnement par groupe.*
+- [x] Compléter le schéma avec tables avancées : `EmailUnite`, `DemandeAcces`, `Validation`. *Structure complète pour la gestion des accès et validations.*
+- [x] Mettre à jour `send-expense` pour charger les destinataires dans Postgres (trésorerie, chef, email d'unité validé) et conserver le mode Lite (pas de stockage pièce jointe). *Aligne l'envoi d'emails sur les nouvelles données et retire les dépendances aux variables d'environnement par groupe.*
 
 ## Session 3 — Interfaces Chef & Trésorier
+
 - [ ] Refonte page d’accueil : champ `code groupe`, saisie email, message “Vérifiez votre boîte mail”. *Remplace la page de connexion Clerk par un parcours orienté produit et donnant clairement la prochaine étape.*
 - [ ] Page “En attente de validation” affichée aux chefs non approuvés. *Évite les erreurs d’accès en montrant explicitement que la validation du trésorier est requise.*
 - [ ] Vue `/admin/ma-branche` : infos branche, liste des chefs, propositions d’email d’unité/nom interne. *Offre aux chefs un espace limité mais utile pour vérifier leur statut et suggérer des corrections.*
@@ -51,3 +52,4 @@
 - [ ] Prévoir un script de migration des données existantes (groupe historique) vers le nouveau schéma. *Garantit une transition sans perte pour La Guillotière et autres groupes déjà onboardés.*
 - [ ] Mettre à jour la documentation (`docs/`) : guide trésorier (code, QR, approbations), guide chef (inscription, envoi). *Offre l’accompagnement nécessaire pour déployer la nouvelle version auprès des utilisateurs finaux.*
 
+- [ ] Retirer SGDF, puisque c'est un mouvement ausein de tous les mouvements scouts de France, ce qui va a l'encontre de notre volonté de généraliser le projet à tous les mouvements
