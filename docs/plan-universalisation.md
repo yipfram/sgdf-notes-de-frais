@@ -32,13 +32,13 @@
 - [x] Compléter le schéma avec tables avancées : `EmailUnite`, `DemandeAcces`, `Validation`. *Structure complète pour la gestion des accès et validations.*
 - [x] Mettre à jour `send-expense` pour charger les destinataires dans Postgres (trésorerie, chef, email d'unité validé) et conserver le mode Lite (pas de stockage pièce jointe). *Aligne l'envoi d'emails sur les nouvelles données et retire les dépendances aux variables d'environnement par groupe.*
 
-## Session 3 — Interfaces Chef & Trésorier
-
-- [ ] Refonte page d’accueil : champ `code groupe`, saisie email, message “Vérifiez votre boîte mail”. *Remplace la page de connexion Clerk par un parcours orienté produit et donnant clairement la prochaine étape.*
-- [ ] Page “En attente de validation” affichée aux chefs non approuvés. *Évite les erreurs d’accès en montrant explicitement que la validation du trésorier est requise.*
-- [ ] Vue `/admin/ma-branche` : infos branche, liste des chefs, propositions d’email d’unité/nom interne. *Offre aux chefs un espace limité mais utile pour vérifier leur statut et suggérer des corrections.*
-- [ ] Vue `/admin/groupe` : listing branches (édition inline), file d’attente chefs (Approuver/Refuser), gestion code (copie lien, génération QR). *Donne au trésorier la console de pilotage centralisée exigée par le PRD.*
-- [ ] Préparer le walkthrough de rentrée (squelette de flow, bouton “Lancer Walkthrough”). *Anticipe la fonctionnalité Phase 2 en posant les hooks UI/techniques sans tout implémenter.*
+## Session 3 — Interfaces Chef & Trésorier ✅ COMPLÉTÉ
+- [x] Refonte page d'accueil : champ `code groupe`, saisie email, message "Vérifiez votre boîte mail". *Remplace la page de connexion Clerk par un parcours orienté produit et donnant clairement la prochaine étape.*
+- [x] Page "En attente de validation" affichée aux chefs non approuvés. *Évite les erreurs d'accès en montrant explicitement que la validation du trésorier est requise.*
+- [x] Vue `/admin/ma-branche` : infos branche, liste des chefs, propositions d'email d'unité/nom interne. *Offre aux chefs un espace limité mais utile pour vérifier leur statut et suggérer des corrections.*
+- [x] Vue `/admin/groupe` : listing branches (édition inline), file d'attente chefs (Approuver/Refuser), gestion code (copie lien, génération QR). *Donne au trésorier la console de pilotage centralisée exigée par le PRD.*
+- [x] Fix QR code generation : implémentation de QR codes dynamiques avec la bibliothèque `qrcode` pour un accès direct via lien du groupe. *Remplace le placeholder SVG par un QR code fonctionnel contenant l'URL d'accès au groupe.*
+- [x] Préparer le walkthrough de rentrée (squelette de flow, bouton "Lancer Walkthrough"). *Anticipe la fonctionnalité Phase 2 en posant les hooks UI/techniques sans tout implémenter.*
 
 ## Session 4 — Emails & Notifications
 - [ ] Centraliser les templates d’emails (`src/lib/email.ts`) : demande d’accès, confirmation chef, refus, notification proposition, digest (option). *Permet de maintenir une seule source de vérité pour les contenus, facilement personnalisables.*
