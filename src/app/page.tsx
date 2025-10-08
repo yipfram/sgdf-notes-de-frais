@@ -21,12 +21,13 @@ function HomeContent() {
   useEffect(() => {
     const processQRCodeScan = async () => {
       // Conditions pour traiter le QR code:
-      // 1. Utilisateur est connecté
+      // 1. Clerk est chargé et utilisateur est connecté
       // 2. Il y a un code groupe dans l'URL
       // 3. Pas de branche active
       // 4. Pas de demande en attente
       // 5. Pas déjà en train de traiter
-      if (isSignedIn && groupCodeFromURL && !activeBranch && !hasPendingRequest && !isProcessingQRCode && !isLoading) {
+      // 6. Auth context a fini de charger
+      if (isLoaded && isSignedIn && user && groupCodeFromURL && !activeBranch && !hasPendingRequest && !isProcessingQRCode && !isLoading) {
         setIsProcessingQRCode(true)
         setQrCodeError(null)
 
@@ -61,7 +62,7 @@ function HomeContent() {
     }
 
     processQRCodeScan()
-  }, [isSignedIn, groupCodeFromURL, activeBranch, hasPendingRequest, isProcessingQRCode, isLoading])
+  }, [isLoaded, isSignedIn, user, groupCodeFromURL, activeBranch, hasPendingRequest, isProcessingQRCode, isLoading])
 
   // Rediriger les utilisateurs connectés vers leurs interfaces appropriées
   useEffect(() => {
