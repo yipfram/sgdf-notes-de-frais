@@ -54,7 +54,6 @@ export default function PendingApprovalPage() {
     )
   }
 
-      console.error('Erreur lors de la copie du lien:', err)
   const pendingDemandes = demandes.filter(d => d.statut === 'en_attente')
 
   // Si aucune demande en attente, rediriger vers l'accueil
@@ -76,7 +75,7 @@ export default function PendingApprovalPage() {
               onClick={() => router.push('/')}
               className="text-zinc-600 hover:text-zinc-900 underline"
             >
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </button>
           </div>
         </div>
@@ -118,7 +117,7 @@ export default function PendingApprovalPage() {
           </h2>
 
           <p className="text-zinc-600 text-center mb-6">
-            Le trésorier de votre groupe examine votre demande d'accès. Vous recevrez un email dès qu'une décision sera prise.
+            Le trésorier de votre groupe examine votre demande d&apos;accès. Vous recevrez un email dès qu&apos;une décision sera prise.
           </p>
 
           <div className="space-y-4 mb-6">
@@ -145,7 +144,7 @@ export default function PendingApprovalPage() {
             <ul className="text-sm space-y-1">
               <li>• Le trésorier examine votre demande</li>
               <li>• Vous recevrez un email de confirmation</li>
-              <li>• Une fois approuvé, vous pourrez accéder à l'espace de votre groupe</li>
+              <li>• Une fois approuvé, vous pourrez accéder à l&apos;espace de votre groupe</li>
             </ul>
           </div>
 

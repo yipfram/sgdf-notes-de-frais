@@ -5,7 +5,7 @@ import { eq, and } from 'drizzle-orm'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth()
@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
 
-    const branchId = params.id
+    const { id: branchId } = await params
 
     // Vérifier que l'utilisateur a accès à cette branche
     const userAccess = await db

@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import * as schema from './schema'
 
-// Création du client PostgreSQL
+// Configuration PostgreSQL par défaut
 const connectionString = process.env.POSTGRES_URL
 
 if (!connectionString) {
@@ -19,7 +19,7 @@ const client = postgres(connectionString, {
 
 // Instance Drizzle
 export const db = drizzle(client, { schema })
+console.log('🐘 Using PostgreSQL database')
 
 // Export du schema pour les requêtes
 export * from './schema'
-

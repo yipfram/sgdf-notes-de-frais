@@ -38,6 +38,7 @@
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^24",
     "@types/nodemailer": "^7.0.2",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",

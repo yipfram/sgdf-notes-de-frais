@@ -26,6 +26,7 @@ interface AuthContextType {
   hasAccessToBranch: (branchId: string) => boolean
   isAdmin: () => boolean
   isLoading: boolean
+  hasPendingRequest: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -39,7 +40,31 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
   const [userBranches, setUserBranches] = useState<Branch[]>([])
   const [activeBranch, setActiveBranchState] = useState<Branch | null>(null)
   const [activeBranchRole, setActiveBranchRole] = useState<string | null>(null)
+  const [hasPendingRequest, setHasPendingRequest] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+
+  // Vérifier les demandes en attente
+  const checkPendingRequests = useCallback(async () => {
+    if (!user?.id) {
+      setHasPendingRequest(false)
+      return
+    }
+
+    try {
+      const response = await fetch('/api/access/request')
+      if (response.ok) {
+        const data = await response.json()
+        const demandes = data.demandes || []
+        const pendingDemandes = demandes.filter((d: any) => d.statut === 'en_attente')
+        setHasPendingRequest(pendingDemandes.length > 0)
+      } else {
+        setHasPendingRequest(false)
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification des demandes en attente:', error)
+      setHasPendingRequest(false)
+    }
+  }, [user?.id])
 
   // Charger les branches accessibles par l'utilisateur
   const loadUserBranches = useCallback(async () => {
@@ -47,6 +72,7 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
       setUserBranches([])
       setActiveBranchState(null)
       setActiveBranchRole(null)
+      setHasPendingRequest(false)
       setIsLoading(false)
       return
     }
@@ -93,12 +119,17 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
         setActiveBranchRole(null)
       }
 
+      // Vérifier s'il y a des demandes en attente
+      await checkPendingRequests()
+
     } catch (error) {
       console.error('Erreur lors du chargement des branches utilisateur:', error)
+      // Vérifier quand même les demandes en attente en cas d'erreur
+      await checkPendingRequests()
     } finally {
       setIsLoading(false)
     }
-  }, [user?.id, user?.publicMetadata?.branch, user?.publicMetadata?.activeBranchId])
+  }, [user?.id, user?.publicMetadata?.branch, user?.publicMetadata?.activeBranchId, checkPendingRequests])
 
   // Migration depuis Clerk metadata
   const migrateFromLegacyBranch = async (userId: string, legacyBranchName: string) => {
@@ -175,7 +206,8 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
     hasAccessToBranch,
     isAdmin,
     isLoading,
-  }), [user, isLoaded, isSignedIn, userBranches, activeBranch, activeBranchRole, setActiveBranch, isLoading])
+    hasPendingRequest,
+  }), [user, isLoaded, isSignedIn, userBranches, activeBranch, activeBranchRole, setActiveBranch, isLoading, hasPendingRequest, hasAccessToBranch, isAdmin])
 
   return (
     <AuthContext.Provider value={value}>

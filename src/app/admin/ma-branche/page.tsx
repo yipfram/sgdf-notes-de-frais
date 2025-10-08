@@ -41,17 +41,6 @@ export default function MaBranchePage() {
   const [loading, setLoading] = useState(true)
   const isOnline = useOnlineStatus()
 
-  useEffect(() => {
-    if (!isLoading && (!isSignedIn || !activeBranch)) {
-      router.push('/')
-      return
-    }
-
-    if (activeBranch) {
-      loadBranchData()
-    }
-  }, [isSignedIn, activeBranch, isLoading, router])
-
   const loadBranchData = async () => {
     if (!activeBranch) return
 
@@ -83,6 +72,17 @@ export default function MaBranchePage() {
     }
   }
 
+  useEffect(() => {
+    if (!isLoading && (!isSignedIn || !activeBranch)) {
+      router.push('/')
+      return
+    }
+
+    if (activeBranch) {
+      loadBranchData()
+    }
+  }, [isSignedIn, activeBranch, isLoading, router])
+
   // Afficher un loader pendant le chargement
   if (isLoading || loading) {
     return (
@@ -92,7 +92,7 @@ export default function MaBranchePage() {
     )
   }
 
-      loadBranchData()
+  if (!activeBranch || !branchInfo) {
     return (
       <main className="min-h-screen p-4 flex items-center justify-center bg-zinc-50">
         <div className="text-zinc-600 text-sm">Branche non trouvée</div>

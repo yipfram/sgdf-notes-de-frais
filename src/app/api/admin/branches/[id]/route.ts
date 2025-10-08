@@ -5,7 +5,7 @@ import { eq, and } from 'drizzle-orm'
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth()
@@ -14,7 +14,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
 
-    const branchId = params.id
+    const { id: branchId } = await params
     const body = await request.json()
     const { name, isActive } = body
 
