@@ -233,7 +233,7 @@ export default function GroupeAdminPage() {
                 <p className="font-medium text-zinc-900">{groupInfo.name}</p>
               </div>
               <div>
-                <p className="text-sm text-zinc-500">Code d'accès</p>
+                <p className="text-sm text-zinc-500">Code d&apos;accès</p>
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-zinc-900">{groupInfo.slug.toUpperCase()}</p>
                   <button
@@ -282,7 +282,7 @@ export default function GroupeAdminPage() {
                         <p className="font-medium text-zinc-900">{request.email}</p>
                         <p className="text-sm text-zinc-600">{request.branchName} • {request.groupName}</p>
                         {request.message && (
-                          <p className="text-sm text-zinc-500 mt-1">"{request.message}"</p>
+                          <p className="text-sm text-zinc-500 mt-1">&quot;{request.message}&quot;</p>
                         )}
                       </div>
                       <span className="text-xs text-zinc-500">
@@ -401,7 +401,7 @@ export default function GroupeAdminPage() {
           <div className="bg-white rounded-lg border border-zinc-200 shadow-sm max-w-md w-full">
             <div className="p-6 border-b border-zinc-200">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-zinc-900">QR Code d'accès</h3>
+                <h3 className="text-lg font-semibold text-zinc-900">QR Code d&apos;accès</h3>
                 <button
                   onClick={() => setShowQRCode(false)}
                   className="text-zinc-500 hover:text-zinc-700"
@@ -425,10 +425,13 @@ export default function GroupeAdminPage() {
               {/* QR Code Container */}
               <div className="bg-white border-2 border-zinc-200 rounded-lg p-4 mb-4 flex items-center justify-center">
                 {qrCodeDataUrl ? (
-                  <img
+                  <Image
                     src={qrCodeDataUrl}
-                    alt="QR Code d'accès"
+                    alt="QR Code d&apos;accès"
+                    width={192}
+                    height={192}
                     className="w-48 h-48"
+                    unoptimized
                   />
                 ) : (
                   <div className="w-48 h-48 bg-zinc-100 flex items-center justify-center">

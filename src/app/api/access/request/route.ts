@@ -5,18 +5,12 @@ import { eq, and } from 'drizzle-orm'
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await auth()
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
-    }
-
     const body = await request.json()
-    const { groupCode, branchName, message } = body
+    const { groupCode, email } = body
 
-    if (!groupCode || !branchName) {
+    if (!groupCode || !email) {
       return NextResponse.json({
-        error: 'Code groupe et nom de branche requis'
+        error: 'Code groupe et email requis'
       }, { status: 400 })
     }
 
@@ -32,26 +26,26 @@ export async function POST(request: Request) {
       }, { status: 404 })
     }
 
-    // Chercher la branche dans ce groupe
+    // Chercher une branche active dans ce groupe (la première disponible)
     const branch = await db.select()
       .from(branches)
       .where(and(
         eq(branches.groupId, group[0].id),
-        eq(branches.name, branchName)
+        eq(branches.isActive, true)
       ))
       .limit(1)
 
     if (branch.length === 0) {
       return NextResponse.json({
-        error: 'Branche non trouvée dans ce groupe'
+        error: 'Aucune branche disponible dans ce groupe'
       }, { status: 404 })
     }
 
-    // Vérifier si l'utilisateur a déjà une demande en attente pour cette branche
+    // Vérifier si une demande existe déjà pour cet email et cette branche
     const existingDemande = await db.select()
       .from(demandeAcces)
       .where(and(
-        eq(demandeAcces.userId, userId),
+        eq(demandeAcces.email, email),
         eq(demandeAcces.branchId, branch[0].id),
         eq(demandeAcces.statut, 'en_attente')
       ))
@@ -59,24 +53,19 @@ export async function POST(request: Request) {
 
     if (existingDemande.length > 0) {
       return NextResponse.json({
-        error: 'Vous avez déjà une demande en attente pour cette branche'
+        error: 'Vous avez déjà une demande en attente pour ce groupe'
       }, { status: 409 })
     }
 
-    // Récupérer l'email de l'utilisateur depuis Clerk
-    // Note: Vous devrez peut-être utiliser l'API Clerk pour obtenir l'email
-    // Pour l'instant, nous utiliserons un placeholder
-    const userEmail = body.email || 'utilisateur@example.com'
-
-    // Créer la demande d'accès
+    // Créer la demande d'accès (sans userId pour l'instant)
     const [nouvelleDemande] = await db.insert(demandeAcces)
       .values({
-        email: userEmail,
+        email,
         groupId: group[0].id,
         branchId: branch[0].id,
-        userId,
+        userId: null, // Sera rempli après l'inscription
         statut: 'en_attente',
-        message: message || null,
+        message: null,
       })
       .returning()
 
