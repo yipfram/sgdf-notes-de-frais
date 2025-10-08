@@ -40,7 +40,7 @@ export default function Home() {
     )
   }
 
-  if (isSignedIn && !activeBranch) {
+  if (isSignedIn && !activeBranch && !hasPendingRequest) {
     return (
       <main className="min-h-screen p-4 flex items-center justify-center bg-zinc-50">
         <div className="max-w-md mx-auto bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
@@ -54,8 +54,11 @@ export default function Home() {
             <p className="text-zinc-600 mb-4">
               Votre compte est en cours de configuration.
             </p>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-zinc-500 mb-2">
               Veuillez contacter le trésorier de votre groupe pour obtenir l&apos;accès.
+            </p>
+            <p className="text-xs text-zinc-400">
+              Si vous avez scanné un QR code, assurez-vous d&apos;avoir utilisé la même adresse email lors de votre inscription.
             </p>
           </div>
         </div>

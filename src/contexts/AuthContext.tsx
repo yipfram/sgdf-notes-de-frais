@@ -56,8 +56,12 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
         const data = await response.json()
         const demandes = data.demandes || []
         const pendingDemandes = demandes.filter((d: any) => d.statut === 'en_attente')
+        
+        console.log('Demandes récupérées:', demandes.length, 'En attente:', pendingDemandes.length)
+        
         setHasPendingRequest(pendingDemandes.length > 0)
       } else {
+        console.error('Erreur lors de la récupération des demandes:', response.status)
         setHasPendingRequest(false)
       }
     } catch (error) {
@@ -78,6 +82,8 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
     }
 
     try {
+      console.log('Chargement des branches pour l\'utilisateur:', user.id)
+      
       // Récupérer les branches via l'API
       const response = await fetch('/api/user/branches')
       if (!response.ok) {
@@ -88,17 +94,22 @@ export function AuthProvider({ children }: Readonly<AuthProviderProps>) {
       const branchesList = data.branches || []
       const roles = data.roles || {}
 
+      console.log('Branches trouvées:', branchesList.length)
+      
       setUserBranches(branchesList)
 
       // Si aucune branche trouvée, essayer de migrer depuis Clerk metadata
       if (branchesList.length === 0) {
         const legacyBranch = user.publicMetadata?.branch as string
         if (legacyBranch) {
+          console.log('Migration legacy depuis metadata:', legacyBranch)
           await migrateFromLegacyBranch(user.id, legacyBranch)
           // Relancer le chargement après migration
           loadUserBranches()
           return
         }
+        
+        console.log('Aucune branche trouvée, vérification des demandes en attente...')
       }
 
       // Définir la branche active (priorité : 1. Clerk metadata, 2. première branche)

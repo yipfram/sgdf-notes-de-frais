@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { db, groups, branches, demandeAcces } from '@/lib/db'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, isNull } from 'drizzle-orm'
 
 export async function POST(request: Request) {
   try {
@@ -69,6 +69,15 @@ export async function POST(request: Request) {
       })
       .returning()
 
+    console.log('POST /api/access/request - Demande créée:', {
+      id: nouvelleDemande.id,
+      email,
+      groupId: group[0].id,
+      branchId: branch[0].id,
+      groupName: group[0].name,
+      branchName: branch[0].name
+    })
+
     // TODO: Envoyer un email au trésorier du groupe
     // await sendTreasurerEmail(group[0].adminUserId, {
     //   demandeId: nouvelleDemande.id,
@@ -101,7 +110,30 @@ export async function GET() {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
 
-    // Récupérer les demandes de l'utilisateur
+    // D'abord, récupérer l'email de l'utilisateur depuis Clerk
+    const { clerkClient } = await import('@clerk/nextjs/server')
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const userEmail = user.emailAddresses[0]?.emailAddress
+
+    console.log('GET /api/access/request - userId:', userId, 'email:', userEmail)
+
+    // Mettre à jour les demandes qui ont le même email mais pas de userId
+    if (userEmail) {
+      const updateResult = await db.update(demandeAcces)
+        .set({ userId, updatedAt: new Date() })
+        .where(and(
+          eq(demandeAcces.email, userEmail),
+          isNull(demandeAcces.userId)
+        ))
+        .returning()
+      
+      if (updateResult.length > 0) {
+        console.log('Demandes liées au userId:', updateResult.length)
+      }
+    }
+
+    // Récupérer les demandes de l'utilisateur (par userId OU par email si userId est null)
     const demandes = await db.select({
       id: demandeAcces.id,
       statut: demandeAcces.statut,
