@@ -2,15 +2,14 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function GroupCodeForm() {
+  const { user } = useAuth()
   const [groupCode, setGroupCode] = useState('')
-  const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,7 +17,10 @@ export function GroupCodeForm() {
     setError('')
 
     try {
-      // Validate group code and send access request email
+      if (!user) {
+        throw new Error('Vous devez être connecté pour rejoindre un groupe')
+      }
+
       const response = await fetch('/api/access/request', {
         method: 'POST',
         headers: {
@@ -26,7 +28,6 @@ export function GroupCodeForm() {
         },
         body: JSON.stringify({
           groupCode,
-          email,
         }),
       })
 
@@ -43,6 +44,8 @@ export function GroupCodeForm() {
     }
   }
 
+  const userEmail = user?.emailAddresses?.[0]?.emailAddress
+
   if (submitted) {
     return (
       <div className="max-w-md mx-auto bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
@@ -58,12 +61,12 @@ export function GroupCodeForm() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-zinc-900 mb-2">Vérifiez votre boîte mail</h2>
+          <h2 className="text-xl font-semibold text-zinc-900 mb-2">Demande envoyée !</h2>
           <p className="text-zinc-600 mb-4">
-            Nous avons envoyé un email à <strong>{email}</strong> avec les instructions pour accéder à votre groupe.
+            Votre demande d&apos;accès au groupe a été envoyée au trésorier.
           </p>
           <p className="text-sm text-zinc-500">
-            Pas reçu d&apos;email ? Vérifiez vos courriers indésirables.
+            Vous recevrez un email à <strong>{userEmail}</strong> dès qu&apos;elle sera approuvée.
           </p>
         </div>
       </div>
@@ -78,10 +81,15 @@ export function GroupCodeForm() {
           <h1 className="text-2xl font-semibold text-center">Notes de frais</h1>
         </div>
         <p className="text-center text-zinc-500 mt-2">
-          Accédez à l&apos;espace de votre groupe
+          Rejoignez votre groupe SGDF
         </p>
       </div>
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-3 rounded-lg mb-4">
+          <p className="font-medium mb-1">📧 Email de connexion :</p>
+          <p className="text-sm">{userEmail}</p>
+        </div>
+
         <div>
           <label htmlFor="groupCode" className="block text-sm font-medium text-zinc-700 mb-1">
             Code groupe
@@ -95,21 +103,9 @@ export function GroupCodeForm() {
             className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-transparent"
             required
           />
-        </div>
-
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-zinc-700 mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="votre@email.com"
-            className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:border-transparent"
-            required
-          />
+          <p className="text-xs text-zinc-500 mt-1">
+            Entrez le code fourni par le trésorier de votre groupe
+          </p>
         </div>
 
         {error && (
@@ -123,7 +119,7 @@ export function GroupCodeForm() {
           disabled={isSubmitting}
           className="w-full bg-zinc-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? 'Envoi en cours...' : 'Accéder à mon groupe'}
+          {isSubmitting ? 'Envoi en cours...' : 'Rejoindre mon groupe'}
         </button>
       </form>
     </div>

@@ -69,7 +69,40 @@ export default function Home() {
   // Page d'accueil avec formulaire de code groupe pour les nouveaux utilisateurs
   return (
     <main className="min-h-screen p-4 flex items-center justify-center bg-zinc-50">
-      <GroupCodeForm />
+      {isSignedIn ? (
+        <GroupCodeForm />
+      ) : (
+        <div className="max-w-md mx-auto bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
+          <div className="bg-white text-zinc-900 p-6 border-b border-zinc-200">
+            <div className="flex items-center justify-center gap-2">
+              <Image src="/SGDF_symbole_RVB.png" alt="SGDF" width={24} height={24} className="rounded-sm" />
+              <h1 className="text-2xl font-semibold text-center">Notes de frais</h1>
+            </div>
+          </div>
+          <div className="p-6 text-center">
+            <h2 className="text-xl font-semibold text-zinc-900 mb-4">
+              Bienvenue !
+            </h2>
+            <p className="text-zinc-600 mb-6">
+              Pour rejoindre votre groupe SGDF, veuillez d&apos;abord vous connecter ou créer un compte.
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => router.push('/sign-up')}
+                className="w-full bg-zinc-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
+              >
+                Créer un compte
+              </button>
+              <button
+                onClick={() => router.push('/sign-in')}
+                className="w-full bg-white text-zinc-900 py-3 px-6 rounded-lg font-semibold border border-zinc-300 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
+              >
+                Se connecter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <InstallPrompt />
     </main>
   )

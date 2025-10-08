@@ -1,16 +1,36 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { db, groups, branches, demandeAcces } from '@/lib/db'
-import { eq, and, isNull } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { groupCode, email } = body
-
-    if (!groupCode || !email) {
+    // Vérifier l'authentification
+    const { userId } = await auth()
+    if (!userId) {
       return NextResponse.json({
-        error: 'Code groupe et email requis'
+        error: 'Vous devez être connecté pour faire une demande d\'accès'
+      }, { status: 401 })
+    }
+
+    // Récupérer l'email de l'utilisateur depuis Clerk
+    const { clerkClient } = await import('@clerk/nextjs/server')
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const email = user.emailAddresses[0]?.emailAddress
+
+    if (!email) {
+      return NextResponse.json({
+        error: 'Aucun email trouvé pour votre compte'
+      }, { status: 400 })
+    }
+
+    const body = await request.json()
+    const { groupCode } = body
+
+    if (!groupCode) {
+      return NextResponse.json({
+        error: 'Code groupe requis'
       }, { status: 400 })
     }
 
@@ -41,11 +61,11 @@ export async function POST(request: Request) {
       }, { status: 404 })
     }
 
-    // Vérifier si une demande existe déjà pour cet email et cette branche
+    // Vérifier si une demande existe déjà pour cet utilisateur et cette branche
     const existingDemande = await db.select()
       .from(demandeAcces)
       .where(and(
-        eq(demandeAcces.email, email),
+        eq(demandeAcces.userId, userId),
         eq(demandeAcces.branchId, branch[0].id),
         eq(demandeAcces.statut, 'en_attente')
       ))
@@ -57,13 +77,13 @@ export async function POST(request: Request) {
       }, { status: 409 })
     }
 
-    // Créer la demande d'accès (sans userId pour l'instant)
+    // Créer la demande d'accès avec le userId
     const [nouvelleDemande] = await db.insert(demandeAcces)
       .values({
         email,
         groupId: group[0].id,
         branchId: branch[0].id,
-        userId: null, // Sera rempli après l'inscription
+        userId, // Maintenant on a le userId dès le départ
         statut: 'en_attente',
         message: null,
       })
@@ -72,6 +92,7 @@ export async function POST(request: Request) {
     console.log('POST /api/access/request - Demande créée:', {
       id: nouvelleDemande.id,
       email,
+      userId,
       groupId: group[0].id,
       branchId: branch[0].id,
       groupName: group[0].name,
@@ -110,30 +131,9 @@ export async function GET() {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
 
-    // D'abord, récupérer l'email de l'utilisateur depuis Clerk
-    const { clerkClient } = await import('@clerk/nextjs/server')
-    const client = await clerkClient()
-    const user = await client.users.getUser(userId)
-    const userEmail = user.emailAddresses[0]?.emailAddress
+    console.log('GET /api/access/request - userId:', userId)
 
-    console.log('GET /api/access/request - userId:', userId, 'email:', userEmail)
-
-    // Mettre à jour les demandes qui ont le même email mais pas de userId
-    if (userEmail) {
-      const updateResult = await db.update(demandeAcces)
-        .set({ userId, updatedAt: new Date() })
-        .where(and(
-          eq(demandeAcces.email, userEmail),
-          isNull(demandeAcces.userId)
-        ))
-        .returning()
-      
-      if (updateResult.length > 0) {
-        console.log('Demandes liées au userId:', updateResult.length)
-      }
-    }
-
-    // Récupérer les demandes de l'utilisateur (par userId OU par email si userId est null)
+    // Récupérer les demandes de l'utilisateur
     const demandes = await db.select({
       id: demandeAcces.id,
       statut: demandeAcces.statut,
@@ -148,6 +148,8 @@ export async function GET() {
       .innerJoin(branches, eq(demandeAcces.branchId, branches.id))
       .where(eq(demandeAcces.userId, userId))
       .orderBy(demandeAcces.createdAt)
+
+    console.log('Demandes trouvées:', demandes.length)
 
     return NextResponse.json({
       success: true,
