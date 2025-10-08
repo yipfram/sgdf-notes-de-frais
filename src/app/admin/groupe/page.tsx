@@ -43,6 +43,9 @@ export default function GroupeAdminPage() {
   const [showQRCode, setShowQRCode] = useState(false)
   const [copiedLink, setCopiedLink] = useState(false)
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null)
+  const [showAddBranch, setShowAddBranch] = useState(false)
+  const [newBranchName, setNewBranchName] = useState('')
+  const [isAddingBranch, setIsAddingBranch] = useState(false)
 
   useEffect(() => {
     if (!isLoading && (!isSignedIn || !activeBranch || !isAdmin())) {
@@ -91,17 +94,20 @@ export default function GroupeAdminPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ requestId }),
+        body: JSON.stringify({ demandeId: requestId }),
       })
 
       if (response.ok) {
         // Recharger les demandes
         loadGroupData()
       } else {
-        console.error('Erreur lors de l\'approbation de la demande')
+        const data = await response.json()
+        console.error('Erreur lors de l\'approbation de la demande:', data.error)
+        alert(`Erreur: ${data.error || 'Impossible d\'approuver la demande'}`)
       }
     } catch (error) {
       console.error('Erreur lors de l\'approbation de la demande:', error)
+      alert('Erreur de connexion lors de l\'approbation de la demande')
     }
   }
 
@@ -112,17 +118,20 @@ export default function GroupeAdminPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ requestId }),
+        body: JSON.stringify({ demandeId: requestId }),
       })
 
       if (response.ok) {
         // Recharger les demandes
         loadGroupData()
       } else {
-        console.error('Erreur lors du refus de la demande')
+        const data = await response.json()
+        console.error('Erreur lors du refus de la demande:', data.error)
+        alert(`Erreur: ${data.error || 'Impossible de refuser la demande'}`)
       }
     } catch (error) {
       console.error('Erreur lors du refus de la demande:', error)
+      alert('Erreur de connexion lors du refus de la demande')
     }
   }
 
@@ -178,6 +187,38 @@ export default function GroupeAdminPage() {
       } catch (error) {
         console.error('Erreur lors de la génération du QR code:', error)
       }
+    }
+  }
+
+  const handleAddBranch = async () => {
+    if (!newBranchName.trim()) {
+      alert('Veuillez entrer un nom de branche')
+      return
+    }
+
+    setIsAddingBranch(true)
+    try {
+      const response = await fetch('/api/admin/branches', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: newBranchName.trim() }),
+      })
+
+      if (response.ok) {
+        setShowAddBranch(false)
+        setNewBranchName('')
+        loadGroupData()
+      } else {
+        const data = await response.json()
+        alert(`Erreur: ${data.error || 'Impossible de créer la branche'}`)
+      }
+    } catch (error) {
+      console.error('Erreur lors de la création de la branche:', error)
+      alert('Erreur de connexion lors de la création de la branche')
+    } finally {
+      setIsAddingBranch(false)
     }
   }
 
@@ -238,7 +279,7 @@ export default function GroupeAdminPage() {
                   <p className="font-medium text-zinc-900">{groupInfo.slug.toUpperCase()}</p>
                   <button
                     onClick={copyGroupLink}
-                    className={`text-sm ${copiedLink ? 'text-green-600' : 'text-zinc-500 hover:text-zinc-700'}`}
+                    className={`text-sm cursor-pointer ${copiedLink ? 'text-green-600' : 'text-zinc-500 hover:text-zinc-700'}`}
                     title={copiedLink ? 'Lien copié!' : 'Copier le lien'}
                   >
                     {copiedLink ? (
@@ -253,7 +294,7 @@ export default function GroupeAdminPage() {
                   </button>
                   <button
                     onClick={generateQRCode}
-                    className="text-zinc-500 hover:text-zinc-700 text-sm"
+                    className="text-zinc-500 hover:text-zinc-700 text-sm cursor-pointer"
                     title="Générer un QR code"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,13 +333,13 @@ export default function GroupeAdminPage() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleApproveRequest(request.id)}
-                        className="bg-green-600 text-white py-1 px-3 rounded text-sm hover:bg-green-700 transition-colors"
+                        className="bg-green-600 text-white py-1 px-3 rounded text-sm hover:bg-green-700 transition-colors cursor-pointer"
                       >
                         Approuver
                       </button>
                       <button
                         onClick={() => handleRejectRequest(request.id)}
-                        className="bg-red-600 text-white py-1 px-3 rounded text-sm hover:bg-red-700 transition-colors"
+                        className="bg-red-600 text-white py-1 px-3 rounded text-sm hover:bg-red-700 transition-colors cursor-pointer"
                       >
                         Refuser
                       </button>
@@ -334,12 +375,12 @@ export default function GroupeAdminPage() {
                           value={branchName}
                           onChange={(e) => setBranchName(e.target.value)}
                           onBlur={() => handleBranchUpdate(branch.id, branchName)}
-                          onKeyPress={(e) => {
+                          onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                               handleBranchUpdate(branch.id, branchName)
                             }
                           }}
-                          className="px-2 py-1 border border-zinc-300 rounded focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                          className="px-2 py-1 border border-zinc-300 rounded focus:outline-none focus:ring-2 focus:ring-zinc-400 bg-white text-zinc-900"
                           autoFocus
                         />
                       ) : (
@@ -348,7 +389,7 @@ export default function GroupeAdminPage() {
                             setEditingBranch(branch.id)
                             setBranchName(branch.name)
                           }}
-                          className="text-zinc-900 hover:text-zinc-700 font-medium"
+                          className="text-zinc-900 hover:text-zinc-700 font-medium cursor-pointer"
                         >
                           {branch.name}
                         </button>
@@ -368,13 +409,14 @@ export default function GroupeAdminPage() {
                     </td>
                     <td className="py-3 px-3">
                       <div className="flex gap-2">
-                        <button className="text-zinc-500 hover:text-zinc-700 text-sm">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        </button>
-                        <button className="text-zinc-500 hover:text-zinc-700 text-sm">
+                        <button 
+                          className="text-zinc-500 hover:text-zinc-700 text-sm cursor-pointer"
+                          title="Modifier"
+                          onClick={() => {
+                            setEditingBranch(branch.id)
+                            setBranchName(branch.name)
+                          }}
+                        >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
@@ -388,12 +430,92 @@ export default function GroupeAdminPage() {
           </div>
 
           <div className="mt-4 pt-4 border-t border-zinc-200">
-            <button className="bg-zinc-900 text-white py-2 px-4 rounded-lg text-sm hover:bg-zinc-800 transition-colors">
+            <button 
+              className="bg-zinc-900 text-white py-2 px-4 rounded-lg text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
+              onClick={() => setShowAddBranch(true)}
+            >
               Ajouter une branche
             </button>
           </div>
         </div>
       </div>
+
+      {/* Add Branch Modal */}
+      {showAddBranch && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg border border-zinc-200 shadow-sm max-w-md w-full">
+            <div className="p-6 border-b border-zinc-200">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-zinc-900">Ajouter une branche</h3>
+                <button
+                  onClick={() => {
+                    setShowAddBranch(false)
+                    setNewBranchName('')
+                  }}
+                  className="text-zinc-500 hover:text-zinc-700 cursor-pointer"
+                  disabled={isAddingBranch}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="mb-4">
+                <label htmlFor="branchName" className="block text-sm font-medium text-zinc-700 mb-2">
+                  Nom de la branche
+                </label>
+                <input
+                  id="branchName"
+                  type="text"
+                  value={newBranchName}
+                  onChange={(e) => setNewBranchName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !isAddingBranch) {
+                      handleAddBranch()
+                    }
+                  }}
+                  placeholder="Ex: Louveteaux, Scouts, Pionniers..."
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-400 bg-white text-zinc-900"
+                  autoFocus
+                  disabled={isAddingBranch}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowAddBranch(false)
+                    setNewBranchName('')
+                  }}
+                  className="flex-1 border border-zinc-300 text-zinc-700 py-2 px-4 rounded-lg text-sm hover:bg-zinc-50 transition-colors cursor-pointer"
+                  disabled={isAddingBranch}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleAddBranch}
+                  className="flex-1 bg-zinc-900 text-white py-2 px-4 rounded-lg text-sm hover:bg-zinc-800 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isAddingBranch || !newBranchName.trim()}
+                >
+                  {isAddingBranch ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Création...
+                    </span>
+                  ) : (
+                    'Créer'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* QR Code Modal */}
       {showQRCode && groupInfo && (
@@ -404,7 +526,7 @@ export default function GroupeAdminPage() {
                 <h3 className="text-lg font-semibold text-zinc-900">QR Code d&apos;accès</h3>
                 <button
                   onClick={() => setShowQRCode(false)}
-                  className="text-zinc-500 hover:text-zinc-700"
+                  className="text-zinc-500 hover:text-zinc-700 cursor-pointer"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -443,7 +565,7 @@ export default function GroupeAdminPage() {
               <div className="flex gap-3">
                 <button
                   onClick={copyGroupLink}
-                  className="flex-1 bg-zinc-900 text-white py-2 px-4 rounded-lg text-sm hover:bg-zinc-800 transition-colors"
+                  className="flex-1 bg-zinc-900 text-white py-2 px-4 rounded-lg text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   Copier le lien
                 </button>
@@ -456,7 +578,7 @@ export default function GroupeAdminPage() {
                       a.click()
                     }
                   }}
-                  className="flex-1 border border-zinc-300 text-zinc-700 py-2 px-4 rounded-lg text-sm hover:bg-zinc-50 transition-colors"
+                  className="flex-1 border border-zinc-300 text-zinc-700 py-2 px-4 rounded-lg text-sm hover:bg-zinc-50 transition-colors cursor-pointer"
                 >
                   Télécharger
                 </button>

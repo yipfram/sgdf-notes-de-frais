@@ -175,7 +175,13 @@ export default function MaBranchePage() {
           {propositions.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-zinc-500 mb-4">Aucune proposition en cours</p>
-              <button className="bg-zinc-900 text-white py-2 px-4 rounded-lg text-sm hover:bg-zinc-800 transition-colors">
+              <button 
+                className="bg-zinc-900 text-white py-2 px-4 rounded-lg text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
+                onClick={() => {
+                  // TODO: Implémenter le formulaire de proposition
+                  alert('Fonctionnalité à venir : faire une proposition')
+                }}
+              >
                 Faire une proposition
               </button>
             </div>
@@ -206,7 +212,13 @@ export default function MaBranchePage() {
                   </p>
                 </div>
               ))}
-              <button className="w-full bg-zinc-900 text-white py-2 px-4 rounded-lg text-sm hover:bg-zinc-800 transition-colors">
+              <button 
+                className="w-full bg-zinc-900 text-white py-2 px-4 rounded-lg text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
+                onClick={() => {
+                  // TODO: Implémenter le formulaire de proposition
+                  alert('Fonctionnalité à venir : faire une nouvelle proposition')
+                }}
+              >
                 Faire une nouvelle proposition
               </button>
             </div>

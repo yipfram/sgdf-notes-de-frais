@@ -73,7 +73,7 @@ export default function PendingApprovalPage() {
             </p>
             <button
               onClick={() => router.push('/')}
-              className="text-zinc-600 hover:text-zinc-900 underline"
+              className="text-zinc-600 hover:text-zinc-900 underline cursor-pointer"
             >
               Retour à l&apos;accueil
             </button>
@@ -151,7 +151,7 @@ export default function PendingApprovalPage() {
           <div className="text-center">
             <button
               onClick={() => window.location.reload()}
-              className="text-zinc-600 hover:text-zinc-900 underline text-sm"
+              className="text-zinc-600 hover:text-zinc-900 underline text-sm cursor-pointer"
             >
               Actualiser le statut
             </button>
