@@ -8,7 +8,7 @@ Ce guide explique **pas à pas** comment installer et déployer l'application, q
 2. [Ce dont vous aurez besoin](#ce-dont-vous-aurez-besoin)
 3. [Guide rapide pour développeurs](#guide-rapide-pour-développeurs)
 4. [Guide détaillé pas à pas](#guide-détaillé-pas-à-pas)
-   - [Étape 1 : Configuration Gmail](#étape-1--configuration-gmail)
+   - [Étape 1 : Configuration SMTP (Email)](#étape-1--configuration-smtp-email)
    - [Étape 2 : Configuration Clerk](#étape-2--configuration-clerk)
    - [Étape 3 : Déploiement sur Vercel](#étape-3--déploiement-sur-vercel)
    - [Étape 4 : Configuration des variables d'environnement](#étape-4--configuration-des-variables-denvironnement)
@@ -34,7 +34,7 @@ L'application permet aux membres de votre groupe SGDF de :
 
 Avant de commencer :
 
-- ✅ Un compte **Gmail** pour envoyer les emails (gratuit)
+- ✅ Un compte **Email** avec accès SMTP pour envoyer les emails (Gmail, Outlook, Office 365, ou serveur personnalisé - gratuit)
 - ✅ Un compte **GitHub** pour accéder au code source (gratuit)
 - ✅ Un compte **Clerk** pour l'authentification (gratuit jusqu'à 10 000 utilisateurs/mois)
 - ✅ Un compte **Vercel** pour héberger l'application (gratuit pour projets associatifs)
@@ -49,8 +49,8 @@ Si vous êtes développeur et que vous connaissez déjà ces outils :
 
 1. Forkez le repo sur GitHub
 2. Configurez Clerk sur [dashboard.clerk.com](https://dashboard.clerk.com/)
-3. Activez la 2FA Gmail et générez un mot de passe d'application
-4. Copiez `.env.example` → `.env.local` et remplissez les 7 variables
+3. Configurez vos identifiants SMTP (voir `.env.example` pour exemples Gmail/Outlook/Office365)
+4. Copiez `.env.example` → `.env.local` et remplissez les variables SMTP + Clerk
 5. Déployez sur Vercel et ajoutez les variables d'environnement
 6. Ajoutez votre domaine Vercel dans Clerk
 
@@ -60,22 +60,48 @@ Pour plus de détails, voir le [Guide détaillé pas à pas](#guide-détaillé-p
 
 ## Guide détaillé pas à pas
 
-### Étape 1 : Configuration Gmail
+### Étape 1 : Configuration SMTP (Email)
 
-Gmail sera utilisé pour envoyer les emails de factures.
+L'application utilise le protocole SMTP pour envoyer les emails de factures. Vous pouvez utiliser **Gmail, Outlook, Office 365, ou n'importe quel serveur SMTP**.
 
-#### 1.1 Créer ou utiliser un compte Gmail
+#### 1.1 Choisir votre fournisseur SMTP
 
-Si vous avez déjà un compte Gmail dédié à votre trésorerie SGDF, passez à l'étape 1.2.
+Vous avez plusieurs options :
+
+**Option A : Gmail** (recommandé pour les associations)
+- Gratuit et fiable
+- Nécessite un compte Gmail et un mot de passe d'application
+- Limite : 500 emails/jour (largement suffisant)
+
+**Option B : Outlook/Hotmail**
+- Gratuit avec un compte Microsoft
+- Configuration simple
+- Aucun mot de passe d'application nécessaire
+
+**Option C : Office 365**
+- Si votre association a un compte Microsoft professionnel
+- Même configuration qu'Outlook
+
+**Option D : Serveur SMTP personnalisé**
+- Si vous avez votre propre serveur email
+- Configuration selon votre hébergeur
+
+#### 1.2 Configuration pour Gmail
+
+Si vous utilisez Gmail, suivez ces étapes :
+
+**1.2.1 Créer ou utiliser un compte Gmail**
+
+Si vous avez déjà un compte Gmail dédié à votre trésorerie, passez à l'étape suivante.
 
 Sinon :
 1. Allez sur [gmail.com](https://mail.google.com)
-2. Créez un nouveau compte (utilisez une adresse professionnelle type `sgdf.tresorerie@gmail.com`)
-3. Notez bien l'adresse email et le mot de passe
+2. Créez un nouveau compte (ex: `sgdf.tresorerie@gmail.com`)
+3. Notez bien l'adresse email
 
-> 💡 **Conseil** : Utilisez un compte dédié au groupe SGDF plutôt qu'un compte personnel.
+> 💡 **Conseil** : Utilisez un compte dédié au groupe plutôt qu'un compte personnel.
 
-#### 1.2 Activer la validation en deux étapes
+**1.2.2 Activer la validation en deux étapes**
 
 **Obligatoire** pour pouvoir créer un mot de passe d'application.
 
@@ -83,18 +109,14 @@ Sinon :
 2. Allez sur [https://myaccount.google.com/security](https://myaccount.google.com/security)
 3. Cherchez **"Validation en deux étapes"** (ou "2-Step Verification")
 4. Cliquez sur **"Validation en deux étapes"** → **"Activer"**
-5. Suivez les instructions :
-   - Entrez votre numéro de téléphone
-   - Recevez et entrez le code SMS
+5. Suivez les instructions (numéro de téléphone + code SMS)
 6. ✅ La validation en deux étapes est maintenant active
 
-#### 1.3 Générer un mot de passe d'application
-
-Ce mot de passe permettra à l'application d'envoyer des emails.
+**1.2.3 Générer un mot de passe d'application**
 
 1. Sur [https://myaccount.google.com/security](https://myaccount.google.com/security)
 2. Cherchez **"Mots de passe des applications"** (ou "App passwords")
-3. Cliquez dessus (vous devrez peut-être vous reconnecter)
+3. Cliquez dessus
 4. Dans **"Sélectionner une application"** :
    - Choisissez **"Autre (nom personnalisé)"**
    - Tapez : `SGDF Notes de frais`
@@ -102,7 +124,58 @@ Ce mot de passe permettra à l'application d'envoyer des emails.
 6. Google affiche un mot de passe de **16 caractères** (ex: `abcd efgh ijkl mnop`)
 7. **⚠️ IMPORTANT** : Copiez ce mot de passe immédiatement dans un endroit sûr
 
-> Les espaces dans le mot de passe peuvent être gardés ou supprimés (les deux fonctionnent).
+**Informations à noter pour Gmail :**
+- SMTP_HOST : `smtp.gmail.com`
+- SMTP_PORT : `587`
+- SMTP_SECURE : `false`
+- SMTP_USER : votre adresse Gmail complète
+- SMTP_PASSWORD : le mot de passe d'application de 16 caractères
+
+#### 1.3 Configuration pour Outlook/Hotmail
+
+Si vous utilisez Outlook ou Hotmail :
+
+1. Créez ou utilisez un compte sur [outlook.com](https://outlook.com)
+2. Notez votre adresse email et mot de passe
+
+**Informations à noter pour Outlook :**
+- SMTP_HOST : `smtp-mail.outlook.com`
+- SMTP_PORT : `587`
+- SMTP_SECURE : `false`
+- SMTP_USER : votre adresse Outlook complète
+- SMTP_PASSWORD : votre mot de passe Outlook habituel
+
+#### 1.4 Configuration pour Office 365
+
+Si votre association a Office 365 :
+
+1. Utilisez votre adresse email professionnelle
+2. Notez votre mot de passe
+
+**Informations à noter pour Office 365 :**
+- SMTP_HOST : `smtp.office365.com`
+- SMTP_PORT : `587`
+- SMTP_SECURE : `false`
+- SMTP_USER : votre adresse email professionnelle
+- SMTP_PASSWORD : votre mot de passe habituel
+
+#### 1.5 Configuration pour serveur personnalisé
+
+Si vous avez un serveur SMTP personnalisé :
+
+1. Contactez votre hébergeur ou administrateur système
+2. Demandez les informations SMTP :
+   - Adresse du serveur SMTP (ex: `smtp.votredomaine.com`)
+   - Port (généralement 587 ou 465)
+   - Si SSL/TLS est requis
+   - Vos identifiants (nom d'utilisateur et mot de passe)
+
+**Informations à noter :**
+- SMTP_HOST : adresse fournie par votre hébergeur
+- SMTP_PORT : port fourni (587 ou 465)
+- SMTP_SECURE : `true` pour port 465, `false` pour 587
+- SMTP_USER : votre nom d'utilisateur
+- SMTP_PASSWORD : votre mot de passe
 
 ---
 
@@ -180,12 +253,14 @@ Sur la page de configuration du projet dans Vercel, descendez jusqu'à **"Enviro
 Si vous avez déjà déployé :
 1. Allez sur votre projet → **"Settings"** → **"Environment Variables"**
 
-#### 4.2 Ajouter les 7 variables
+#### 4.2 Ajouter les variables d'environnement
 
 Pour chaque variable ci-dessous :
 1. Entrez le **nom** dans "Key"
 2. Entrez la **valeur** dans "Value"
 3. Cliquez sur **"Add"**
+
+**Variables Clerk (4 variables) :**
 
 ##### Variable 1 : NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 - **Valeur** : Votre clé Clerk publique (commence par `pk_test_...`)
@@ -203,22 +278,46 @@ Pour chaque variable ci-dessous :
 - **Valeur** : `/sign-up`
 - ⚠️ Tapez exactement `/sign-up` (avec le slash)
 
-##### Variable 5 : GMAIL_USER
-- **Valeur** : Votre adresse Gmail complète (ex: `sgdf.tresorerie@gmail.com`)
+**Variables SMTP (6 variables minimum) :**
 
-##### Variable 6 : GMAIL_APP_PASSWORD
-- **Valeur** : Le mot de passe d'application de 16 caractères (créé à l'étape 1.3)
-- Les espaces peuvent être gardés ou supprimés
+##### Variable 5 : SMTP_HOST
+- **Valeur** : L'adresse de votre serveur SMTP (notée à l'étape 1)
+- Exemples : `smtp.gmail.com`, `smtp-mail.outlook.com`, `smtp.office365.com`
 
-##### Variable 7 : TREASURY_EMAIL
-- **Valeur** : L'adresse email de votre trésorerie (peut être la même que GMAIL_USER)
+##### Variable 6 : SMTP_PORT
+- **Valeur** : Le port SMTP (noté à l'étape 1)
+- Généralement : `587` (TLS) ou `465` (SSL)
+
+##### Variable 7 : SMTP_SECURE
+- **Valeur** : `false` pour port 587, `true` pour port 465
+
+##### Variable 8 : SMTP_USER
+- **Valeur** : Votre nom d'utilisateur SMTP (généralement votre adresse email complète)
+
+##### Variable 9 : SMTP_PASSWORD
+- **Valeur** : Votre mot de passe SMTP
+- Pour Gmail : le mot de passe d'application de 16 caractères
+- Pour Outlook/Office365 : votre mot de passe habituel
+
+##### Variable 10 : TREASURY_EMAIL
+- **Valeur** : L'adresse email de votre trésorerie (destinataire principal des factures)
+
+**Variables optionnelles (pour personnalisation) :**
+
+##### SMTP_FROM_NAME (optionnel)
+- **Valeur** : Nom affiché comme expéditeur (ex: `Factures SGDF La Guillotière`)
+- Si non définie : utilise `Factures carte procurement SGDF`
+
+##### SMTP_FROM_EMAIL (optionnel)
+- **Valeur** : Email affiché comme expéditeur
+- Si non définie : utilise SMTP_USER
 
 #### 4.3 Vérification
 
 Vérifiez que :
-- ✅ Vous avez bien **7 variables**
+- ✅ Vous avez au minimum **10 variables** (4 Clerk + 6 SMTP)
 - ✅ Les noms sont **exactement** comme indiqué
-- ✅ Aucune valeur n'a d'espace au début/fin (sauf GMAIL_APP_PASSWORD entre les groupes)
+- ✅ Aucune valeur n'a d'espace au début/fin
 
 #### 4.4 Déployer
 
@@ -304,19 +403,29 @@ NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 ```
 
-### Configuration Gmail SMTP (résumé technique)
+### Configuration SMTP (résumé technique)
 
-1. Activez l'authentification à 2 facteurs sur le compte Gmail utilisé pour l'envoi
-2. Générez un mot de passe d'application (Google Account → Security → App passwords)
-3. Ajoutez ces variables d'environnement :
+L'application supporte n'importe quel serveur SMTP. Voici les variables requises :
 
 ```bash
-GMAIL_USER=sgdf.tresolaguillotiere@gmail.com
-GMAIL_APP_PASSWORD=xxxxxxxxxxxxxxxx
-TREASURY_EMAIL=sgdf.tresolaguillotiere@gmail.com
+# Requis
+SMTP_HOST=smtp.gmail.com                    # ou smtp-mail.outlook.com, smtp.office365.com, etc.
+SMTP_PORT=587                               # ou 465 pour SSL
+SMTP_SECURE=false                           # true pour port 465, false pour 587
+SMTP_USER=votre-email@example.com
+SMTP_PASSWORD=votre-mot-de-passe            # Mot de passe d'application pour Gmail
+TREASURY_EMAIL=tresorerie@example.com
+
+# Optionnel
+SMTP_FROM_NAME=Factures SGDF
+SMTP_FROM_EMAIL=noreply@example.com
 ```
 
-Remarque : utilisez un mot de passe d'application (16 caractères) et ne committez jamais `.env.local`.
+**Pour Gmail :** Activez la 2FA et générez un mot de passe d'application (Google Account → Security → App passwords)
+
+**Pour Outlook/Office365 :** Utilisez votre mot de passe habituel
+
+Remarque : Ne committez jamais `.env.local` (déjà dans `.gitignore`).
 
 ### Fichier `.env.local`
 
@@ -417,13 +526,15 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 
 ### Problème : "Configuration SMTP invalide"
 
-**Cause** : Le mot de passe d'application Gmail est incorrect.
+**Cause** : Les identifiants SMTP sont incorrects ou le serveur est inaccessible.
 
 **Solution** :
-1. Vérifiez `GMAIL_APP_PASSWORD` dans Vercel (16 caractères)
-2. Vérifiez qu'il n'y a pas d'espaces au début/fin
-3. Si le problème persiste, générez un nouveau mot de passe d'application
-4. Mettez à jour la variable dans Vercel → Redéployez
+1. Vérifiez `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` dans Vercel
+2. Vérifiez qu'il n'y a pas d'espaces au début/fin des valeurs
+3. Pour Gmail : Vérifiez que vous utilisez un mot de passe d'application (16 caractères)
+4. Pour Outlook/Office365 : Vérifiez que votre mot de passe est correct
+5. Vérifiez que `SMTP_SECURE` correspond au port (`false` pour 587, `true` pour 465)
+6. Mettez à jour les variables dans Vercel → Redéployez
 
 ### Problème : "Non autorisé" ou impossible de se connecter
 
@@ -439,23 +550,31 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 **Causes possibles** :
 1. Email dans les spams
 2. Adresse `TREASURY_EMAIL` incorrecte
-3. Compte Gmail bloqué
+3. Compte email bloqué ou limité
+4. Serveur SMTP bloque l'envoi
 
 **Solutions** :
-1. Vérifiez les spams
+1. Vérifiez les spams et les dossiers courrier indésirable
 2. Vérifiez `TREASURY_EMAIL` dans Vercel
-3. Connectez-vous à Gmail et vérifiez les alertes de sécurité
+3. Connectez-vous à votre compte email et vérifiez les alertes de sécurité
+4. Vérifiez les logs Vercel pour des erreurs d'envoi
 
-### Problème : "Invalid login"
+### Problème : "Invalid login" ou erreur d'authentification SMTP
 
-**Cause** : Mot de passe d'application expiré.
+**Cause** : Identifiants SMTP incorrects ou expirés.
 
-**Solution** :
+**Solution Gmail** :
 1. Allez sur [https://myaccount.google.com/security](https://myaccount.google.com/security)
 2. Supprimez l'ancien mot de passe d'application
 3. Créez-en un nouveau
-4. Mettez à jour `GMAIL_APP_PASSWORD` dans Vercel
+4. Mettez à jour `SMTP_PASSWORD` dans Vercel
 5. Redéployez
+
+**Solution Outlook/Office365** :
+1. Vérifiez que votre mot de passe est correct
+2. Vérifiez que la 2FA n'est pas activée (ou utilisez un mot de passe d'application si disponible)
+3. Mettez à jour `SMTP_PASSWORD` dans Vercel
+4. Redéployez
 
 ### Problème : L'appareil photo ne fonctionne pas
 
@@ -470,13 +589,16 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 
 **Solutions** :
 1. Vercel → Settings → Environment Variables
-2. Vérifiez que les **7 variables** sont présentes :
+2. Vérifiez que les **10 variables minimum** sont présentes :
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
    - `CLERK_SECRET_KEY`
    - `NEXT_PUBLIC_CLERK_SIGN_IN_URL`
    - `NEXT_PUBLIC_CLERK_SIGN_UP_URL`
-   - `GMAIL_USER`
-   - `GMAIL_APP_PASSWORD`
+   - `SMTP_HOST`
+   - `SMTP_PORT`
+   - `SMTP_SECURE`
+   - `SMTP_USER`
+   - `SMTP_PASSWORD`
    - `TREASURY_EMAIL`
 3. Vercel → Deployments → cliquez sur le dernier → vérifiez les logs
 4. Redéployez si nécessaire

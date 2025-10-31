@@ -12,15 +12,15 @@ export interface EmailData {
   fileName: string
 }
 
-// Configuration du transporteur Gmail SMTP
+// Configuration du transporteur SMTP générique
 export const createEmailTransporter = () => {
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // true pour port 465, false pour les autres ports
+    host: process.env.SMTP_HOST,
+    port: Number.parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true', // true pour port 465, false pour les autres ports
     auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
     },
   })
 }
@@ -164,8 +164,8 @@ Email envoyé automatiquement par l'application Factures carte procurement SGDF.
 
   const mailOptions = {
     from: {
-  name: 'Factures carte procurement SGDF',
-      address: process.env.GMAIL_USER!
+      name: process.env.SMTP_FROM_NAME || 'Factures carte procurement SGDF',
+      address: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER!
     },
     to: process.env.TREASURY_EMAIL!,
     cc: userEmail,

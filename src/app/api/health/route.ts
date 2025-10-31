@@ -7,8 +7,9 @@ export async function GET() {
 
   // Env checks
   const missingEnv: string[] = []
-  if (!process.env.GMAIL_USER) missingEnv.push('GMAIL_USER')
-  if (!process.env.GMAIL_APP_PASSWORD) missingEnv.push('GMAIL_APP_PASSWORD')
+  if (!process.env.SMTP_HOST) missingEnv.push('SMTP_HOST')
+  if (!process.env.SMTP_USER) missingEnv.push('SMTP_USER')
+  if (!process.env.SMTP_PASSWORD) missingEnv.push('SMTP_PASSWORD')
   if (!process.env.TREASURY_EMAIL) missingEnv.push('TREASURY_EMAIL')
 
   const envOk = missingEnv.length === 0

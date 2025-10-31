@@ -1,7 +1,7 @@
 # Factures carte procurement SGDF - Developer Instructions
 
 ## Project Overview
-Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. Features Clerk authentication, and server-side email sending via Gmail SMTP. **No database** - authentication via Clerk, emails sent directly to recipients.
+Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. Features Clerk authentication, and server-side email sending via generic SMTP (supports Gmail, Outlook, Office 365, custom servers). **No database** - authentication via Clerk, emails sent directly to recipients.
 
 ## Core Architecture
 
@@ -11,10 +11,10 @@ Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. Features
 - `src/components/PhotoCapture.tsx` - Image capture/upload
 - `src/components/ExpenseForm.tsx` - Form with SGDF branch selection, validation, and API submission
 - `src/middleware.ts` - Clerk middleware protecting routes and API endpoints
-- `src/lib/email.ts` - Gmail SMTP email sending utilities
+- `src/lib/email.ts` - Generic SMTP email sending utilities
 - `src/app/api/send-expense/route.ts` - Protected API route for email sending
 ## Project Overview
-Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. The app uses Clerk for authentication and sends invoice emails server-side via Gmail SMTP. There is no central database: emails are delivered directly to the treasury and the user.
+Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. The app uses Clerk for authentication and sends invoice emails server-side via generic SMTP. There is no central database: emails are delivered directly to the treasury and the user.
 
 ## Core Architecture
 
@@ -24,7 +24,7 @@ Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. The app 
 - `src/components/PhotoCapture.tsx` - Image capture / upload UI
 - `src/components/ExpenseForm.tsx` - Form with SGDF branch selection, validation, and API submission
 - `src/middleware.ts` - Clerk middleware protecting routes and API endpoints
-- `src/lib/email.ts` - Gmail SMTP email sending utilities
+- `src/lib/email.ts` - Generic SMTP email sending utilities
 - `src/app/api/send-expense/route.ts` - Protected API route for email sending
 
 ### Data Flow Pattern
@@ -32,12 +32,12 @@ Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. The app 
 2. Image capture → user captures or uploads a photo
 3. State lifting → data flows up to `page.tsx` then down to `ExpenseForm`
 4. Form submission → POST to `/api/send-expense` with base64 image
-5. Email generation → server converts base64 to buffer and sends via Gmail SMTP
+5. Email generation → server converts base64 to buffer and sends via SMTP
 6. Dual delivery → email sent to both treasury (configured via `TREASURY_EMAIL`) and user
 
 ### Key Technical Decisions
 - Authentication: Clerk for Google/Email auth (no custom user management)
-- Email Service: Gmail SMTP with app passwords (simple and reliable for association use)
+- Email Service: Generic SMTP support (works with Gmail, Outlook, Office 365, custom servers)
 - Image Handling: Base64 encoding/decoding between client and server
 - Validation: Server-side validation with specific error messages
 - State Management: React useState with loading/success/error states
@@ -61,8 +61,9 @@ cp .env.example .env.local
 
 # Required variables (see .env.example):
 # - Clerk keys from https://dashboard.clerk.com/
-# - Gmail app password from Google Account settings
+# - SMTP server configuration (host, port, credentials)
 # - Treasury email address
+# Supports Gmail, Outlook, Office 365, and custom SMTP servers
 ```
 
 ### Testing Requirements
@@ -70,7 +71,7 @@ cp .env.example .env.local
 - Manual mobile testing: Use browser dev tools mobile view or real device
 - Camera functionality: Test photo capture and file upload on mobile
 - Email delivery: Verify emails arrive at both treasury and user addresses
-- Error handling: Test invalid Gmail credentials, network failures, malformed data
+- Error handling: Test invalid SMTP credentials, network failures, malformed data
 
 ## SGDF-Specific Business Logic
 
@@ -108,10 +109,11 @@ Format: `YYYY-MM-DD - Branch - Amount.jpg`
 - All required fields present
 ```
 
-### Gmail SMTP Security
-- App Passwords: Dedicated password for SMTP (not main account password)
-- TLS Encryption: Port 587 with STARTTLS
-- Rate Limiting: Gmail's 500 emails/day limit (sufficient for association)
+### SMTP Security
+- Secure Authentication: TLS/SSL encryption for all SMTP connections
+- Port Configuration: Port 587 (TLS) or 465 (SSL) recommended
+- Provider-Specific: Gmail requires app passwords, Outlook uses standard passwords
+- Rate Limiting: Varies by provider (Gmail: 500/day, typically sufficient for associations)
 - Error Handling: Specific error messages for auth failures vs connection issues
 
 ## Common Issues & Solutions
@@ -122,10 +124,11 @@ Format: `YYYY-MM-DD - Branch - Amount.jpg`
 - User context undefined: Ensure ClerkProvider wraps the app in `layout.tsx`
 
 ### Email Sending Issues
-- "Configuration SMTP invalide": Verify Gmail app password and 2FA enabled
-- "Invalid login": Regenerate Gmail app password (16-character format)
-- "Erreur de connexion SMTP": Check Gmail account isn't blocked/suspended
-- Large attachments: Gmail SMTP supports up to 25MB (photos are typically <5MB)
+- "Configuration SMTP invalide": Verify SMTP host, port, credentials are correct
+- "Invalid login": Check SMTP username and password (Gmail needs app password)
+- "Erreur de connexion SMTP": Verify SMTP server is accessible and credentials are valid
+- Large attachments: Most SMTP servers support up to 25MB (photos are typically <5MB)
+- Provider-specific: Gmail requires app passwords with 2FA, Outlook uses standard passwords
 
 ### Mobile Camera Issues
 - No camera access: Ensure HTTPS in production (required for `getUserMedia`)
@@ -142,7 +145,7 @@ Format: `YYYY-MM-DD - Branch - Amount.jpg`
 
 ### Vercel Configuration
 - Runtime: Node.js (not static export)
-- Environment Variables: Copy all from `.env.local` to Vercel dashboard
+- Environment Variables: Copy all from `.env.local` to Vercel dashboard (10+ variables)
 - Build Command: `pnpm build` (includes API routes)
 - Security Headers: Configured in `vercel.json`
 
@@ -151,6 +154,7 @@ Format: `YYYY-MM-DD - Branch - Amount.jpg`
 - Production: Environment variables set in hosting platform
 - HTTPS Required: Camera access needs secure context
 - Domain Configuration: Update Clerk dashboard with production domain
+- SMTP Testing: Test with your chosen provider before deploying
 
 ## Code Patterns & Conventions
 

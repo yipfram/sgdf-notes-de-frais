@@ -6,8 +6,8 @@ import { sendExpenseEmail, type EmailData } from '@/lib/email'
 const jsonError = (message: string, status: number) => NextResponse.json({ error: message }, { status })
 
 function validateEnv() {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD || !process.env.TREASURY_EMAIL) {
-    console.error('Variables d\'environnement manquantes pour Gmail SMTP')
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD || !process.env.TREASURY_EMAIL) {
+    console.error('Variables d\'environnement manquantes pour SMTP')
     return jsonError('Configuration serveur manquante', 500)
   }
   return null
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     console.error('Erreur lors de l\'envoi de l\'email:', error)
     if (error instanceof Error) {
       if (error.message.startsWith('INVALID_IMAGE:')) return jsonError('Image invalide ou corrompue. Veuillez reprendre la photo/import.', 400)
-      if (error.message.includes('Invalid login')) return jsonError('Erreur d\'authentification Gmail. Vérifiez le mot de passe d\'application.', 500)
+      if (error.message.includes('Invalid login')) return jsonError('Erreur d\'authentification SMTP. Vérifiez les identifiants.', 500)
       if (error.message.includes('SMTP')) return jsonError('Erreur de connexion SMTP. Vérifiez la configuration.', 500)
     }
     return jsonError('Erreur interne du serveur', 500)
