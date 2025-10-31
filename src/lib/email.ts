@@ -88,6 +88,31 @@ export const sendExpenseEmail = async (data: EmailData) => {
     throw e
   }
 
+  const defaultFromName = process.env.SMTP_FROM_NAME || 'Factures carte procurement SGDF'
+  const fromRaw = process.env.SMTP_FROM?.trim()
+  const fallbackAddress = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER
+
+  if (!fromRaw && !fallbackAddress) {
+    throw new Error('SMTP_FROM_UNDEFINED')
+  }
+
+  const from = (() => {
+    if (fromRaw) {
+      // Allow full "Name <email>" syntax or simple email override
+      if (fromRaw.includes('<') || fromRaw.includes('>')) {
+        return fromRaw
+      }
+      return {
+        name: defaultFromName,
+        address: fromRaw,
+      }
+    }
+    return {
+      name: defaultFromName,
+      address: fallbackAddress!,
+    }
+  })()
+
   const subject = `Facture carte procurement - ${branch} - ${date}`
   const primaryColor = getBranchColor(branch)
   // Accent: If the primary color is a warm tone, keep gold, else use a light variant
@@ -163,10 +188,7 @@ Email envoyé automatiquement par l'application Factures carte procurement SGDF.
   `
 
   const mailOptions = {
-    from: {
-      name: process.env.SMTP_FROM_NAME || 'Factures carte procurement SGDF',
-      address: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER!
-    },
+    from,
     to: process.env.TREASURY_EMAIL!,
     cc: userEmail,
     subject,

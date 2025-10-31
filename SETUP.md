@@ -304,12 +304,19 @@ Pour chaque variable ci-dessous :
 
 **Variables optionnelles (pour personnalisation) :**
 
+##### SMTP_FROM (optionnel mais recommandé si votre fournisseur impose un user technique)
+- **Valeur** : Adresse email complète ou format `Nom <email>` utilisé comme expéditeur
+- Indispensable pour des fournisseurs comme Resend où `SMTP_USER = resend`
+- Si non définie : l'application retombera sur SMTP_FROM_EMAIL puis SMTP_USER
+
 ##### SMTP_FROM_NAME (optionnel)
 - **Valeur** : Nom affiché comme expéditeur (ex: `Factures SGDF La Guillotière`)
+- Utilisé uniquement si `SMTP_FROM` ne contient pas déjà un nom
 - Si non définie : utilise `Factures carte procurement SGDF`
 
 ##### SMTP_FROM_EMAIL (optionnel)
 - **Valeur** : Email affiché comme expéditeur
+- Sert de solution de repli si `SMTP_FROM` n'est pas défini
 - Si non définie : utilise SMTP_USER
 
 #### 4.3 Vérification
@@ -417,8 +424,9 @@ SMTP_PASSWORD=votre-mot-de-passe            # Mot de passe d'application pour Gm
 TREASURY_EMAIL=tresorerie@example.com
 
 # Optionnel
+SMTP_FROM=noreply@example.com              # Requis pour Resend ou si SMTP_USER n'est pas une adresse
 SMTP_FROM_NAME=Factures SGDF
-SMTP_FROM_EMAIL=noreply@example.com
+SMTP_FROM_EMAIL=noreply@example.com        # Reste utile comme repli si SMTP_FROM absent
 ```
 
 **Pour Gmail :** Activez la 2FA et générez un mot de passe d'application (Google Account → Security → App passwords)

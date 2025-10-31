@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
     console.error('Erreur lors de l\'envoi de l\'email:', error)
     if (error instanceof Error) {
       if (error.message.startsWith('INVALID_IMAGE:')) return jsonError('Image invalide ou corrompue. Veuillez reprendre la photo/import.', 400)
+      if (error.message === 'SMTP_FROM_UNDEFINED') return jsonError('Expéditeur SMTP manquant. Définissez SMTP_FROM ou SMTP_FROM_EMAIL.', 500)
       if (error.message.includes('Invalid login')) return jsonError('Erreur d\'authentification SMTP. Vérifiez les identifiants.', 500)
       if (error.message.includes('SMTP')) return jsonError('Erreur de connexion SMTP. Vérifiez la configuration.', 500)
     }
