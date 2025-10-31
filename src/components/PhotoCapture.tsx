@@ -92,6 +92,7 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [compressedInfo, setCompressedInfo] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileBrowseInputRef = useRef<HTMLInputElement>(null)
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -126,6 +127,12 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
     }
   }
 
+  const handleFileBrowse = () => {
+    if (fileBrowseInputRef.current) {
+      fileBrowseInputRef.current.click()
+    }
+  }
+
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
@@ -141,7 +148,7 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
           <span className="text-sm font-medium">Prendre photo</span>
         </button>
         <button
-          onClick={handleCameraCapture}
+          onClick={handleFileBrowse}
           className="flex flex-col items-center p-4 bg-white text-zinc-900 rounded-lg border border-zinc-200 hover:bg-zinc-100 transition-colors"
         >
           <ArrowUpOnSquareIcon className="w-6 h-6 mb-2 text-zinc-700" aria-hidden="true" />
@@ -154,6 +161,14 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
         type="file"
         accept="image/*"
         capture="environment"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+
+      <input
+        ref={fileBrowseInputRef}
+        type="file"
+        accept="image/*"
         onChange={handleFileSelect}
         className="hidden"
       />
