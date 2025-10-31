@@ -1,19 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createEmailTransporter } from '@/lib/email'
 import { ALL_BRANCHES } from '@/lib/branches'
-
-const SMTP_VERIFY_TIMEOUT_MS = 3000
-
-async function verifySmtpWithTimeout() {
-  const transporter = createEmailTransporter()
-  const verifyPromise = transporter.verify()
-
-  const timeout = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('SMTP_VERIFY_TIMEOUT')), SMTP_VERIFY_TIMEOUT_MS)
-  )
-
-  return Promise.race([verifyPromise, timeout])
-}
 
 export async function GET() {
   const timestamp = new Date().toISOString()
@@ -30,25 +16,8 @@ export async function GET() {
   // Branches check
   const branchesOk = Array.isArray(ALL_BRANCHES) && ALL_BRANCHES.length > 0
 
-  // SMTP check (only if env OK)
-  let smtpOk = false
-  let smtpError: string | null = null
-  if (envOk) {
-    try {
-      // verify may throw; use timeout wrapper
-      // eslint-disable-next-line no-await-in-loop
-      await verifySmtpWithTimeout()
-      smtpOk = true
-    } catch (err) {
-      smtpOk = false
-      smtpError = err instanceof Error ? err.message : String(err)
-      console.error('Health check: SMTP verify failed:', smtpError)
-    }
-  } else {
-    smtpError = 'Skipping SMTP verify because env variables are missing'
-  }
-
-  const allOk = envOk && smtpOk && branchesOk
+  // Overall health: env vars present + branches configured
+  const allOk = envOk && branchesOk
 
   const body = {
     ok: allOk,
@@ -57,12 +26,6 @@ export async function GET() {
     env: {
       ok: envOk,
       missing: missingEnv,
-    },
-    smtp: {
-      ok: smtpOk,
-      // Too sensitive, might contain secrets
-      // error: smtpError,
-      timeoutMs: SMTP_VERIFY_TIMEOUT_MS,
     },
     branches: {
       ok: branchesOk,
