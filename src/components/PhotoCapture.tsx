@@ -109,7 +109,14 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
         return
       }
 
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1080 },
+          height: { ideal: 1920 },
+          aspectRatio: { ideal: 9 / 16 }
+        }
+      })
         .then(s => {
           stream = s
           if (videoRef.current) {
@@ -241,7 +248,7 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
             ref={videoRef}
             autoPlay
             playsInline
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
           <div className="absolute bottom-8 flex gap-6 items-center z-10">
             <button
