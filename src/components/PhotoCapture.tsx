@@ -96,9 +96,10 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
   const fileBrowseInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
-    let stream: MediaStream | null = null
+    let cancelled = false
 
     if (isCameraOpen) {
       // Check if mediaDevices API is available (requires HTTPS on mobile browsers)
@@ -118,21 +119,38 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
         }
       })
         .then(s => {
-          stream = s
+          if (cancelled) {
+            // Modal was closed before stream arrived, stop it immediately
+            s.getTracks().forEach(track => track.stop())
+            return
+          }
+          streamRef.current = s
           if (videoRef.current) {
-            videoRef.current.srcObject = stream
+            videoRef.current.srcObject = s
           }
         })
         .catch(err => {
           console.error('Erreur caméra:', err)
           setErrorMsg("Impossible d'accéder à la caméra. Vérifiez les permissions.")
           setIsCameraOpen(false)
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop())
+            streamRef.current = null
+          }
+          if (videoRef.current) {
+            videoRef.current.srcObject = null
+          }
         })
     }
 
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop())
+      cancelled = true
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+        streamRef.current = null
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null
       }
     }
   }, [isCameraOpen])
