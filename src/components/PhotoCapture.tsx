@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { CameraIcon, ArrowUpOnSquareIcon } from '@heroicons/react/24/outline'
+import { useState, useRef, useEffect } from 'react'
+import { CameraIcon, ArrowUpOnSquareIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 // --- Utilitaires ---
 async function blobToDataUrl(blob: Blob): Promise<string> {
@@ -66,7 +66,7 @@ async function downscaleImage(file: File, maxDim = 1600, quality = 0.75): Promis
   if (!ctx) throw new Error('CANVAS_CONTEXT_FAILED')
   ctx.drawImage(drawSource, 0, 0, targetWidth, targetHeight)
   if ('close' in drawSource && typeof (drawSource as any).close === 'function') {
-    try { (drawSource as any).close() } catch {}
+    try { (drawSource as any).close() } catch { }
   }
 
   return new Promise<Blob>((resolve, reject) => {
@@ -91,17 +91,52 @@ interface PhotoCaptureProps {
 export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [compressedInfo, setCompressedInfo] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isCameraOpen, setIsCameraOpen] = useState(false)
+
   const fileBrowseInputRef = useRef<HTMLInputElement>(null)
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    let stream: MediaStream | null = null
+
+    if (isCameraOpen) {
+      // Check if mediaDevices API is available (requires HTTPS on mobile browsers)
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error('getUserMedia non disponible')
+        setErrorMsg("L'accès à la caméra nécessite une connexion sécurisée (HTTPS). Utilisez 'Importer fichier' à la place.")
+        setIsCameraOpen(false)
+        return
+      }
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(s => {
+          stream = s
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream
+          }
+        })
+        .catch(err => {
+          console.error('Erreur caméra:', err)
+          setErrorMsg("Impossible d'accéder à la caméra. Vérifiez les permissions.")
+          setIsCameraOpen(false)
+        })
+    }
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [isCameraOpen])
+
+  const processFile = async (file: File | Blob) => {
     setErrorMsg(null)
     setCompressedInfo(null)
 
     let processedBlob: Blob
     try {
-      processedBlob = await downscaleImage(file)
+      processedBlob = await downscaleImage(file as File)
       const originalKb = (file.size / 1024).toFixed(0)
       const newKb = (processedBlob.size / 1024).toFixed(0)
       setCompressedInfo(`${originalKb}KB → ${newKb}KB`)
@@ -121,10 +156,36 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
     }
   }
 
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    await processFile(file)
+  }
+
   const handleCameraCapture = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click()
-    }
+    setIsCameraOpen(true)
+  }
+
+  const handleCaptureClick = () => {
+    if (!videoRef.current || !canvasRef.current) return
+
+    const video = videoRef.current
+    const canvas = canvasRef.current
+
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+    canvas.toBlob((blob) => {
+      if (blob) {
+        processFile(blob)
+        setIsCameraOpen(false)
+      }
+    }, 'image/jpeg', 0.9)
   }
 
   const handleFileBrowse = () => {
@@ -157,15 +218,6 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
       </div>
 
       <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={handleFileSelect}
-        className="hidden"
-      />
-
-      <input
         ref={fileBrowseInputRef}
         type="file"
         accept="image/*"
@@ -180,6 +232,34 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
       {errorMsg && (
         <div className="p-3 rounded-md bg-rose-50 border border-rose-200 text-rose-700 text-sm">
           {errorMsg}
+        </div>
+      )}
+
+      {isCameraOpen && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute bottom-8 flex gap-6 items-center z-10">
+            <button
+              onClick={() => setIsCameraOpen(false)}
+              className="p-4 bg-zinc-800 text-white rounded-full hover:bg-zinc-700 transition-colors border border-zinc-600"
+              aria-label="Annuler"
+            >
+              <XMarkIcon className="w-8 h-8" />
+            </button>
+            <button
+              onClick={handleCaptureClick}
+              className="p-5 bg-white text-zinc-900 rounded-full hover:bg-gray-200 transition-colors shadow-lg ring-4 ring-zinc-500/30"
+              aria-label="Prendre la photo"
+            >
+              <CameraIcon className="w-10 h-10" />
+            </button>
+          </div>
+          <canvas ref={canvasRef} className="hidden" />
         </div>
       )}
     </div>
