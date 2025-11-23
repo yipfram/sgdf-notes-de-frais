@@ -66,7 +66,7 @@ async function downscaleImage(file: File, maxDim = 1600, quality = 0.75): Promis
   if (!ctx) throw new Error('CANVAS_CONTEXT_FAILED')
   ctx.drawImage(drawSource, 0, 0, targetWidth, targetHeight)
   if ('close' in drawSource && typeof (drawSource as any).close === 'function') {
-    try { (drawSource as any).close() } catch {}
+    try { (drawSource as any).close() } catch { }
   }
 
   return new Promise<Blob>((resolve, reject) => {
@@ -141,6 +141,7 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
 
       <div className="grid grid-cols-2 gap-3">
         <button
+          type="button"
           onClick={handleCameraCapture}
           className="flex flex-col items-center p-4 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
         >
@@ -148,6 +149,7 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
           <span className="text-sm font-medium">Prendre photo</span>
         </button>
         <button
+          type="button"
           onClick={handleFileBrowse}
           className="flex flex-col items-center p-4 bg-white text-zinc-900 rounded-lg border border-zinc-200 hover:bg-zinc-100 transition-colors"
         >
@@ -160,7 +162,6 @@ export function PhotoCapture({ onImageCapture }: Readonly<PhotoCaptureProps>) {
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={handleFileSelect}
         className="hidden"
       />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { ClipboardDocumentListIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
 
@@ -40,7 +40,23 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
     message: string
   }>({ type: null, message: '' })
 
+  // Load saved data on mount
+  useEffect(() => {
+    const savedData = localStorage.getItem('expenseFormData')
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData)
+        setFormData(prev => ({ ...prev, ...parsed }))
+      } catch (e) {
+        console.error('Failed to parse saved form data', e)
+      }
+    }
+  }, [])
 
+  // Save data on change
+  useEffect(() => {
+    localStorage.setItem('expenseFormData', JSON.stringify(formData))
+  }, [formData])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -75,7 +91,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!capturedImage || !formData.branch || !formData.expenseType || !formData.amount) {
       setSubmitStatus({
         type: 'error',
@@ -118,8 +134,9 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
           branch: prev.branch,
           expenseType: '',
           amount: '',
-            description: ''
+          description: ''
         }))
+        localStorage.removeItem('expenseFormData')
       } else {
         setSubmitStatus({
           type: 'error',
@@ -149,6 +166,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
       amount: '',
       description: ''
     }))
+    localStorage.removeItem('expenseFormData')
     setSubmitStatus({ type: null, message: '' })
     if (onCreateNewNote) onCreateNewNote()
   }
@@ -299,11 +317,10 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
 
       {/* Status messages */}
       {submitStatus.type && (
-        <div className={`p-4 rounded-lg space-y-3 ${
-          submitStatus.type === 'success'
+        <div className={`p-4 rounded-lg space-y-3 ${submitStatus.type === 'success'
             ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
             : 'bg-rose-50 border border-rose-200 text-rose-800'
-        }`}>
+          }`}>
           <p className="text-sm flex items-start gap-2">
             {submitStatus.type === 'success' ? (
               <CheckCircleIcon className="w-5 h-5 flex-none" aria-hidden="true" />
@@ -336,7 +353,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
               • Trésorerie : sgdf.tresolaguillotiere@gmail.com<br />
               • Vous : {userEmail}<br />
               <span className="inline-flex items-center gap-2 font-medium">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 5 17 10"/><line x1="12" x2="12" y1="5" y2="20"/></svg>
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 5 17 10" /><line x1="12" x2="12" y1="5" y2="20" /></svg>
                 Fichier :
               </span> {generateFileName()}
             </p>
@@ -353,11 +370,10 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
         <button
           type="submit"
           disabled={!isFormValid || isSubmitting || !isOnline}
-          className={`w-full p-4 rounded-lg font-semibold text-white transition-colors focus:outline-none ${
-            isFormValid && !isSubmitting && isOnline
+          className={`w-full p-4 rounded-lg font-semibold text-white transition-colors focus:outline-none ${isFormValid && !isSubmitting && isOnline
               ? 'bg-zinc-900 hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-400'
               : 'bg-zinc-300 cursor-not-allowed'
-          }`}
+            }`}
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center">
