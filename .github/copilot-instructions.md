@@ -1,7 +1,7 @@
 # Factures carte procurement SGDF - Developer Instructions
 
 ## Project Overview
-Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. Features Clerk authentication, and server-side email sending via generic SMTP (supports Gmail, Outlook, Office 365, custom servers). **No database** - authentication via Clerk, emails sent directly to recipients.
+Hybrid Next.js 16 expense tracking app for SGDF La Guillotière scouts. Features Clerk authentication, and server-side email sending via generic SMTP (supports Gmail, Outlook, Office 365, custom servers). **No database** - authentication via Clerk, emails sent directly to recipients.
 
 ## Core Architecture
 
@@ -14,7 +14,7 @@ Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. Features
 - `src/lib/email.ts` - Generic SMTP email sending utilities
 - `src/app/api/send-expense/route.ts` - Protected API route for email sending
 ## Project Overview
-Hybrid Next.js 15 expense tracking app for SGDF La Guillotière scouts. The app uses Clerk for authentication and sends invoice emails server-side via generic SMTP. There is no central database: emails are delivered directly to the treasury and the user.
+Hybrid Next.js 16 expense tracking app for SGDF La Guillotière scouts. The app uses Clerk for authentication and sends invoice emails server-side via generic SMTP. There is no central database: emails are delivered directly to the treasury and the user.
 
 ## Core Architecture
 

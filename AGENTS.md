@@ -1,7 +1,7 @@
 # AI Coding Agent Instructions
 
 ## 📚 Repository Overview
-This repository hosts a **Next.js 15** application (App Router) for managing SGDF procurement card invoices. The stack includes:
+This repository hosts a **Next.js 16** application (App Router) for managing SGDF procurement card invoices. The stack includes:
 - **TypeScript**
 - **Tailwind CSS** for styling
 - **Clerk** for authentication
