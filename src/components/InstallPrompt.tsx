@@ -10,25 +10,23 @@ export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [visible, setVisible] = useState(false)
   const [installed, setInstalled] = useState(false)
-  const [isIOS, setIsIOS] = useState(false)
-  const [isStandalone, setIsStandalone] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  
+  // Detect device type and installation status synchronously
+  const ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
+  const isIOS = /iphone|ipad|ipod/i.test(ua)
+  const android = /android/i.test(ua)
+  const isMobile = isIOS || android || /mobile/i.test(ua)
+  const isStandalone = typeof window !== 'undefined' 
+    ? (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator as any).standalone === true
+    : false
 
   useEffect(() => {
-    // Detect iOS (Safari) which doesn't fire beforeinstallprompt
-  const ua = window.navigator.userAgent
-  const iOS = /iphone|ipad|ipod/i.test(ua)
-  const android = /android/i.test(ua)
-  const mobile = iOS || android || /mobile/i.test(ua)
-    const standalone = (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator as any).standalone === true
-    setIsIOS(iOS)
-    setIsStandalone(standalone)
-  setIsMobile(mobile)
+    // Only set up event listeners, don't set state directly
 
     const handler = (e: Event) => {
       e.preventDefault()
       // Only show custom prompt on mobile devices
-      if (mobile) {
+      if (isMobile) {
         setDeferredPrompt(e as BeforeInstallPromptEvent)
         setVisible(true)
       }
@@ -46,7 +44,7 @@ export function InstallPrompt() {
       window.removeEventListener('beforeinstallprompt', handler as any)
       window.removeEventListener('appinstalled', installedHandler)
     }
-  }, [])
+  }, [isMobile])
 
   // iOS manual A2HS instructions when not installed and no deferredPrompt available
   if (isIOS && isMobile && !isStandalone && !installed && !deferredPrompt) {
