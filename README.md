@@ -84,7 +84,7 @@ L'application est une Progressive Web App (PWA) optimisée pour mobile :
 
 ## Technologies utilisées
 
-- **Next.js 15** (App Router)
+- **Next.js 16** (App Router)
 - **TypeScript**
 - **Tailwind CSS**
 - **Clerk** (authentification)
