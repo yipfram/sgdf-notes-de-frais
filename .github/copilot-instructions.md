@@ -75,10 +75,11 @@ cp .env.example .env.local
 
 ## SGDF-Specific Business Logic
 
-### Branch Selection (hardcoded in `ExpenseForm.tsx`)
-```typescript
-const SGDF_BRANCHES = ['Louveteaux', 'Jeannettes', 'Scouts', 'Guides', 'Pionniers-Caravelles']
-```
+### Branch Selection (centralized in `src/lib/branches.ts`)
+Branches are now centrally defined in `src/lib/branches.ts` with two exports:
+- `BRANCH_COLORS` - Maps branch names to hex color codes for email styling
+- `BRANCHES_BY_AGE` - Ordered array for UI dropdowns (Farfadets → Groupe → Piok Saône → Piok Rhône)
+- `ALL_BRANCHES` - Derived from BRANCH_COLORS keys for validation
 
 ### Filename Convention
 Format: `YYYY-MM-DD - Branch - Amount.jpg`

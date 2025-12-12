@@ -1,5 +1,6 @@
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
+import { ALL_BRANCHES } from '@/lib/branches'
 
 export async function POST(req: Request) {
   try {
@@ -14,18 +15,8 @@ export async function POST(req: Request) {
     }
 
     const branch = body.branch.trim()
-    const ALLOWED = [
-      'Louveteaux',
-      'Jeannettes',
-      'Scouts',
-      'Guides',
-      'Pionniers-Caravelles',
-      'Compagnons',
-      'Farfadets',
-      'Groupe'
-    ]
 
-    if (!ALLOWED.includes(branch)) {
+    if (!ALL_BRANCHES.includes(branch)) {
       return NextResponse.json({ error: 'Valeur de branche invalide' }, { status: 400 })
     }
 

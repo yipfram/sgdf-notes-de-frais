@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { ClipboardDocumentListIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
+import { BRANCHES_BY_AGE } from '@/lib/branches'
 
 interface ExpenseFormProps {
   readonly capturedImage: string | null
@@ -12,17 +13,6 @@ interface ExpenseFormProps {
   readonly onCreateNewNote?: () => void
   readonly onBranchChange?: (branch: string) => void
 }
-
-const SGDF_BRANCHES = [
-  'Farfadets',
-  'Louveteaux',
-  'Jeannettes',
-  'Scouts',
-  'Guides',
-  'Pionniers-Caravelles',
-  'Compagnons',
-  'Groupe'
-]
 
 export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, isOnline = true }: ExpenseFormProps & { isOnline?: boolean }) {
   const [formData, setFormData] = useState({
@@ -234,7 +224,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
           required
         >
           <option value="">Sélectionner une branche</option>
-          {SGDF_BRANCHES.map(branch => (
+          {BRANCHES_BY_AGE.map(branch => (
             <option key={branch} value={branch}>
               {branch}
             </option>
