@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { ClipboardDocumentListIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
 import { BRANCHES_BY_AGE } from '@/lib/branches'
@@ -23,6 +23,16 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
     description: ''
   })
   const [branchPersistStatus, setBranchPersistStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+
+  // Sync initialBranch prop when Clerk metadata loads (after initial render)
+  useEffect(() => {
+    if (initialBranch !== formData.branch) {
+      // Allow clearing when metadata is empty; avoid overriding user input once they changed it
+      if (!formData.branch || initialBranch === '') {
+        setFormData(prev => ({ ...prev, branch: initialBranch }))
+      }
+    }
+  }, [initialBranch, formData.branch])
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<{

@@ -11,16 +11,28 @@ import Image from 'next/image'
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser()
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
-  const initialBranch = (user?.publicMetadata?.branch as string) || ''
-  const [activeBranch, setActiveBranch] = useState<string>(initialBranch)
+  const [activeBranch, setActiveBranch] = useState<string>('')
   const isOnline = useOnlineStatus()
 
   // Update activeBranch when user metadata loads
   useEffect(() => {
     if (user?.publicMetadata?.branch) {
       setActiveBranch(user.publicMetadata.branch as string)
+    } else {
+      setActiveBranch('')
     }
   }, [user?.publicMetadata?.branch])
+
+  // Force-refresh Clerk user to avoid stale metadata (e.g., cleared branch)
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return
+    user?.reload?.()
+      .then(() => {
+        const next = (user?.publicMetadata?.branch as string) || ''
+        setActiveBranch(next)
+      })
+      .catch((err) => console.error('Erreur de rafraîchissement Clerk', err))
+  }, [isLoaded, isSignedIn, user])
 
   // Afficher un loader pendant le chargement de l'état d'authentification
   if (!isLoaded) {
@@ -98,7 +110,7 @@ export default function Home() {
           <ExpenseForm
             capturedImage={capturedImage}
             userEmail={user?.emailAddresses[0]?.emailAddress || ''}
-            initialBranch={initialBranch}
+            initialBranch={activeBranch}
             onCreateNewNote={() => {
               setCapturedImage(null)
             }}
@@ -113,6 +125,8 @@ export default function Home() {
                   const data = await res.json().catch(() => ({}))
                   throw new Error(data.error || 'Erreur API')
                 }
+                await user?.reload()
+                setActiveBranch(branch)
               } catch (e) {
                 console.error('Erreur de sauvegarde de la branche dans Clerk', e)
               }
