@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer'
 import { getBranchColor } from './branches'
+import { isAllowedAttachmentMimeType, type ExpenseAttachment } from './attachments'
 
 export interface EmailData {
   userEmail: string
@@ -8,8 +9,7 @@ export interface EmailData {
   expenseType: string
   amount: string
   description?: string
-  imageBase64: string
-  fileName: string
+  attachments: ExpenseAttachment[]
 }
 
 // Configuration du transporteur SMTP générique
@@ -38,22 +38,22 @@ export const sendExpenseEmail = async (data: EmailData) => {
     throw new Error('Configuration SMTP invalide')
   }
 
-  const { userEmail, date, branch, expenseType, amount, description, imageBase64, fileName } = data
+  const { userEmail, date, branch, expenseType, amount, description, attachments } = data
 
   // Helper pour extraire le buffer depuis une data URL ou une chaîne base64 brute
-  const extractImageBuffer = (input: string) => {
-    if (!input) {
-      throw new Error('IMAGE_MISSING')
+  const extractAttachmentBuffer = (input: string, mimeType: string) => {
+    if (!input || !mimeType) {
+      throw new Error('ATTACHMENT_MISSING')
     }
 
-    let mime = 'image/jpeg'
+    let mime = mimeType
     let base64Part = input
 
-    // Format attendu: data:image/<type>;base64,<data>
+    // Format attendu: data:<type>;base64,<data>
     if (input.startsWith('data:')) {
-      const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.*)$/.exec(input)
+      const match = /^data:([a-zA-Z0-9.+/-]+);base64,(.*)$/.exec(input)
       if (!match || match.length < 3) {
-        throw new Error('IMAGE_DATA_URL_INVALID')
+        throw new Error('ATTACHMENT_DATA_URL_INVALID')
       }
       mime = match[1]
       base64Part = match[2]
@@ -62,31 +62,40 @@ export const sendExpenseEmail = async (data: EmailData) => {
       base64Part = input.split(',').pop() as string
     } else if (!/^[A-Za-z0-9+/=\r\n]+$/.test(input)) {
       // Vérification minimale que la chaîne ressemble à du base64
-      throw new Error('IMAGE_NOT_BASE64')
+      throw new Error('ATTACHMENT_NOT_BASE64')
+    }
+
+    if (!isAllowedAttachmentMimeType(mime)) {
+      throw new Error('ATTACHMENT_MIME_NOT_ALLOWED')
     }
 
     try {
       const buffer = Buffer.from(base64Part, 'base64')
       if (buffer.length === 0) {
-        throw new Error('IMAGE_EMPTY_BUFFER')
+        throw new Error('ATTACHMENT_EMPTY_BUFFER')
       }
       return { buffer, mime }
     } catch (e) {
-      console.error('Erreur conversion buffer image:', e)
-      throw new Error('IMAGE_BUFFER_CONVERSION_FAILED')
+      console.error('Erreur conversion buffer pièce jointe:', e)
+      throw new Error('ATTACHMENT_BUFFER_CONVERSION_FAILED')
     }
   }
 
-  let imageInfo: { buffer: Buffer; mime: string }
-  try {
-    imageInfo = extractImageBuffer(imageBase64)
-  } catch (e) {
-    if (e instanceof Error && e.message.startsWith('IMAGE_')) {
-      // Relever une erreur claire pour la route API afin de retourner 400
-      throw new Error(`INVALID_IMAGE:${e.message}`)
+  const parsedAttachments = attachments.map((attachment) => {
+    try {
+      const info = extractAttachmentBuffer(attachment.base64Data, attachment.mimeType)
+      return {
+        filename: attachment.normalizedFileName || attachment.displayName || attachment.originalFileName,
+        content: info.buffer,
+        contentType: info.mime
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message.startsWith('ATTACHMENT_')) {
+        throw new Error(`INVALID_ATTACHMENT:${e.message}`)
+      }
+      throw e
     }
-    throw e
-  }
+  })
 
   const defaultFromName = process.env.SMTP_FROM_NAME || 'Factures carte procurement SGDF'
   const fromRaw = process.env.SMTP_FROM?.trim()
@@ -160,7 +169,10 @@ export const sendExpenseEmail = async (data: EmailData) => {
         </div>
         
         <div style="background-color: ${accentColor}; color: ${primaryColor}; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <strong>📎 Justificatif en pièce jointe :</strong> ${fileName}
+          <strong>📎 ${parsedAttachments.length} pièce(s) jointe(s) :</strong>
+          <ul style="margin: 8px 0 0 18px; padding: 0;">
+            ${parsedAttachments.map(a => `<li>${a.filename}</li>`).join('')}
+          </ul>
         </div>
         
         <p style="color: #6B7280; font-size: 14px; margin-top: 30px;">
@@ -182,7 +194,8 @@ Montant : ${amount} €
 Demandeur : ${userEmail}
 ${description ? `Description : ${description}` : ''}
 
-Justificatif en pièce jointe : ${fileName}
+Pièce(s) jointe(s) (${parsedAttachments.length}) :
+${parsedAttachments.map(a => `- ${a.filename}`).join('\n')}
 
 Email envoyé automatiquement par l'application Factures carte procurement SGDF.
   `
@@ -201,13 +214,7 @@ Email envoyé automatiquement par l'application Factures carte procurement SGDF.
       'X-Priority': '1 (Highest)',
       'X-MSMail-Priority': 'High'
     },
-    attachments: [
-      {
-        filename: fileName,
-        content: imageInfo.buffer,
-        contentType: imageInfo.mime || 'image/jpeg'
-      }
-    ]
+    attachments: parsedAttachments
   }
 
   try {
