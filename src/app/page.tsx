@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useUser, UserButton, SignInButton } from '@clerk/nextjs'
+import { useUser, UserButton } from '@clerk/nextjs'
 import { ExpenseForm } from '@/components/ExpenseForm'
 import { PhotoCapture } from '@/components/PhotoCapture'
 import { useOnlineStatus } from '@/lib/useOnlineStatus'
 import { InstallPrompt } from '@/components/InstallPrompt'
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser()
@@ -22,17 +23,6 @@ export default function Home() {
       setActiveBranch('')
     }
   }, [user?.publicMetadata?.branch])
-
-  // Force-refresh Clerk user to avoid stale metadata (e.g., cleared branch)
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn) return
-    user?.reload?.()
-      .then(() => {
-        const next = (user?.publicMetadata?.branch as string) || ''
-        setActiveBranch(next)
-      })
-      .catch((err) => console.error('Erreur de rafraîchissement Clerk', err))
-  }, [isLoaded, isSignedIn, user])
 
   // Afficher un loader pendant le chargement de l'état d'authentification
   if (!isLoaded) {
@@ -61,11 +51,12 @@ export default function Home() {
             <p className="text-zinc-600 mb-6">
               Connectez-vous pour accéder à l&apos;application de gestion des factures carte procurement.
             </p>
-            <SignInButton mode="modal">
-              <button className="w-full bg-zinc-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors">
-                Se connecter
-              </button>
-            </SignInButton>
+            <Link
+              href="/sign-in"
+              className="inline-flex w-full items-center justify-center bg-zinc-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
+            >
+              Se connecter
+            </Link>
           </div>
         </div>
       </main>
@@ -109,7 +100,7 @@ export default function Home() {
 
           <ExpenseForm
             capturedImage={capturedImage}
-            userEmail={user?.emailAddresses[0]?.emailAddress || ''}
+            userEmail={user?.primaryEmailAddress?.emailAddress || user?.emailAddresses[0]?.emailAddress || ''}
             initialBranch={activeBranch}
             onCreateNewNote={() => {
               setCapturedImage(null)
