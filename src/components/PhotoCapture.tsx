@@ -127,6 +127,7 @@ export function PhotoCapture({ onAttachmentsAdd, currentCount }: Readonly<PhotoC
     }
 
     const createdAttachments: ExpenseAttachment[] = []
+    const compressionMessages: string[] = []
 
     for (const file of candidates) {
       if (!isAllowedAttachmentMimeType(file.type)) {
@@ -145,7 +146,7 @@ export function PhotoCapture({ onAttachmentsAdd, currentCount }: Readonly<PhotoC
           const originalKb = (file.size / 1024).toFixed(0)
           const newKb = (processedBlob.size / 1024).toFixed(0)
           if (originalKb !== newKb) {
-            setCompressedInfo(`${originalKb}KB → ${newKb}KB`)
+            compressionMessages.push(`${file.name}: ${originalKb}KB → ${newKb}KB`)
           }
         }
 
@@ -172,14 +173,21 @@ export function PhotoCapture({ onAttachmentsAdd, currentCount }: Readonly<PhotoC
       nextErrors.push('Impossible de traiter la photo capturée.')
     }
 
+    if (compressionMessages.length > 0) {
+      setCompressedInfo(compressionMessages.join(' | '))
+    }
+
     setErrorMessages(nextErrors)
   }
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (!files) return
-    await processFiles(files, event.target === fileInputRef.current)
-    event.target.value = ''
+    try {
+      await processFiles(files, event.target === fileInputRef.current)
+    } finally {
+      event.target.value = ''
+    }
   }
 
   const handleCameraCapture = () => {

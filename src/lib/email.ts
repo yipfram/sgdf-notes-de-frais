@@ -58,9 +58,13 @@ export const sendExpenseEmail = async (data: EmailData) => {
       mime = match[1]
       base64Part = match[2]
     } else if (input.includes(',')) {
-      // Cas dégradé: on tente de prendre après la dernière virgule
-      base64Part = input.split(',').pop() as string
-    } else if (!/^[A-Za-z0-9+/=\r\n]+$/.test(input)) {
+      // Cas dégradé: on prend tout après la première virgule
+      const commaIndex = input.indexOf(',')
+      base64Part = commaIndex >= 0 ? input.slice(commaIndex + 1) : input
+    }
+
+    base64Part = base64Part.replace(/\s+/g, '')
+    if (!/^[A-Za-z0-9+/=]+$/.test(base64Part)) {
       // Vérification minimale que la chaîne ressemble à du base64
       throw new Error('ATTACHMENT_NOT_BASE64')
     }
@@ -96,6 +100,12 @@ export const sendExpenseEmail = async (data: EmailData) => {
       throw e
     }
   })
+  const escapeHtml = (value: string) => value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
 
   const defaultFromName = process.env.SMTP_FROM_NAME || 'Factures carte procurement SGDF'
   const fromRaw = process.env.SMTP_FROM?.trim()
@@ -171,7 +181,7 @@ export const sendExpenseEmail = async (data: EmailData) => {
         <div style="background-color: ${accentColor}; color: ${primaryColor}; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <strong>📎 ${parsedAttachments.length} pièce(s) jointe(s) :</strong>
           <ul style="margin: 8px 0 0 18px; padding: 0;">
-            ${parsedAttachments.map(a => `<li>${a.filename}</li>`).join('')}
+            ${parsedAttachments.map(a => `<li>${escapeHtml(a.filename)}</li>`).join('')}
           </ul>
         </div>
         

@@ -376,7 +376,7 @@ Vérifiez :
 Vous devriez avoir reçu un email avec :
 - Les détails de la facture
 - Une ou plusieurs pièces jointes
-- Des noms de fichiers formatés : `YYYY-MM-DD - Branche - Type - Montant - 01.pdf` (ou `.jpg/.png/.webp`)
+- Des noms de fichiers formatés : `YYYY-MM-DD - Branche - Type - Montant.pdf` (un seul fichier) ou `YYYY-MM-DD - Branche - Type - Montant - 01.pdf` (plusieurs fichiers)
 
 #### 5.5 Installation sur mobile (optionnel)
 
