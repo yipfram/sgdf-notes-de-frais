@@ -2,19 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { ClipboardDocumentListIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusCircleIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
+import { ClipboardDocumentListIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusCircleIcon, PaperAirplaneIcon, DocumentTextIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { BRANCHES_BY_AGE } from '@/lib/branches'
+import { buildNormalizedFileNames, type ExpenseAttachment } from '@/lib/attachments'
 
 interface ExpenseFormProps {
-  readonly capturedImage: string | null
+  readonly attachments: ExpenseAttachment[]
   readonly userEmail: string
   readonly initialBranch?: string // From Clerk public metadata
   readonly onPersistBranch?: (branch: string) => Promise<void> | void
   readonly onCreateNewNote?: () => void
   readonly onBranchChange?: (branch: string) => void
+  readonly onRemoveAttachment?: (index: number) => void
 }
 
-export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, isOnline = true }: ExpenseFormProps & { isOnline?: boolean }) {
+export function ExpenseForm({ attachments, userEmail, initialBranch = '', onPersistBranch, onCreateNewNote, onBranchChange, onRemoveAttachment, isOnline = true }: ExpenseFormProps & { isOnline?: boolean }) {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     branch: initialBranch || '',
@@ -66,20 +68,26 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
     return amount.replace(',', '.')
   }
 
-  const generateFileName = () => {
-    const { date, branch, amount, expenseType } = formData
-    const formattedAmount = formatAmount(amount)
-    const typeShort = expenseType ? expenseType.replace(/\s+/g, ' ').trim() : ''
-    return `${date} - ${branch}${typeShort ? ' - ' + typeShort : ''} - ${formattedAmount}.jpg`
+  const generateFileNames = () => {
+    if (attachments.length === 0) return []
+    return buildNormalizedFileNames(
+      attachments,
+      {
+        date: formData.date,
+        branch: formData.branch,
+        expenseType: formData.expenseType,
+        amount: formatAmount(formData.amount)
+      }
+    )
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!capturedImage || !formData.branch || !formData.expenseType || !formData.amount) {
+    if (attachments.length === 0 || !formData.branch || !formData.expenseType || !formData.amount) {
       setSubmitStatus({
         type: 'error',
-        message: 'Veuillez remplir tous les champs obligatoires et capturer une image.'
+        message: 'Veuillez remplir tous les champs obligatoires et ajouter au moins un justificatif.'
       })
       return
     }
@@ -88,6 +96,12 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
     setSubmitStatus({ type: null, message: '' })
 
     try {
+      const normalizedFileNames = generateFileNames()
+      const payloadAttachments = attachments.map((attachment, index) => ({
+        ...attachment,
+        normalizedFileName: normalizedFileNames[index] || attachment.normalizedFileName || attachment.originalFileName
+      }))
+
       const response = await fetch('/api/send-expense', {
         method: 'POST',
         headers: {
@@ -100,8 +114,7 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
           expenseType: formData.expenseType,
           amount: formatAmount(formData.amount),
           description: formData.description,
-          imageBase64: capturedImage,
-          fileName: generateFileName()
+          attachments: payloadAttachments
         })
       })
 
@@ -138,17 +151,18 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
   }
 
   // Validation complète (inclut type de dépense)
-  const isFormValid = capturedImage && formData.branch && formData.expenseType && formData.amount
+  const isFormValid = attachments.length > 0 && formData.branch && formData.expenseType && formData.amount
+  const previewFileNames = isFormValid ? generateFileNames() : []
 
   const handleNewNote = () => {
     // Clear form (keep branch), clear status, notify parent to reset image & OCR amount
-    setFormData(prev => ({
-      date: new Date().toISOString().split('T')[0],
-      branch: prev.branch,
-      expenseType: '',
-      amount: '',
-      description: ''
-    }))
+        setFormData(prev => ({
+          date: new Date().toISOString().split('T')[0],
+          branch: prev.branch,
+          expenseType: '',
+          amount: '',
+          description: ''
+        }))
     setSubmitStatus({ type: null, message: '' })
     if (onCreateNewNote) onCreateNewNote()
   }
@@ -160,19 +174,47 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
         Informations de la dépense
       </h2>
 
-      {capturedImage && (
+      {attachments.length > 0 && (
         <div className="space-y-2">
-          <label htmlFor="image-preview" className="block text-sm font-medium text-zinc-700">
-            Aperçu du justificatif
+          <label className="block text-sm font-medium text-zinc-700">
+            Justificatifs ({attachments.length})
           </label>
-          <Image
-            id="image-preview"
-            src={capturedImage}
-            alt="Justificatif"
-            width={500}
-            height={200}
-            className="w-full h-48 object-cover rounded-lg border border-zinc-200"
-          />
+          <div className="space-y-2">
+            {attachments.map((attachment, index) => {
+              const isImage = attachment.mimeType.startsWith('image/')
+              return (
+                <div key={`${attachment.displayName}-${index}`} className="flex items-center gap-3 p-3 rounded-lg border border-zinc-200 bg-zinc-50">
+                  {isImage ? (
+                    <Image
+                      src={`data:${attachment.mimeType};base64,${attachment.base64Data}`}
+                      alt={attachment.displayName}
+                      width={56}
+                      height={56}
+                      className="w-14 h-14 object-cover rounded-md border border-zinc-200"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-md border border-zinc-200 bg-white flex items-center justify-center">
+                      <DocumentTextIcon className="w-8 h-8 text-zinc-500" aria-hidden="true" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-zinc-900 truncate font-medium">{attachment.displayName}</p>
+                    <p className="text-xs text-zinc-500">{attachment.mimeType === 'application/pdf' ? 'PDF' : 'Image'}</p>
+                  </div>
+                  {onRemoveAttachment && (
+                    <button
+                      type="button"
+                      onClick={() => onRemoveAttachment(index)}
+                      className="p-2 rounded-md text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors"
+                      aria-label={`Supprimer ${attachment.displayName}`}
+                    >
+                      <TrashIcon className="w-5 h-5" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
 
@@ -335,12 +377,16 @@ export function ExpenseForm({ capturedImage, userEmail, initialBranch = '', onPe
               </span><br />
               • Trésorerie : sgdf.tresolaguillotiere@gmail.com<br />
               • Vous : {userEmail}<br />
-              <span className="inline-flex items-center gap-2 font-medium">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 5 17 10"/><line x1="12" x2="12" y1="5" y2="20"/></svg>
-                Fichier :
-              </span> {generateFileName()}
-            </p>
-          </div>
+               <span className="inline-flex items-center gap-2 font-medium">
+                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 5 17 10"/><line x1="12" x2="12" y1="5" y2="20"/></svg>
+                 Pièce(s) jointe(s) :
+               </span>
+               <br />
+               {previewFileNames.map(name => (
+                 <span key={name}>• {name}<br /></span>
+               ))}
+             </p>
+           </div>
         )}
 
         {!isOnline && (

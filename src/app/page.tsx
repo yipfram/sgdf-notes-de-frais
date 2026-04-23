@@ -6,12 +6,13 @@ import { ExpenseForm } from '@/components/ExpenseForm'
 import { PhotoCapture } from '@/components/PhotoCapture'
 import { useOnlineStatus } from '@/lib/useOnlineStatus'
 import { InstallPrompt } from '@/components/InstallPrompt'
+import { MAX_ATTACHMENT_COUNT, type ExpenseAttachment } from '@/lib/attachments'
 import Image from 'next/image'
 import Link from 'next/link'
 
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser()
-  const [capturedImage, setCapturedImage] = useState<string | null>(null)
+  const [attachments, setAttachments] = useState<ExpenseAttachment[]>([])
   const [activeBranch, setActiveBranch] = useState<string>('')
   const isOnline = useOnlineStatus()
 
@@ -95,15 +96,21 @@ export default function Home() {
 
         <div className="p-6 space-y-6">
           <PhotoCapture
-            onImageCapture={setCapturedImage}
+            onAttachmentsAdd={(newAttachments) => {
+              setAttachments(prev => [...prev, ...newAttachments].slice(0, MAX_ATTACHMENT_COUNT))
+            }}
+            currentCount={attachments.length}
           />
 
           <ExpenseForm
-            capturedImage={capturedImage}
-            userEmail={user?.primaryEmailAddress?.emailAddress || user?.emailAddresses[0]?.emailAddress || ''}
+            attachments={attachments}
+            userEmail={user?.emailAddresses[0]?.emailAddress || ''}
             initialBranch={activeBranch}
             onCreateNewNote={() => {
-              setCapturedImage(null)
+              setAttachments([])
+            }}
+            onRemoveAttachment={(index) => {
+              setAttachments(prev => prev.filter((_, i) => i !== index))
             }}
             onPersistBranch={async (branch: string) => {
               try {

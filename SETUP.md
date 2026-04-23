@@ -20,9 +20,9 @@ Ce guide explique **pas à pas** comment installer et déployer l'application, q
 ## Vue d'ensemble
 
 L'application permet aux membres de votre groupe SGDF de :
-- Prendre en photo leurs justificatifs de dépenses
+- Prendre en photo ou importer leurs justificatifs de dépenses (images ou PDF)
 - Remplir un formulaire simple (date, montant, branche, description)
-- Envoyer automatiquement un email à la trésorerie avec le justificatif en pièce jointe
+- Envoyer automatiquement un email à la trésorerie avec un ou plusieurs justificatifs en pièce jointe
 
 **Aucune donnée n'est stockée sur un serveur**, tout passe par des emails sécurisés.
 
@@ -361,8 +361,8 @@ Clerk détecte automatiquement que c'est un domaine Vercel.
 
 #### 5.3 Tester l'envoi d'une facture
 
-1. Cliquez sur **"Capturer une photo"** ou **"Importer"**
-2. Choisissez une image de test
+1. Cliquez sur **"Prendre photo"** ou **"Importer fichier"**
+2. Choisissez un ou plusieurs justificatifs de test (image(s) et/ou PDF)
 3. Remplissez le formulaire (date, branche, type, montant, description)
 4. Cliquez sur **"Envoyer la facture"**
 5. Vous devriez voir un message de confirmation ✅
@@ -375,8 +375,8 @@ Vérifiez :
 
 Vous devriez avoir reçu un email avec :
 - Les détails de la facture
-- La photo en pièce jointe
-- Un nom de fichier formaté : `YYYY-MM-DD - Branche - Type - Montant.jpg`
+- Une ou plusieurs pièces jointes
+- Des noms de fichiers formatés : `YYYY-MM-DD - Branche - Type - Montant - 01.pdf` (ou `.jpg/.png/.webp`)
 
 #### 5.5 Installation sur mobile (optionnel)
 
@@ -473,14 +473,21 @@ pnpm start
 ## 📧 Fonctionnement de l'envoi d'email
 
 1. L'utilisateur se connecte via Clerk
-2. L'utilisateur capture ou importe une photo du justificatif
+2. L'utilisateur capture ou importe un/des justificatif(s) (images/PDF)
 3. L'utilisateur complète manuellement la date, le type, le montant, la branche et la description
-4. Le frontend envoie les données et l'image en base64 à l'API route `/api/send-expense`
+4. Le frontend envoie les données et les pièces jointes (base64) à l'API route `/api/send-expense`
 5. Le serveur valide les données, construit l'email et envoie via Gmail SMTP à :
    - Trésorerie (`TREASURY_EMAIL`)
    - Utilisateur (email Clerk)
 
-L'email contient un HTML lisible, un fallback texte et la photo en pièce jointe avec un nom formatté `YYYY-MM-DD - Branche - Montant.jpg`.
+L'email contient un HTML lisible, un fallback texte et les pièces jointes avec des noms formatés `YYYY-MM-DD - Branche - Type - Montant - 01.ext`.
+
+### Limites des pièces jointes
+
+- Types supportés : JPG, PNG, WEBP, PDF
+- Nombre maximum : 6 pièces jointes
+- Taille maximum par fichier : 8 MB
+- Taille totale maximum : 20 MB
 
 ## 🔒 Sécurité
 
