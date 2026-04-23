@@ -152,12 +152,28 @@ export function ExpenseForm({ attachments, userEmail, initialBranch = '', onPers
         const isPayloadTooLarge =
           response.status === 413 ||
           /payload too large|request entity too large|function_payload_too_large/i.test(responseText)
+        const isValidationError = response.status === 400
+        const isAuthError = response.status === 401 || response.status === 403
+        const isRateLimited = response.status === 429
+        const isServerError = response.status >= 500
+
+        let errorMessage = resultError || 'Erreur lors de l\'envoi de l\'email'
+
+        if (isPayloadTooLarge) {
+          errorMessage = `Pièces jointes trop volumineuses. Réduisez la taille ou le nombre de fichiers (max ${MAX_ATTACHMENT_COUNT} fichiers, ${(MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB/fichier, ${(MAX_TOTAL_ATTACHMENTS_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB au total), puis réessayez.`
+        } else if (isAuthError) {
+          errorMessage = 'Session expirée ou accès refusé. Veuillez vous reconnecter puis réessayer.'
+        } else if (isRateLimited) {
+          errorMessage = 'Trop de tentatives. Veuillez patienter quelques minutes puis réessayer.'
+        } else if (isServerError) {
+          errorMessage = 'Erreur serveur temporaire. Veuillez réessayer plus tard.'
+        } else if (isValidationError && !resultError) {
+          errorMessage = 'Données invalides. Vérifiez le formulaire puis réessayez.'
+        }
 
         setSubmitStatus({
           type: 'error',
-          message: isPayloadTooLarge
-            ? `Pièces jointes trop volumineuses pour l'envoi. Réduisez la taille ou le nombre de fichiers (max ${MAX_ATTACHMENT_COUNT} fichiers, ${(MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB par fichier, ${(MAX_TOTAL_ATTACHMENTS_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB au total), puis réessayez.`
-            : resultError || 'Erreur lors de l\'envoi de l\'email'
+          message: errorMessage
         })
       }
     } catch (error) {
