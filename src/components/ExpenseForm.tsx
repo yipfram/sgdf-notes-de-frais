@@ -4,7 +4,13 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { ClipboardDocumentListIcon, CheckCircleIcon, ExclamationTriangleIcon, PlusCircleIcon, PaperAirplaneIcon, DocumentTextIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { BRANCHES_BY_AGE } from '@/lib/branches'
-import { buildNormalizedFileNames, type ExpenseAttachment } from '@/lib/attachments'
+import {
+  buildNormalizedFileNames,
+  MAX_ATTACHMENT_COUNT,
+  MAX_ATTACHMENT_SIZE_BYTES,
+  MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
+  type ExpenseAttachment
+} from '@/lib/attachments'
 
 interface ExpenseFormProps {
   readonly attachments: ExpenseAttachment[]
@@ -118,7 +124,16 @@ export function ExpenseForm({ attachments, userEmail, initialBranch = '', onPers
         })
       })
 
-      const result = await response.json()
+      const responseText = await response.text()
+      let resultError = ''
+      if (responseText) {
+        try {
+          const parsed = JSON.parse(responseText) as { error?: string }
+          resultError = parsed.error || ''
+        } catch {
+          // Non-JSON error bodies (e.g. platform 413 pages)
+        }
+      }
 
       if (response.ok) {
         setSubmitStatus({
@@ -134,9 +149,15 @@ export function ExpenseForm({ attachments, userEmail, initialBranch = '', onPers
             description: ''
         }))
       } else {
+        const isPayloadTooLarge =
+          response.status === 413 ||
+          /payload too large|request entity too large|function_payload_too_large/i.test(responseText)
+
         setSubmitStatus({
           type: 'error',
-          message: result.error || 'Erreur lors de l\'envoi de l\'email'
+          message: isPayloadTooLarge
+            ? `Pièces jointes trop volumineuses pour l'envoi. Réduisez la taille ou le nombre de fichiers (max ${MAX_ATTACHMENT_COUNT} fichiers, ${(MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB par fichier, ${(MAX_TOTAL_ATTACHMENTS_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB au total), puis réessayez.`
+            : resultError || 'Erreur lors de l\'envoi de l\'email'
         })
       }
     } catch (error) {
