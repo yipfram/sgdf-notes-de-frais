@@ -40,7 +40,7 @@ function validateBody(body: any): { emailData?: EmailData; error?: NextResponse 
         displayName: body.fileName,
         mimeType: 'image/jpeg',
         base64Data: typeof body.imageBase64 === 'string' && body.imageBase64.includes(',')
-          ? body.imageBase64.split(',').pop()
+          ? body.imageBase64.slice(body.imageBase64.indexOf(',') + 1)
           : body.imageBase64,
         originalFileName: body.fileName,
         normalizedFileName: body.fileName
@@ -56,7 +56,7 @@ function validateBody(body: any): { emailData?: EmailData; error?: NextResponse 
   }
 
   let totalSize = 0
-  const safeBase64Regex = /^[A-Za-z0-9+/=\r\n]+$/
+  const safeBase64Regex = /^[A-Za-z0-9+/=]+$/
   const normalizedAttachments: ExpenseAttachment[] = []
   for (const [index, attachment] of attachments.entries()) {
     if (!attachment || typeof attachment !== 'object') {
@@ -65,7 +65,7 @@ function validateBody(body: any): { emailData?: EmailData; error?: NextResponse 
 
     const displayName = String(attachment.displayName || '').trim()
     const mimeType = String(attachment.mimeType || '').trim().toLowerCase()
-    const base64Data = String(attachment.base64Data || '').trim()
+    const base64Data = String(attachment.base64Data || '').trim().replace(/\s+/g, '')
     const originalFileName = String(attachment.originalFileName || attachment.displayName || '').trim()
     const normalizedFileName = String(attachment.normalizedFileName || originalFileName || displayName || '').trim()
 
