@@ -12,10 +12,8 @@ Application web mobile-first pour la gestion des factures carte procurement du g
 
 Ce repository est sous license MIT, vous pouvez l'utiliser comme bon vous semble ! Réadaptez le, et, si vous voulez, taggez moi :)
 
-> 📚 **Documentation complète (VitePress)** :  
-> - Site GitHub Pages : `https://yipfram.github.io/sgdf-notes-de-frais/`  
-> - Version source : [`/docs`](./docs)  
-> - Guide d’installation historique : [`SETUP.md`](./SETUP.md)
+# Docs
+Pour savoir comment l'utiliser avec [la documentation](https://yipfram.github.io/sgdf-notes-de-frais)
 
 ## Fonctionnalités
 
@@ -42,37 +40,6 @@ L'application est maintenant une **Progressive Web App** :
 | Sécurité | Toujours via HTTPS (caméra + SW) |
 
 > Limitation actuelle : pas encore de stockage local durable des brouillons. Si la page est rechargée hors ligne, la note en cours est perdue.
-
-## Branches SGDF supportées
-
-# Factures carte procurement SGDF
-
-Application web mobile-first pour la gestion des factures carte procurement du groupe SGDF La Guillotière.
-
-## Fonctionnalités principales
-
-- 📸 **Capture de justificatifs** : prise de photo + import d'images/PDF depuis le mobile ou le bureau, en multi-fichiers
-- 📝 **Saisie guidée** : l'utilisateur saisit manuellement la date, la branche, le montant et la description
-- ✉️ **Envoi email automatique** : transmission à la trésorerie + copie à l'utilisateur avec une ou plusieurs pièces jointes
-- 🏷️ **Nom de fichier structuré** : `YYYY-MM-DD - Branche - Type - Montant - 01.pdf` (ou `.jpg/.png/.webp`)
-- 📲 **Installation PWA** : ajout possible à l'écran d'accueil (Android / iOS / Desktop)
-- ⚡ **Mode hors ligne partiel** : consultation et préparation possible sans réseau (l'envoi nécessite la connexion)
-
-
-## PWA & expérience mobile
-
-L'application est une Progressive Web App (PWA) optimisée pour mobile :
-
-| Capacité | Détails |
-|----------|---------|
-| Installation | Icône / raccourci sur l'écran d'accueil + splash screen |
-| Service Worker | Cache applicatif + stratégies runtime pour ressources statiques |
-| Offline | Le formulaire est utilisable tant que l'onglet reste ouvert ; l'envoi exige une connexion |
-| Icônes | `SGDF_symbole_RVB.png` & `SGDF_symbole_blanc.png` |
-| Performance | Stratégie *stale-while-revalidate* pour actifs statiques |
-| Sécurité | HTTPS recommandé (obligatoire en production pour l'accès caméra) |
-
-> Limitation actuelle : pas de stockage persistant des brouillons. Un rafraîchissement hors ligne efface l'état courant.
 
 ## Branches SGDF supportées
 
@@ -117,48 +84,7 @@ pnpm start
 3. Saisir la date, la branche, le montant et la description
 4. Envoyer : un email est généré côté serveur et envoyé à la trésorerie et à l'utilisateur
 5. Installer l'application sur l'écran d'accueil pour un accès rapide
-
-## Mode hors ligne
-
-| Action | Disponible hors ligne | Notes |
-|--------|-----------------------|-------|
-| Ouvrir l'app (déjà chargée) | ✅ | Cache applicatif |
-| Capturer une photo / importer PDF | ✅ | Fonctionnalité native du navigateur |
-| Envoi email | ❌ | Nécessite le réseau |
-| Préparation formulaire | ✅ | Reste en mémoire tant que l'onglet est ouvert |
-
-## Améliorations possibles
-
-- Stockage IndexedDB des notes en attente
-- File d'envoi automatique quand le réseau est rétabli
-- Page historique locale
-- Compression d'image côté client
-
-## Déploiement
-
-Fonctionne bien sur Vercel ou toute plateforme supportant les API routes Next.js. Assurez-vous de définir les variables d'environnement (voir `SETUP.md`). HTTPS est requis pour l'accès caméra en production.
-
-## Caractéristiques techniques
-
-- ✅ Mobile-first
-- ✅ PWA installable
-- ✅ Envoi d'email via serveur (SMTP)
-- ✅ Partiel hors ligne
-- 🔐 Aucune donnée persistée côté serveur (hors emails envoyés)
-
-## Limites des pièces jointes
-
-- Types supportés : `image/jpeg`, `image/png`, `image/webp`, `application/pdf`
-- Nombre max : **6** justificatifs par envoi
-- Taille max par fichier : **8 MB**
-- Taille totale max (toutes pièces jointes) : **20 MB**
-
-## Sécurité & confidentialité
-
-- Aucune base de données
-- Les justificatifs ne sont pas stockés côté serveur en dehors de l'email envoyé lors de la soumission
-- Authentification obligatoire via Clerk
-
+6. 
 ---
 
 Pour toute amélioration ou besoin spécifique (ex: sauvegarde locale des brouillons), ouvrir une issue ou proposer une PR.
