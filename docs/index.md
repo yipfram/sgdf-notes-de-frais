@@ -4,16 +4,12 @@
 
 ## Objectif
 
-Permettre aux membres d’envoyer rapidement leurs justificatifs à la trésorerie, avec copie automatique à l’utilisateur connecté.
+Permettre aux chefs/équipe de groupe d’envoyer rapidement leurs justificatifs à la trésorerie, avec copie automatique, via email.
 
-## Public visé
-
-- **Trésorerie** : réception des justificatifs structurés par email
-- **Responsables** : suivi et centralisation des envois
-- **Utilisateurs** : saisie simple depuis mobile ou desktop
+Plus d'oublis de justificatifs, ça prends 2 secondes :)a
 
 ## Démarrer
 
 - Lire la [vue d’ensemble](/overview)
 - Suivre le [guide d’utilisation](/guide/usage)
-- Voir le [déploiement applicatif](/deploy/application)
+- Voir le [déploiement Vercel](/deploy/vercel)

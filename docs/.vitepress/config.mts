@@ -10,8 +10,7 @@ export default defineConfig({
     nav: [
       { text: 'Accueil', link: '/' },
       { text: 'Utilisation', link: '/guide/usage' },
-      { text: 'Déploiement', link: '/deploy/application' },
-      { text: 'GitHub Pages', link: '/deploy/github-pages' }
+      { text: 'Déploiement', link: '/deploy/vercel' },
     ],
     sidebar: [
       {
@@ -31,17 +30,17 @@ export default defineConfig({
       {
         text: 'Déploiement',
         items: [
-          { text: 'Déploiement applicatif', link: '/deploy/application' },
-          { text: 'Déployer la documentation (GitHub Pages)', link: '/deploy/github-pages' }
+          { text: 'Vercel', link: '/deploy/vercel' },
+          { text: 'Docker', link: '/deploy/docker' }
         ]
       },
       {
         text: 'Référence',
         items: [
+          { text: "Variables d'environnement", link: '/reference/environment-variables' },
           { text: 'Configuration', link: '/configuration' },
           { text: 'Dépannage', link: '/troubleshooting/index' },
           { text: 'Méta documentation VitePress', link: '/meta/vitepress-docs' },
-          { text: 'Roadmap', link: '/roadmap' }
         ]
       }
     ],

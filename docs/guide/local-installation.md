@@ -3,13 +3,25 @@
 ## Prérequis
 
 - Node.js 20+
-- npm ou pnpm
+- npm, pnpm, ou bun
 
 ## Installation
 
-```bash
-npm ci
+::: code-group
+
+```bash [npm]
+npm install
 ```
+
+```bash [pnpm]
+pnpm install
+```
+
+```bash [bun]
+bun install
+```
+
+:::
 
 ## Configuration locale
 
@@ -21,8 +33,24 @@ Renseigner ensuite les variables Clerk + SMTP + `TREASURY_EMAIL`.
 
 ## Lancement et vérification
 
-```bash
+::: code-group
+
+```bash [npm]
 npm run dev
 npm run lint
 npm run build
 ```
+
+```bash [pnpm]
+pnpm dev
+pnpm lint
+pnpm build
+```
+
+```bash [bun]
+bun run dev
+bun run lint
+bun run build
+```
+
+:::
