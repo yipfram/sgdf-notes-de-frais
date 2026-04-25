@@ -37,3 +37,6 @@ next-env.d.ts
 
 # old backup files
 README.old
+
+# vitepress build output
+docs/.vitepress/dist
