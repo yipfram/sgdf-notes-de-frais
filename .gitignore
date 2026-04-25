@@ -40,3 +40,4 @@ README.old
 
 # vitepress build output
 docs/.vitepress/dist
+docs/.vitepress/cache

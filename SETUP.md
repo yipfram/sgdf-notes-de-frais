@@ -246,78 +246,46 @@ Vercel hébergera votre application gratuitement.
 
 Les variables d'environnement sont les "réglages secrets" de l'application.
 
-#### 4.1 Accéder aux paramètres Vercel
+#### 4.1 Tableau récapitulatif des variables
+
+| Variable | Requis | Description | Exemple |
+|----------|:------:|-------------|---------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | ✅ | Clé publique Clerk (commence par `pk_test_...`) | `pk_test_abc123...` |
+| `CLERK_SECRET_KEY` | ✅ | Clé secrète Clerk (commence par `sk_test_...`) | `sk_test_xyz789...` |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | ✅ | URL de connexion | `/sign-in` |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | ✅ | URL d'inscription | `/sign-up` |
+| `SMTP_HOST` | ✅ | Adresse du serveur SMTP | `smtp.gmail.com` |
+| `SMTP_PORT` | ✅ | Port SMTP (587 TLS, 465 SSL) | `587` |
+| `SMTP_SECURE` | ✅ | SSL/TLS activé (`true`/`false`) | `false` |
+| `SMTP_USER` | ✅ | Identifiant SMTP (votre email) | `monemail@gmail.com` |
+| `SMTP_PASSWORD` | ✅ | Mot de passe SMTP | `motdepasse16caracteres` |
+| `TREASURY_EMAIL` | ✅ | Email destinataire principal | `tresorerie@sgdf.fr` |
+| `SMTP_FROM` | ♠️ | Email expéditeur personnalisé | `noreply@mondomaine.fr` |
+| `SMTP_FROM_NAME` | ♠️ | Nom de l'expéditeur | `Factures SGDF` |
+| `SMTP_FROM_EMAIL` | ♠️ | Email expéditeur de repli | `expediteur@email.fr` |
+
+> ✅ = Requis • ♠️ = Optionnel
+
+#### Valeurs par fournisseur
+
+| Fournisseur | SMTP_HOST | SMTP_PORT | SMTP_SECURE |
+|------------|----------|-----------|------------|
+| Gmail | `smtp.gmail.com` | `587` | `false` |
+| Outlook/Hotmail | `smtp-mail.outlook.com` | `587` | `false` |
+| Office 365 | `smtp.office365.com` | `587` | `false` |
+| SSL (port 465) | `smtp.gmail.com` | `465` | `true` |
+
+#### 4.2 Ajouter les variables sur Vercel
 
 Sur la page de configuration du projet dans Vercel, descendez jusqu'à **"Environment Variables"**.
 
 Si vous avez déjà déployé :
 1. Allez sur votre projet → **"Settings"** → **"Environment Variables"**
 
-#### 4.2 Ajouter les variables d'environnement
-
-Pour chaque variable ci-dessous :
+Pour chaque variable du tableau ci-dessus :
 1. Entrez le **nom** dans "Key"
 2. Entrez la **valeur** dans "Value"
 3. Cliquez sur **"Add"**
-
-**Variables Clerk (4 variables) :**
-
-##### Variable 1 : NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-- **Valeur** : Votre clé Clerk publique (commence par `pk_test_...`)
-- Où la trouver : Dashboard Clerk → API Keys
-
-##### Variable 2 : CLERK_SECRET_KEY
-- **Valeur** : Votre clé Clerk secrète (commence par `sk_test_...`)
-- Où la trouver : Dashboard Clerk → API Keys
-
-##### Variable 3 : NEXT_PUBLIC_CLERK_SIGN_IN_URL
-- **Valeur** : `/sign-in`
-- ⚠️ Tapez exactement `/sign-in` (avec le slash)
-
-##### Variable 4 : NEXT_PUBLIC_CLERK_SIGN_UP_URL
-- **Valeur** : `/sign-up`
-- ⚠️ Tapez exactement `/sign-up` (avec le slash)
-
-**Variables SMTP (6 variables minimum) :**
-
-##### Variable 5 : SMTP_HOST
-- **Valeur** : L'adresse de votre serveur SMTP (notée à l'étape 1)
-- Exemples : `smtp.gmail.com`, `smtp-mail.outlook.com`, `smtp.office365.com`
-
-##### Variable 6 : SMTP_PORT
-- **Valeur** : Le port SMTP (noté à l'étape 1)
-- Généralement : `587` (TLS) ou `465` (SSL)
-
-##### Variable 7 : SMTP_SECURE
-- **Valeur** : `false` pour port 587, `true` pour port 465
-
-##### Variable 8 : SMTP_USER
-- **Valeur** : Votre nom d'utilisateur SMTP (généralement votre adresse email complète)
-
-##### Variable 9 : SMTP_PASSWORD
-- **Valeur** : Votre mot de passe SMTP
-- Pour Gmail : le mot de passe d'application de 16 caractères
-- Pour Outlook/Office365 : votre mot de passe habituel
-
-##### Variable 10 : TREASURY_EMAIL
-- **Valeur** : L'adresse email de votre trésorerie (destinataire principal des factures)
-
-**Variables optionnelles (pour personnalisation) :**
-
-##### SMTP_FROM (optionnel mais recommandé si votre fournisseur impose un user technique)
-- **Valeur** : Adresse email complète ou format `Nom <email>` utilisé comme expéditeur
-- Indispensable pour des fournisseurs comme Resend où `SMTP_USER = resend`
-- Si non définie : l'application retombera sur SMTP_FROM_EMAIL puis SMTP_USER
-
-##### SMTP_FROM_NAME (optionnel)
-- **Valeur** : Nom affiché comme expéditeur (ex: `Factures SGDF La Guillotière`)
-- Utilisé uniquement si `SMTP_FROM` ne contient pas déjà un nom
-- Si non définie : utilise `Factures carte procurement SGDF`
-
-##### SMTP_FROM_EMAIL (optionnel)
-- **Valeur** : Email affiché comme expéditeur
-- Sert de solution de repli si `SMTP_FROM` n'est pas défini
-- Si non définie : utilise SMTP_USER
 
 #### 4.3 Vérification
 
