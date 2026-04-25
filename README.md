@@ -13,7 +13,7 @@ Application web mobile-first pour la gestion des factures carte procurement du g
 Ce repository est sous license MIT, vous pouvez l'utiliser comme bon vous semble ! Réadaptez le, et, si vous voulez, taggez moi :)
 
 > 📚 **Documentation complète (VitePress)** :  
-> - Site GitHub Pages : `https://<owner>.github.io/<repo>/`  
+> - Site GitHub Pages : `https://yipfram.github.io/sgdf-notes-de-frais/`  
 > - Version source : [`/docs`](./docs)  
 > - Guide d’installation historique : [`SETUP.md`](./SETUP.md)
 
