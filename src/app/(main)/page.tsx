@@ -8,13 +8,28 @@ import { useOnlineStatus } from '@/lib/useOnlineStatus'
 import { InstallPrompt } from '@/components/InstallPrompt'
 import { MAX_ATTACHMENT_COUNT, type ExpenseAttachment } from '@/lib/attachments'
 import Image from 'next/image'
-import Link from 'next/link'
 
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser()
   const [attachments, setAttachments] = useState<ExpenseAttachment[]>([])
   const [activeBranch, setActiveBranch] = useState<string>('')
+  const [branchSaveStatus, setBranchSaveStatus] = useState<{
+    type: 'success' | 'error' | null
+    message: string
+  }>({ type: null, message: '' })
   const isOnline = useOnlineStatus()
+
+  useEffect(() => {
+    if (!branchSaveStatus.type) {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setBranchSaveStatus({ type: null, message: '' })
+    }, 3000)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [branchSaveStatus.type])
 
   // Update activeBranch when user metadata loads
   useEffect(() => {
@@ -26,40 +41,10 @@ export default function Home() {
   }, [user?.publicMetadata?.branch])
 
   // Afficher un loader pendant le chargement de l'état d'authentification
-  if (!isLoaded) {
+  if (!isLoaded || !isSignedIn) {
     return (
       <main className="min-h-screen p-4 flex items-center justify-center bg-zinc-50">
         <div className="text-zinc-600 text-sm">Chargement…</div>
-      </main>
-    )
-  }
-
-  // Afficher la page de connexion si l'utilisateur n'est pas connecté
-  if (!isSignedIn) {
-    return (
-      <main className="min-h-screen p-4 flex items-center justify-center bg-zinc-50">
-        <div className="max-w-md mx-auto bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
-          <div className="bg-white text-zinc-900 p-6 border-b border-zinc-200">
-            <div className="flex items-center justify-center gap-2">
-              <Image src="/SGDF_symbole_RVB.png" alt="SGDF" width={24} height={24} className="rounded-sm" />
-              <h1 className="text-2xl font-semibold text-center">Factures carte procurement SGDF</h1>
-            </div>
-            <p className="text-center text-zinc-500 mt-2">
-              La Guillotière
-            </p>
-          </div>
-          <div className="p-6 text-center">
-            <p className="text-zinc-600 mb-6">
-              Connectez-vous pour accéder à l&apos;application de gestion des factures carte procurement.
-            </p>
-            <Link
-              href="/sign-in"
-              className="inline-flex w-full items-center justify-center bg-zinc-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
-            >
-              Se connecter
-            </Link>
-          </div>
-        </div>
       </main>
     )
   }
@@ -94,6 +79,18 @@ export default function Home() {
           </div>
         )}
 
+        {branchSaveStatus.type && (
+          <div
+            className={`border-t border-b text-center text-sm py-2 ${
+              branchSaveStatus.type === 'success'
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                : 'bg-red-50 border-red-200 text-red-800'
+            }`}
+          >
+            {branchSaveStatus.message}
+          </div>
+        )}
+
         <div className="p-6 space-y-6">
           <PhotoCapture
             onAttachmentsAdd={(newAttachments) => {
@@ -114,6 +111,7 @@ export default function Home() {
             }}
             onPersistBranch={async (branch: string) => {
               try {
+                setBranchSaveStatus({ type: null, message: '' })
                 const res = await fetch('/api/update-branch', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -125,8 +123,16 @@ export default function Home() {
                 }
                 await user?.reload()
                 setActiveBranch(branch)
+                setBranchSaveStatus({
+                  type: 'success',
+                  message: 'Branche sauvegardée.'
+                })
               } catch (e) {
                 console.error('Erreur de sauvegarde de la branche dans Clerk', e)
+                setBranchSaveStatus({
+                  type: 'error',
+                  message: 'Impossible de sauvegarder la branche. Veuillez réessayer plus tard.'
+                })
               }
             }}
             onBranchChange={(b) => setActiveBranch(b)}

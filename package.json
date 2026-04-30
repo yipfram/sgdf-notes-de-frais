@@ -23,6 +23,7 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
+    "@clerk/localizations": "^4.5.6",
     "@clerk/nextjs": "^7.2.3",
     "@heroicons/react": "^2.1.5",
     "@vercel/speed-insights": "^1.2.0",

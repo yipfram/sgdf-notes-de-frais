@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
-import { SpeedInsights } from '@vercel/speed-insights/next'
+import { frFR } from '@clerk/localizations'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -9,13 +9,11 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 }
 
-// Provide a generateViewport function so Next can place theme-color metadata correctly
-export function generateViewport(): any {
+export function generateViewport() {
   return {
-    // themeColor accepts a string or an array of descriptors; use descriptor form for clarity
     themeColor: [
       {
-        color: '#18181B' // zinc-800
+        color: '#18181B'
       }
     ]
   }
@@ -25,7 +23,18 @@ export default function RootLayout({
   children,
 }: { readonly children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      localization={frFR}
+      appearance={{
+        variables: {
+          colorPrimary: '#18181B',
+          colorBackground: '#FFFFFF',
+          colorForeground: '#18181B',
+          colorInputBackground: '#FFFFFF',
+          colorInputBorder: '#D4D4D8',
+        },
+      }}
+    >
       <html lang="fr">
         <head>
           <meta name="theme-color" content="#18181B" />
@@ -41,8 +50,6 @@ export default function RootLayout({
           <div className="min-h-screen">
             {children}
           </div>
-          <SpeedInsights />
-          <script dangerouslySetInnerHTML={{__html:`if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW registration failed',e));});}`}} />
         </body>
       </html>
     </ClerkProvider>
