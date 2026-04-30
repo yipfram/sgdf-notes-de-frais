@@ -7,7 +7,7 @@ export default function Page() {
         <div className="bg-white rounded-lg border border-zinc-200 shadow-sm w-full max-w-lg">
         <div className="bg-white text-zinc-900 p-6 text-center border-b border-zinc-200 rounded-t-lg">
           <div className="flex items-center justify-center gap-2">
-            <Image src="/SGDF_symbole_RVB.png" alt="SGDF" width={24} height={24} className="rounded-sm" />
+            <Image src="/SGDF_symbole_RVB.png" alt="SGDF" width={24} height={17} className="rounded-sm" style={{ height: 'auto' }} />
             <h1 className="text-2xl font-semibold">Factures carte procurement SGDF</h1>
           </div>
           <p className="text-zinc-500 mt-2">Inscription - La Guillotière</p>

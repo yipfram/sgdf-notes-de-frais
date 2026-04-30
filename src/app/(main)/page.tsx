@@ -56,7 +56,7 @@ export default function Home() {
           <div className="flex justify-between items-center">
             <div>
               <div className="flex items-center gap-2">
-                <Image src="/SGDF_symbole_RVB.png" alt="SGDF" width={28} height={28} className="rounded-sm" />
+                <Image src="/SGDF_symbole_RVB.png" alt="SGDF" width={28} height={20} className="rounded-sm" style={{ height: 'auto' }} />
                 <h1 className="text-2xl font-semibold text-zinc-900">Factures carte procurement SGDF</h1>
               </div>
               <p className="text-zinc-500 mt-2">La Guillotière</p>
