@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useUser, UserButton } from '@clerk/nextjs'
 import { ExpenseForm } from '@/components/ExpenseForm'
+import { FeatureNotice } from '@/components/FeatureNotice'
 import { PhotoCapture } from '@/components/PhotoCapture'
 import { useOnlineStatus } from '@/lib/useOnlineStatus'
 import { InstallPrompt } from '@/components/InstallPrompt'
@@ -92,6 +93,7 @@ export default function Home() {
         )}
 
         <div className="p-6 space-y-6">
+          <FeatureNotice />
           <PhotoCapture
             onAttachmentsAdd={(newAttachments) => {
               setAttachments(prev => [...prev, ...newAttachments].slice(0, MAX_ATTACHMENT_COUNT))

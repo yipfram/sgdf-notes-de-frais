@@ -9,7 +9,7 @@
 ## Parcours utilisateur
 
 1. Se connecter
-2. Ajouter un ou plusieurs justificatifs (photo/import)
+2. Ajouter un ou plusieurs justificatifs (photo/import), jusqu'à 6 fichiers par envoi
 3. Remplir date, branche, type, montant, description
 4. Envoyer la note de frais
 5. Vérifier la réception côté trésorerie et utilisateur
