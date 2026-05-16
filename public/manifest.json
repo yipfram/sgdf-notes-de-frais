@@ -43,12 +43,32 @@
 			"type": "image/x-icon"
 		}
 	],
+	"screenshots": [
+		{
+			"src": "/pwa-screenshot-mobile.png",
+			"sizes": "750x1334",
+			"type": "image/png"
+		},
+		{
+			"src": "/pwa-screenshot-wide.png",
+			"sizes": "1280x720",
+			"type": "image/png",
+			"form_factor": "wide"
+		}
+	],
 	"shortcuts": [
 		{
 			"name": "Nouvelle facture",
 			"short_name": "Nouvelle",
 			"description": "Créer une nouvelle facture carte",
-			"url": "/?action=new"
+			"url": "/?action=new",
+			"icons": [
+				{
+					"src": "/shortcut-96.png",
+					"sizes": "96x96",
+					"type": "image/png"
+				}
+			]
 		}
 	]
 }
