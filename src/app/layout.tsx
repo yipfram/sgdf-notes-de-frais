@@ -43,7 +43,7 @@ export default function RootLayout({
           <meta name="apple-mobile-web-app-title" content="Notes SGDF" />
           <meta name="mobile-web-app-capable" content="yes" />
           <link rel="icon" href="/favicon.ico" />
-          <link rel="apple-touch-icon" href="/SGDF_symbole_RVB.png" />
+          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
           <link rel="manifest" href="/manifest.json" />
         </head>
         <body className="font-sans">
