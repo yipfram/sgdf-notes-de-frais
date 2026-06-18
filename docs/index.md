@@ -6,7 +6,7 @@
 
 Permettre aux chefs/équipe de groupe d’envoyer rapidement leurs justificatifs à la trésorerie, avec copie automatique, via email.
 
-Plus d'oublis de justificatifs, ça prends 2 secondes :)a
+Plus d'oublis de justificatifs, ça prends 2 secondes :)
 
 ## Démarrer
 
