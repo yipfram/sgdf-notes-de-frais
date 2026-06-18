@@ -194,7 +194,7 @@ export const envoyerEmail = async (data: EmailData) => {
                 ? `
             <tr>
               <td style="padding: 10px 0; font-weight: bold; color: #374151; vertical-align: top;">Description :</td>
-              <td style="padding: 10px 0; color: #374151;">${description}</td>
+              <td style="padding: 10px 0; color: #374151;">${escapeHtml(description)}</td>
             </tr>`
                 : ""
             }
