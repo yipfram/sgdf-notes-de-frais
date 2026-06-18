@@ -29,7 +29,7 @@ export function validateBody(body: unknown): {
     .safeParse(body);
 
   if (!bodyParsed.success) {
-    console.error("Error while sending email: " + bodyParsed.error.issues);
+    console.error("Error while sending email:", bodyParsed.error.issues);
     return { error: jsonError("Données manquantes ou incorrecte", 400) };
   }
 
