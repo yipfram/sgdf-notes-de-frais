@@ -7,8 +7,7 @@ import {
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
 } from "@/lib/attachments";
 import type { EmailData } from "@/lib/email";
-import { NextResponse } from "next/server";
-import { log } from "node:console";
+import type { NextResponse } from "next/server";
 import { z } from "zod";
 
 export function validateBody(body: unknown): {
