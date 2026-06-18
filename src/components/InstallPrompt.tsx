@@ -1,50 +1,53 @@
 "use client";
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 }
 
 export function InstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [visible, setVisible] = useState(false)
-  const [installed, setInstalled] = useState(false)
-  
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
+  const [visible, setVisible] = useState(false);
+  const [installed, setInstalled] = useState(false);
+
   // Detect device type and installation status synchronously
-  const ua = typeof window !== 'undefined' ? window.navigator.userAgent : ''
-  const isIOS = /iphone|ipad|ipod/i.test(ua)
-  const android = /android/i.test(ua)
-  const isMobile = isIOS || android || /mobile/i.test(ua)
-  const isStandalone = typeof window !== 'undefined' 
-    ? (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator as any).standalone === true
-    : false
+  const ua = typeof window !== "undefined" ? window.navigator.userAgent : "";
+  const isIOS = /iphone|ipad|ipod/i.test(ua);
+  const android = /android/i.test(ua);
+  const isMobile = isIOS || android || /mobile/i.test(ua);
+  const isStandalone =
+    typeof window !== "undefined"
+      ? window.matchMedia("(display-mode: standalone)").matches ||
+        (window.navigator as any).standalone === true
+      : false;
 
   useEffect(() => {
     // Only set up event listeners, don't set state directly
 
     const handler = (e: Event) => {
-      e.preventDefault()
+      e.preventDefault();
       // Only show custom prompt on mobile devices
       if (isMobile) {
-        setDeferredPrompt(e as BeforeInstallPromptEvent)
-        setVisible(true)
+        setDeferredPrompt(e as BeforeInstallPromptEvent);
+        setVisible(true);
       }
-    }
-    window.addEventListener('beforeinstallprompt', handler as any)
+    };
+    window.addEventListener("beforeinstallprompt", handler as any);
 
     const installedHandler = () => {
-      setInstalled(true)
-      setVisible(false)
-      setDeferredPrompt(null)
-    }
-    window.addEventListener('appinstalled', installedHandler)
+      setInstalled(true);
+      setVisible(false);
+      setDeferredPrompt(null);
+    };
+    window.addEventListener("appinstalled", installedHandler);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handler as any)
-      window.removeEventListener('appinstalled', installedHandler)
-    }
-  }, [isMobile])
+      window.removeEventListener("beforeinstallprompt", handler as any);
+      window.removeEventListener("appinstalled", installedHandler);
+    };
+  }, [isMobile]);
 
   // iOS manual A2HS instructions when not installed and no deferredPrompt available
   if (isIOS && isMobile && !isStandalone && !installed && !deferredPrompt) {
@@ -52,34 +55,47 @@ export function InstallPrompt() {
       <div className="fixed bottom-4 inset-x-0 px-4 z-50">
         <div className="max-w-md mx-auto bg-white shadow-lg rounded-xl border border-gray-200 p-4 flex items-start gap-4">
           <div className="flex-1 text-sm text-gray-700 space-y-1">
-            <p className="font-medium text-gray-900">Installer sur votre iPhone / iPad</p>
+            <p className="font-medium text-gray-900">
+              Installer sur votre iPhone / iPad
+            </p>
             <ol className="list-decimal list-inside text-xs space-y-1">
-              <li>Appuyez sur l&apos;icône <span className="inline-block px-1 py-0.5 border rounded">Partager</span> en bas de Safari.</li>
+              <li>
+                Appuyez sur l&apos;icône{" "}
+                <span className="inline-block px-1 py-0.5 border rounded">
+                  Partager
+                </span>{" "}
+                en bas de Safari.
+              </li>
               <li>Sélectionnez « Ajouter à l&apos;écran d&apos;accueil ».</li>
               <li>Confirmez en appuyant sur « Ajouter ».</li>
             </ol>
           </div>
-          <button onClick={() => setInstalled(true)} className="text-xs px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 h-fit">Fermer</button>
+          <button
+            onClick={() => setInstalled(true)}
+            className="text-xs px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 h-fit"
+          >
+            Fermer
+          </button>
         </div>
       </div>
-    )
+    );
   }
 
-  if (!isMobile) return null
-  if (!visible || installed || !deferredPrompt) return null
+  if (!isMobile) return null;
+  if (!visible || installed || !deferredPrompt) return null;
 
   const onInstall = async () => {
-    if (!deferredPrompt) return
-    await deferredPrompt.prompt()
-    const choice = await deferredPrompt.userChoice
-    if (choice.outcome !== 'accepted') {
+    if (!deferredPrompt) return;
+    await deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    if (choice.outcome !== "accepted") {
       // allow user to trigger again later
-      setTimeout(() => setVisible(true), 10000)
+      setTimeout(() => setVisible(true), 10000);
     } else {
-      setVisible(false)
+      setVisible(false);
     }
-    setDeferredPrompt(null)
-  }
+    setDeferredPrompt(null);
+  };
 
   // Old implementation for Desktop, outdated
 

@@ -20,6 +20,7 @@ Ce guide explique **pas à pas** comment installer et déployer l'application, q
 ## Vue d'ensemble
 
 L'application permet aux membres de votre groupe SGDF de :
+
 - Prendre en photo ou importer leurs justificatifs de dépenses (images ou PDF)
 - Remplir un formulaire simple (date, montant, branche, description)
 - Envoyer automatiquement un email à la trésorerie avec un ou plusieurs justificatifs en pièce jointe
@@ -69,20 +70,24 @@ L'application utilise le protocole SMTP pour envoyer les emails de factures. Vou
 Vous avez plusieurs options :
 
 **Option A : Gmail** (recommandé pour les associations)
+
 - Gratuit et fiable
 - Nécessite un compte Gmail et un mot de passe d'application
 - Limite : 500 emails/jour (largement suffisant)
 
 **Option B : Outlook/Hotmail**
+
 - Gratuit avec un compte Microsoft
 - Configuration simple
 - Aucun mot de passe d'application nécessaire
 
 **Option C : Office 365**
+
 - Si votre association a un compte Microsoft professionnel
 - Même configuration qu'Outlook
 
 **Option D : Serveur SMTP personnalisé**
+
 - Si vous avez votre propre serveur email
 - Configuration selon votre hébergeur
 
@@ -95,6 +100,7 @@ Si vous utilisez Gmail, suivez ces étapes :
 Si vous avez déjà un compte Gmail dédié à votre trésorerie, passez à l'étape suivante.
 
 Sinon :
+
 1. Allez sur [gmail.com](https://mail.google.com)
 2. Créez un nouveau compte (ex: `sgdf.tresorerie@gmail.com`)
 3. Notez bien l'adresse email
@@ -125,6 +131,7 @@ Sinon :
 7. **⚠️ IMPORTANT** : Copiez ce mot de passe immédiatement dans un endroit sûr
 
 **Informations à noter pour Gmail :**
+
 - SMTP_HOST : `smtp.gmail.com`
 - SMTP_PORT : `587`
 - SMTP_SECURE : `false`
@@ -139,6 +146,7 @@ Si vous utilisez Outlook ou Hotmail :
 2. Notez votre adresse email et mot de passe
 
 **Informations à noter pour Outlook :**
+
 - SMTP_HOST : `smtp-mail.outlook.com`
 - SMTP_PORT : `587`
 - SMTP_SECURE : `false`
@@ -153,6 +161,7 @@ Si votre association a Office 365 :
 2. Notez votre mot de passe
 
 **Informations à noter pour Office 365 :**
+
 - SMTP_HOST : `smtp.office365.com`
 - SMTP_PORT : `587`
 - SMTP_SECURE : `false`
@@ -171,6 +180,7 @@ Si vous avez un serveur SMTP personnalisé :
    - Vos identifiants (nom d'utilisateur et mot de passe)
 
 **Informations à noter :**
+
 - SMTP_HOST : adresse fournie par votre hébergeur
 - SMTP_PORT : port fourni (587 ou 465)
 - SMTP_SECURE : `true` pour port 465, `false` pour 587
@@ -248,41 +258,43 @@ Les variables d'environnement sont les "réglages secrets" de l'application.
 
 #### 4.1 Tableau récapitulatif des variables
 
-| Variable | Requis | Description | Exemple |
-|----------|:------:|-------------|---------|
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | ✅ | Clé publique Clerk (commence par `pk_test_...`) | `pk_test_abc123...` |
-| `CLERK_SECRET_KEY` | ✅ | Clé secrète Clerk (commence par `sk_test_...`) | `sk_test_xyz789...` |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | ✅ | URL de connexion | `/sign-in` |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | ✅ | URL d'inscription | `/sign-up` |
-| `SMTP_HOST` | ✅ | Adresse du serveur SMTP | `smtp.gmail.com` |
-| `SMTP_PORT` | ✅ | Port SMTP (587 TLS, 465 SSL) | `587` |
-| `SMTP_SECURE` | ✅ | SSL/TLS activé (`true`/`false`) | `false` |
-| `SMTP_USER` | ✅ | Identifiant SMTP (votre email) | `monemail@gmail.com` |
-| `SMTP_PASSWORD` | ✅ | Mot de passe SMTP | `motdepasse16caracteres` |
-| `TREASURY_EMAIL` | ✅ | Email destinataire principal | `tresorerie@sgdf.fr` |
-| `SMTP_FROM` | ♠️ | Email expéditeur personnalisé | `noreply@mondomaine.fr` |
-| `SMTP_FROM_NAME` | ♠️ | Nom de l'expéditeur | `Factures SGDF` |
-| `SMTP_FROM_EMAIL` | ♠️ | Email expéditeur de repli | `expediteur@email.fr` |
+| Variable                            | Requis | Description                                     | Exemple                  |
+| ----------------------------------- | :----: | ----------------------------------------------- | ------------------------ |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` |   ✅   | Clé publique Clerk (commence par `pk_test_...`) | `pk_test_abc123...`      |
+| `CLERK_SECRET_KEY`                  |   ✅   | Clé secrète Clerk (commence par `sk_test_...`)  | `sk_test_xyz789...`      |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`     |   ✅   | URL de connexion                                | `/sign-in`               |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`     |   ✅   | URL d'inscription                               | `/sign-up`               |
+| `SMTP_HOST`                         |   ✅   | Adresse du serveur SMTP                         | `smtp.gmail.com`         |
+| `SMTP_PORT`                         |   ✅   | Port SMTP (587 TLS, 465 SSL)                    | `587`                    |
+| `SMTP_SECURE`                       |   ✅   | SSL/TLS activé (`true`/`false`)                 | `false`                  |
+| `SMTP_USER`                         |   ✅   | Identifiant SMTP (votre email)                  | `monemail@gmail.com`     |
+| `SMTP_PASSWORD`                     |   ✅   | Mot de passe SMTP                               | `motdepasse16caracteres` |
+| `NEXT_PUBLIC_TREASURY_EMAIL`        |   ✅   | Email destinataire principal                    | `tresorerie@sgdf.fr`     |
+| `SMTP_FROM`                         |   ♠️   | Email expéditeur personnalisé                   | `noreply@mondomaine.fr`  |
+| `SMTP_FROM_NAME`                    |   ♠️   | Nom de l'expéditeur                             | `Factures SGDF`          |
+| `SMTP_FROM_EMAIL`                   |   ♠️   | Email expéditeur de repli                       | `expediteur@email.fr`    |
 
 > ✅ = Requis • ♠️ = Optionnel
 
 #### Valeurs par fournisseur
 
-| Fournisseur | SMTP_HOST | SMTP_PORT | SMTP_SECURE |
-|------------|----------|-----------|------------|
-| Gmail | `smtp.gmail.com` | `587` | `false` |
-| Outlook/Hotmail | `smtp-mail.outlook.com` | `587` | `false` |
-| Office 365 | `smtp.office365.com` | `587` | `false` |
-| SSL (port 465) | `smtp.gmail.com` | `465` | `true` |
+| Fournisseur     | SMTP_HOST               | SMTP_PORT | SMTP_SECURE |
+| --------------- | ----------------------- | --------- | ----------- |
+| Gmail           | `smtp.gmail.com`        | `587`     | `false`     |
+| Outlook/Hotmail | `smtp-mail.outlook.com` | `587`     | `false`     |
+| Office 365      | `smtp.office365.com`    | `587`     | `false`     |
+| SSL (port 465)  | `smtp.gmail.com`        | `465`     | `true`      |
 
 #### 4.2 Ajouter les variables sur Vercel
 
 Sur la page de configuration du projet dans Vercel, descendez jusqu'à **"Environment Variables"**.
 
 Si vous avez déjà déployé :
+
 1. Allez sur votre projet → **"Settings"** → **"Environment Variables"**
 
 Pour chaque variable du tableau ci-dessus :
+
 1. Entrez le **nom** dans "Key"
 2. Entrez la **valeur** dans "Value"
 3. Cliquez sur **"Add"**
@@ -290,6 +302,7 @@ Pour chaque variable du tableau ci-dessus :
 #### 4.3 Vérification
 
 Vérifiez que :
+
 - ✅ Vous avez au minimum **10 variables** (4 Clerk + 6 SMTP)
 - ✅ Les noms sont **exactement** comme indiqué
 - ✅ Aucune valeur n'a d'espace au début/fin
@@ -299,6 +312,7 @@ Vérifiez que :
 Maintenant, cliquez sur **"Deploy"** !
 
 Vercel va :
+
 1. Construire l'application (2-3 minutes)
 2. La déployer automatiquement
 3. Vous donner une URL (ex: `https://sgdf-notes-de-frais-xxx.vercel.app`)
@@ -338,10 +352,12 @@ Clerk détecte automatiquement que c'est un domaine Vercel.
 #### 5.4 Vérifier les emails
 
 Vérifiez :
+
 - ✅ L'email de la trésorerie (TREASURY_EMAIL)
 - ✅ Votre email personnel (celui de votre compte)
 
 Vous devriez avoir reçu un email avec :
+
 - Les détails de la facture
 - Une ou plusieurs pièces jointes
 - Des noms de fichiers formatés : `YYYY-MM-DD - Branche - Type - Montant.pdf` (un seul fichier) ou `YYYY-MM-DD - Branche - Type - Montant - 01.pdf` (plusieurs fichiers)
@@ -349,11 +365,13 @@ Vous devriez avoir reçu un email avec :
 #### 5.5 Installation sur mobile (optionnel)
 
 **Android (Chrome) :**
+
 1. Ouvrez l'app dans Chrome
 2. Un bandeau "Ajouter à l'écran d'accueil" apparaît
 3. Tapez "Ajouter"
 
 **iPhone/iPad (Safari) :**
+
 1. Ouvrez l'app dans Safari
 2. Icône de partage → "Sur l'écran d'accueil"
 3. Tapez "Ajouter"
@@ -389,7 +407,7 @@ SMTP_PORT=587                               # ou 465 pour SSL
 SMTP_SECURE=false                           # true pour port 465, false pour 587
 SMTP_USER=votre-email@example.com
 SMTP_PASSWORD=votre-mot-de-passe            # Mot de passe d'application pour Gmail
-TREASURY_EMAIL=tresorerie@example.com
+NEXT_PUBLIC_TREASURY_EMAIL=tresorerie@example.com
 
 # Optionnel
 SMTP_FROM=noreply@example.com              # Requis pour Resend ou si SMTP_USER n'est pas une adresse
@@ -445,7 +463,7 @@ pnpm start
 3. L'utilisateur complète manuellement la date, le type, le montant, la branche et la description
 4. Le frontend envoie les données et les pièces jointes (base64) à l'API route `/api/send-expense`
 5. Le serveur valide les données, construit l'email et envoie via Gmail SMTP à :
-   - Trésorerie (`TREASURY_EMAIL`)
+   - Trésorerie (`NEXT_PUBLIC_TREASURY_EMAIL`)
    - Utilisateur (email Clerk)
 
 L'email contient un HTML lisible, un fallback texte et les pièces jointes avec des noms formatés `YYYY-MM-DD - Branche - Type - Montant - 01.ext`.
@@ -475,6 +493,7 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 ## 📱 Déploiement
 
 ### Vercel (Recommandé)
+
 1. Connectez le repo GitHub à Vercel
 2. Ajoutez les variables d'environnement dans Vercel Dashboard
 3. Déployez (build automatique)
@@ -512,6 +531,7 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 **Cause** : Les identifiants SMTP sont incorrects ou le serveur est inaccessible.
 
 **Solution** :
+
 1. Vérifiez `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` dans Vercel
 2. Vérifiez qu'il n'y a pas d'espaces au début/fin des valeurs
 3. Pour Gmail : Vérifiez que vous utilisez un mot de passe d'application (16 caractères)
@@ -524,6 +544,7 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 **Cause** : Les clés Clerk sont incorrectes ou le domaine n'est pas configuré.
 
 **Solution** :
+
 1. Vérifiez `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` et `CLERK_SECRET_KEY` dans Vercel
 2. Vérifiez que votre domaine Vercel est dans Clerk → Domains
 3. Redéployez l'application
@@ -531,14 +552,16 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 ### Problème : Les emails ne sont pas reçus
 
 **Causes possibles** :
+
 1. Email dans les spams
-2. Adresse `TREASURY_EMAIL` incorrecte
+2. Adresse `NEXT_PUBLIC_TREASURY_EMAIL` incorrecte
 3. Compte email bloqué ou limité
 4. Serveur SMTP bloque l'envoi
 
 **Solutions** :
+
 1. Vérifiez les spams et les dossiers courrier indésirable
-2. Vérifiez `TREASURY_EMAIL` dans Vercel
+2. Vérifiez `NEXT_PUBLIC_TREASURY_EMAIL` dans Vercel
 3. Connectez-vous à votre compte email et vérifiez les alertes de sécurité
 4. Vérifiez les logs Vercel pour des erreurs d'envoi
 
@@ -547,6 +570,7 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 **Cause** : Identifiants SMTP incorrects ou expirés.
 
 **Solution Gmail** :
+
 1. Allez sur [https://myaccount.google.com/security](https://myaccount.google.com/security)
 2. Supprimez l'ancien mot de passe d'application
 3. Créez-en un nouveau
@@ -554,6 +578,7 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 5. Redéployez
 
 **Solution Outlook/Office365** :
+
 1. Vérifiez que votre mot de passe est correct
 2. Vérifiez que la 2FA n'est pas activée (ou utilisez un mot de passe d'application si disponible)
 3. Mettez à jour `SMTP_PASSWORD` dans Vercel
@@ -564,6 +589,7 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 **Cause** : Navigateur bloque l'accès caméra.
 
 **Solutions** :
+
 1. Vérifiez que l'URL commence par `https://`
 2. Autorisez l'accès caméra dans le navigateur
 3. Essayez un autre navigateur
@@ -571,6 +597,7 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 ### Problème : Erreur 500 ou application ne charge pas
 
 **Solutions** :
+
 1. Vercel → Settings → Environment Variables
 2. Vérifiez que les **10 variables minimum** sont présentes :
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
@@ -582,7 +609,7 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
    - `SMTP_SECURE`
    - `SMTP_USER`
    - `SMTP_PASSWORD`
-   - `TREASURY_EMAIL`
+   - `NEXT_PUBLIC_TREASURY_EMAIL`
 3. Vercel → Deployments → cliquez sur le dernier → vérifiez les logs
 4. Redéployez si nécessaire
 
@@ -591,5 +618,7 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 1. **Consultez les logs** : Vercel → Deployments → Runtime Logs
 2. **Ouvrez une issue** : [GitHub Issues](https://github.com/yipfram/sgdf-notes-de-frais/issues)
 3. Décrivez votre problème avec le message d'erreur et les étapes suivies
+
+```
 
 ```

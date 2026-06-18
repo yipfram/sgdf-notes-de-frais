@@ -1,31 +1,37 @@
-'use client'
-import { useEffect, useState } from 'react'
+"use client";
+import { useEffect, useState } from "react";
 
-interface BeforeInstallPromptEvent extends Event { prompt: () => Promise<void>; userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }> }
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+}
 
 export function InstallTestButton() {
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null)
-  const [result, setResult] = useState<string>('')
+  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(
+    null,
+  );
+  const [result, setResult] = useState<string>("");
 
   useEffect(() => {
     const handler = (e: Event) => {
-      e.preventDefault()
-      setDeferred(e as BeforeInstallPromptEvent)
-    }
-    window.addEventListener('beforeinstallprompt', handler as any)
-    return () => window.removeEventListener('beforeinstallprompt', handler as any)
-  }, [])
+      e.preventDefault();
+      setDeferred(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener("beforeinstallprompt", handler as any);
+    return () =>
+      window.removeEventListener("beforeinstallprompt", handler as any);
+  }, []);
 
   const trigger = async () => {
     if (!deferred) {
-      setResult('Événement non disponible (conditions non remplies)')
-      return
+      setResult("Événement non disponible (conditions non remplies)");
+      return;
     }
-    await deferred.prompt()
-    const choice = await deferred.userChoice
-    setResult(`Choix: ${choice.outcome}`)
-    setDeferred(null)
-  }
+    await deferred.prompt();
+    const choice = await deferred.userChoice;
+    setResult(`Choix: ${choice.outcome}`);
+    setDeferred(null);
+  };
 
   return (
     <div className="mt-4 p-3 border border-dashed border-zinc-300 rounded-lg text-sm bg-white/60">
@@ -34,13 +40,16 @@ export function InstallTestButton() {
         <button
           type="button"
           onClick={trigger}
-          className={`px-3 py-1.5 rounded-md text-xs font-semibold text-white ${deferred ? 'bg-zinc-900 hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-400' : 'bg-zinc-300 cursor-not-allowed'}`}
+          className={`px-3 py-1.5 rounded-md text-xs font-semibold text-white ${deferred ? "bg-zinc-900 hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-400" : "bg-zinc-300 cursor-not-allowed"}`}
         >
-          {deferred ? 'Lancer prompt' : 'Indisponible'}
+          {deferred ? "Lancer prompt" : "Indisponible"}
         </button>
       </div>
       {result && <p className="mt-2 text-xs text-gray-600">{result}</p>}
-  <p className="mt-1 text-[11px] text-gray-500 leading-snug">Le bouton n&apos;est actif que si le navigateur a émis <code>beforeinstallprompt</code>.</p>
+      <p className="mt-1 text-[11px] text-gray-500 leading-snug">
+        Le bouton n&apos;est actif que si le navigateur a émis{" "}
+        <code>beforeinstallprompt</code>.
+      </p>
     </div>
-  )
+  );
 }

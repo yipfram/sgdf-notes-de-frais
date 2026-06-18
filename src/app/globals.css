@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /* Neutral theme: prefer white/zinc surfaces; remove brand color utilities */
 @layer utilities {

@@ -1,4 +1,4 @@
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais&env=NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,CLERK_SECRET_KEY,NEXT_PUBLIC_CLERK_SIGN_IN_URL,NEXT_PUBLIC_CLERK_SIGN_UP_URL,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,TREASURY_EMAIL&envDescription=Variables%20n%C3%A9cessaires%20pour%20le%20d%C3%A9ploiement%20(Clerk%20%2B%20SMTP)&envLink=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais%2Fblob%2Fmain%2FSETUP.md&project-name=sgdf-factures&repository-name=sgdf-factures)
+[![Deploy with Vercel](https://vercel.com/button)](<https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais&env=NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,CLERK_SECRET_KEY,NEXT_PUBLIC_CLERK_SIGN_IN_URL,NEXT_PUBLIC_CLERK_SIGN_UP_URL,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,NEXT_PUBLIC_TREASURY_EMAIL&envDescription=Variables%20n%C3%A9cessaires%20pour%20le%20d%C3%A9ploiement%20(Clerk%20%2B%20SMTP)&envLink=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais%2Fblob%2Fmain%2FSETUP.md&project-name=sgdf-factures&repository-name=sgdf-factures>)
 
 <br/>
 <img width="350" height="785" alt="image" src="https://github.com/user-attachments/assets/9c01c1a9-5bb7-4c72-95da-a413e1c8be9b" />
@@ -13,6 +13,7 @@ Application web mobile-first pour la gestion des factures carte procurement du g
 Ce repository est sous license MIT, vous pouvez l'utiliser comme bon vous semble ! Réadaptez le, et, si vous voulez, taggez moi :)
 
 # Docs
+
 Pour savoir comment l'utiliser avec [la documentation](https://yipfram.github.io/sgdf-notes-de-frais)
 
 ## Fonctionnalités
@@ -30,14 +31,14 @@ Pour savoir comment l'utiliser avec [la documentation](https://yipfram.github.io
 
 L'application est maintenant une **Progressive Web App** :
 
-| Capacité | Détails |
-|----------|---------|
-| Installation | Icône sur écran d'accueil + splash screen natif |
-| Service Worker | Cache Shell applicatif + stratégie network-first pour API |
-| Offline | Formulaire utilisable, justificatifs conservés en mémoire, envoi différé impossible (pas de queue persistée) |
-| Icônes | Logo SGDF bleu & blanc (maskable) |
-| Performance | Stratégie *stale-while-revalidate* pour actifs statiques |
-| Sécurité | Toujours via HTTPS (caméra + SW) |
+| Capacité       | Détails                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------ |
+| Installation   | Icône sur écran d'accueil + splash screen natif                                                              |
+| Service Worker | Cache Shell applicatif + stratégie network-first pour API                                                    |
+| Offline        | Formulaire utilisable, justificatifs conservés en mémoire, envoi différé impossible (pas de queue persistée) |
+| Icônes         | Logo SGDF bleu & blanc (maskable)                                                                            |
+| Performance    | Stratégie _stale-while-revalidate_ pour actifs statiques                                                     |
+| Sécurité       | Toujours via HTTPS (caméra + SW)                                                                             |
 
 > Limitation actuelle : pas encore de stockage local durable des brouillons. Si la page est rechargée hors ligne, la note en cours est perdue.
 
@@ -84,7 +85,8 @@ pnpm start
 3. Saisir la date, la branche, le montant et la description
 4. Envoyer : un email est généré côté serveur et envoyé à la trésorerie et à l'utilisateur
 5. Installer l'application sur l'écran d'accueil pour un accès rapide
-6. 
+6.
+
 ---
 
 Pour toute amélioration ou besoin spécifique (ex: sauvegarde locale des brouillons), ouvrir une issue ou proposer une PR.
