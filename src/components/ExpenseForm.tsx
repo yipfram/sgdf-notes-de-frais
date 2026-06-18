@@ -47,7 +47,7 @@ export function ExpenseForm({
     amount: "",
     description: "",
   });
-  const emailTresorier: string = process.env.NEXT_PUBLIC_TREASURY_EMAIL!;
+  const emailTresorier = process.env.NEXT_PUBLIC_TREASURY_EMAIL ?? "";
 
   const [branchPersistStatus, setBranchPersistStatus] = useState<
     "idle" | "saving" | "saved" | "error"
