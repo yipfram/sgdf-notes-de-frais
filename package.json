@@ -30,12 +30,8 @@
     "next": "16.2.4",
     "nodemailer": "^8.0.4",
     "react": "19.2.5",
-    "react-dom": "19.2.5"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@clerk/shared"
-    ]
+    "react-dom": "19.2.5",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.13",

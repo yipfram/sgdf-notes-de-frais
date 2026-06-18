@@ -17,7 +17,7 @@ Voir aussi la reference centralisee : [Variables d'environnement](/reference/env
 | `SMTP_SECURE` | ✅ | SSL/TLS | `false` |
 | `SMTP_USER` | ✅ | Identifiant | `user@example.com` |
 | `SMTP_PASSWORD` | ✅ | Mot de passe | `xxxx xxxx xxxx xxxx` |
-| `TREASURY_EMAIL` | ✅ | Destinataire | `treso@sgdf.fr` |
+| `NEXT_PUBLIC_TREASURY_EMAIL` | ✅ | Destinataire | `treso@sgdf.fr` |
 | `SMTP_FROM` | ♠️ | Expéditeur personnalisé | `noreply@domain.fr` |
 | `SMTP_FROM_NAME` | ♠️ | Nom expéditeur | `Factures SGDF` |
 | `SMTP_FROM_EMAIL` | ♠️ | Email de repli | `send@domain.fr` |

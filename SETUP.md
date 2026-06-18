@@ -259,7 +259,7 @@ Les variables d'environnement sont les "réglages secrets" de l'application.
 | `SMTP_SECURE` | ✅ | SSL/TLS activé (`true`/`false`) | `false` |
 | `SMTP_USER` | ✅ | Identifiant SMTP (votre email) | `monemail@gmail.com` |
 | `SMTP_PASSWORD` | ✅ | Mot de passe SMTP | `motdepasse16caracteres` |
-| `TREASURY_EMAIL` | ✅ | Email destinataire principal | `tresorerie@sgdf.fr` |
+| `NEXT_PUBLIC_TREASURY_EMAIL` | ✅ | Email destinataire principal | `tresorerie@sgdf.fr` |
 | `SMTP_FROM` | ♠️ | Email expéditeur personnalisé | `noreply@mondomaine.fr` |
 | `SMTP_FROM_NAME` | ♠️ | Nom de l'expéditeur | `Factures SGDF` |
 | `SMTP_FROM_EMAIL` | ♠️ | Email expéditeur de repli | `expediteur@email.fr` |
@@ -389,7 +389,7 @@ SMTP_PORT=587                               # ou 465 pour SSL
 SMTP_SECURE=false                           # true pour port 465, false pour 587
 SMTP_USER=votre-email@example.com
 SMTP_PASSWORD=votre-mot-de-passe            # Mot de passe d'application pour Gmail
-TREASURY_EMAIL=tresorerie@example.com
+NEXT_PUBLIC_TREASURY_EMAIL=tresorerie@example.com
 
 # Optionnel
 SMTP_FROM=noreply@example.com              # Requis pour Resend ou si SMTP_USER n'est pas une adresse
@@ -445,7 +445,7 @@ pnpm start
 3. L'utilisateur complète manuellement la date, le type, le montant, la branche et la description
 4. Le frontend envoie les données et les pièces jointes (base64) à l'API route `/api/send-expense`
 5. Le serveur valide les données, construit l'email et envoie via Gmail SMTP à :
-   - Trésorerie (`TREASURY_EMAIL`)
+   - Trésorerie (`NEXT_PUBLIC_TREASURY_EMAIL`)
    - Utilisateur (email Clerk)
 
 L'email contient un HTML lisible, un fallback texte et les pièces jointes avec des noms formatés `YYYY-MM-DD - Branche - Type - Montant - 01.ext`.
@@ -532,13 +532,13 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 
 **Causes possibles** :
 1. Email dans les spams
-2. Adresse `TREASURY_EMAIL` incorrecte
+2. Adresse `NEXT_PUBLIC_TREASURY_EMAIL` incorrecte
 3. Compte email bloqué ou limité
 4. Serveur SMTP bloque l'envoi
 
 **Solutions** :
 1. Vérifiez les spams et les dossiers courrier indésirable
-2. Vérifiez `TREASURY_EMAIL` dans Vercel
+2. Vérifiez `NEXT_PUBLIC_TREASURY_EMAIL` dans Vercel
 3. Connectez-vous à votre compte email et vérifiez les alertes de sécurité
 4. Vérifiez les logs Vercel pour des erreurs d'envoi
 
@@ -582,7 +582,7 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
    - `SMTP_SECURE`
    - `SMTP_USER`
    - `SMTP_PASSWORD`
-   - `TREASURY_EMAIL`
+   - `NEXT_PUBLIC_TREASURY_EMAIL`
 3. Vercel → Deployments → cliquez sur le dernier → vérifiez les logs
 4. Redéployez si nécessaire
 

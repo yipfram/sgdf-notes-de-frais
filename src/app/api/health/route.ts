@@ -1,24 +1,26 @@
-import { NextResponse } from 'next/server'
-import { ALL_BRANCHES } from '@/lib/branches'
+import { NextResponse } from "next/server";
+import { ALL_BRANCHES } from "@/lib/branches";
 
 export async function GET() {
-  const timestamp = new Date().toISOString()
-  const uptimeSeconds = typeof process.uptime === 'function' ? Math.floor(process.uptime()) : null
+  const timestamp = new Date().toISOString();
+  const uptimeSeconds =
+    typeof process.uptime === "function" ? Math.floor(process.uptime()) : null;
 
   // Env checks
-  const missingEnv: string[] = []
-  if (!process.env.SMTP_HOST) missingEnv.push('SMTP_HOST')
-  if (!process.env.SMTP_USER) missingEnv.push('SMTP_USER')
-  if (!process.env.SMTP_PASSWORD) missingEnv.push('SMTP_PASSWORD')
-  if (!process.env.TREASURY_EMAIL) missingEnv.push('TREASURY_EMAIL')
+  const missingEnv: string[] = [];
+  if (!process.env.SMTP_HOST) missingEnv.push("SMTP_HOST");
+  if (!process.env.SMTP_USER) missingEnv.push("SMTP_USER");
+  if (!process.env.SMTP_PASSWORD) missingEnv.push("SMTP_PASSWORD");
+  if (!process.env.NEXT_PUBLIC_TREASURY_EMAIL)
+    missingEnv.push("NEXT_PUBLIC_TREASURY_EMAIL");
 
-  const envOk = missingEnv.length === 0
+  const envOk = missingEnv.length === 0;
 
   // Branches check
-  const branchesOk = Array.isArray(ALL_BRANCHES) && ALL_BRANCHES.length > 0
+  const branchesOk = Array.isArray(ALL_BRANCHES) && ALL_BRANCHES.length > 0;
 
   // Overall health: env vars present + branches configured
-  const allOk = envOk && branchesOk
+  const allOk = envOk && branchesOk;
 
   const body = {
     ok: allOk,
@@ -32,8 +34,8 @@ export async function GET() {
       ok: branchesOk,
       count: Array.isArray(ALL_BRANCHES) ? ALL_BRANCHES.length : 0,
     },
-  }
+  };
 
-  if (allOk) return NextResponse.json(body)
-  return NextResponse.json(body, { status: 503 })
+  if (allOk) return NextResponse.json(body);
+  return NextResponse.json(body, { status: 503 });
 }

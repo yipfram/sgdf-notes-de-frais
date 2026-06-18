@@ -29,7 +29,7 @@ bun install
 cp .env.example .env.local
 ```
 
-Renseigner ensuite les variables Clerk + SMTP + `TREASURY_EMAIL`.
+Renseigner ensuite les variables Clerk + SMTP + `NEXT_PUBLIC_TREASURY_EMAIL`.
 
 ## Lancement et vérification
 
