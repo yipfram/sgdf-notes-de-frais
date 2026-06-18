@@ -33,8 +33,7 @@ export async function POST(req: NextRequest) {
     // Body & validation
     const body = await req.json().catch(() => null);
     if (!body) return jsonError("Corps de requête invalide", 400);
-    if (body.userEmail !== userEmail)
-      return jsonError("Mauvais utilisateur", 403);
+    if (body.userEmail !== userEmail) return jsonError("Email invalide", 403);
 
     const { emailData, error } = validateBody(body);
     if (error || !emailData) return error as NextResponse;
