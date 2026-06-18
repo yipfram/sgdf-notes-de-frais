@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { sendExpenseEmail } from "@/lib/email";
-import { jsonError, checkEmailError } from "@/lib/api/utils";
+import { envoyerEmail } from "@/lib/email";
+import { jsonError, verifierErreur } from "@/lib/api/utils";
 import { validateBody } from "@/lib/api/validateBody";
 
 function validateEnv() {
@@ -38,8 +38,7 @@ export async function POST(req: NextRequest) {
     const { emailData, error } = validateBody(body);
     if (error || !emailData) return error as NextResponse;
 
-    // Send email
-    const result = await sendExpenseEmail(emailData);
+    const result = await envoyerEmail(emailData);
     return NextResponse.json({
       success: true,
       message: "Email envoyé avec succès",
@@ -48,7 +47,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Erreur lors de l'envoi de l'email:", error);
     if (error instanceof Error) {
-      return checkEmailError(error);
+      return verifierErreur(error);
     }
     return jsonError("Erreur interne du serveur", 500);
   }

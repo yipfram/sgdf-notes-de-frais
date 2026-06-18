@@ -29,7 +29,7 @@ export const createEmailTransporter = () => {
 };
 
 // Fonction pour envoyer un email avec pièce jointe
-export const sendExpenseEmail = async (data: EmailData) => {
+export const envoyerEmail = async (data: EmailData) => {
   const transporter = createEmailTransporter();
 
   // Vérifier la connexion SMTP

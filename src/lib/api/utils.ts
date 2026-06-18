@@ -5,7 +5,7 @@ export function jsonError(message: string, status: number): NextResponse {
   return NextResponse.json({ error: message }, { status });
 }
 
-export function checkEmailError(error: Error): NextResponse {
+export function verifierErreur(error: Error): NextResponse {
   if (error.message.startsWith("INVALID_ATTACHMENT:"))
     return jsonError(
       "Pièce jointe invalide ou corrompue. Veuillez réessayer.",
