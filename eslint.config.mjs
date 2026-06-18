@@ -1,13 +1,10 @@
-import coreWebVitalsConfig from 'eslint-config-next/core-web-vitals'
+import coreWebVitalsConfig from "eslint-config-next/core-web-vitals";
 
 const config = [
   {
-    ignores: [
-      'docs/.vitepress/cache/**',
-      'docs/.vitepress/dist/**',
-    ],
+    ignores: ["docs/.vitepress/cache/**", "docs/.vitepress/dist/**"],
   },
   ...coreWebVitalsConfig,
-]
+];
 
-export default config
+export default config;

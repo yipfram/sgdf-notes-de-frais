@@ -18,6 +18,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
+    "format": "prettier --write .",
+    "type": "tsc --noEmit",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
@@ -44,8 +46,9 @@
     "eslint": "^9.36.0",
     "eslint-config-next": "16.0.7",
     "postcss": "^8",
+    "prettier": "^3.8.4",
     "tailwindcss": "^4.1.13",
-    "typescript": "^5",
+    "typescript": "^5.9.2",
     "vitepress": "^1.6.4"
   }
 }

@@ -1,7 +1,7 @@
 allowBuilds:
-  '@clerk/shared': true
-  '@tailwindcss/oxide': true
-  '@vercel/speed-insights': true
+  "@clerk/shared": true
+  "@tailwindcss/oxide": true
+  "@vercel/speed-insights": true
   esbuild: true
   sharp: true
   unrs-resolver: true

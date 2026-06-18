@@ -1,11 +1,13 @@
 # Next.js 16 Upgrade Notes
 
 ## Summary
+
 Successfully upgraded from Next.js 15.5.4 to 16.0.7 on December 6, 2024.
 
 ## Changes Made
 
 ### Dependencies Updated
+
 - **Next.js**: 15.5.4 → 16.0.7
 - **React**: 19.1.1 → 19.2.1
 - **React-DOM**: 19.1.1 → 19.2.1
@@ -16,16 +18,19 @@ Successfully upgraded from Next.js 15.5.4 to 16.0.7 on December 6, 2024.
 ### Configuration Changes
 
 #### ESLint Configuration
+
 - **Removed**: `.eslintrc.json` (old ESLint config format)
 - **Added**: `eslint.config.mjs` (new flat config format for ESLint 9)
 - **Updated**: `package.json` lint script from `next lint` to `eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0`
 
 #### Next.js Configuration
+
 - **Updated**: `next.config.js` to add `turbopack: {}` configuration
   - Turbopack is now the default bundler in Next.js 16
   - Kept webpack config for fallback compatibility
 
 #### TypeScript Configuration
+
 - **Auto-updated by Next.js**: `tsconfig.json`
   - Changed `jsx` from `preserve` to `react-jsx` (React automatic runtime)
   - Added `.next/dev/types/**/*.ts` to include paths
@@ -33,6 +38,7 @@ Successfully upgraded from Next.js 15.5.4 to 16.0.7 on December 6, 2024.
 ### Code Changes
 
 #### InstallPrompt Component
+
 - Fixed React 19 strict mode compliance issue
 - Moved state initialization from `useEffect` to render-time computation
 - This prevents "calling setState synchronously within an effect" error
@@ -41,6 +47,7 @@ Successfully upgraded from Next.js 15.5.4 to 16.0.7 on December 6, 2024.
 ## Deprecation Warnings
 
 ### Middleware Convention (Not Urgent)
+
 The `middleware.ts` file convention is deprecated in favor of `proxy`. This is a deprecation warning only - middleware still works in Next.js 16.
 
 **Action Required**: In a future update, consider migrating from `src/middleware.ts` to the new proxy configuration.
@@ -50,16 +57,19 @@ The `middleware.ts` file convention is deprecated in favor of `proxy`. This is a
 ## Breaking Changes Addressed
 
 ### 1. Turbopack Default
+
 - **Issue**: Next.js 16 uses Turbopack by default instead of webpack
 - **Resolution**: Added empty `turbopack: {}` config to silence migration warning
 - **Impact**: Build now uses Turbopack, which is faster than webpack
 
 ### 2. ESLint Migration
+
 - **Issue**: `next lint` command is removed in Next.js 16
 - **Resolution**: Migrated to direct ESLint CLI usage with flat config
 - **Impact**: Linting now uses standard ESLint commands
 
 ### 3. React 19 Stricter Rules
+
 - **Issue**: React 19 has stricter linting rules for effect usage
 - **Resolution**: Fixed InstallPrompt component to follow React best practices
 - **Impact**: Code is more maintainable and follows React recommended patterns
