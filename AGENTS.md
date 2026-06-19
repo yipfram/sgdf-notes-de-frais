@@ -16,9 +16,8 @@ The source lives under the `src/` folder and follows a conventional Next.js layo
 src/
 ├─ app/               # App Router pages & API routes
 │   ├─ layout.tsx
-│   ├─ page.tsx        # Home page
-│   ├─ sign‑in/        # Clerk sign‑in UI
-│   ├─ sign‑up/        # Clerk sign‑up UI
+│   ├─ (main)          # Home page + app
+│   ├─ (auth)          # Clerk auth Logic
 │   ├─ offline/        # Offline‑only UI
 │   └─ api/            # Server‑side route handlers
 ├─ components/        # Re‑usable UI components (forms, modals, etc.)
@@ -27,6 +26,8 @@ src/
 ```
 
 ## 🎯 Goals for AI Agents
+
+MOST IMPORTANT: Keep it stupid simple. Only make necessary code, always prefer other solution over adding new code !
 
 1. **Maintain architectural consistency** – keep new files in the appropriate `app/`, `components/`, or `lib/` sub‑folders.
 2. **Follow the existing coding style** – TypeScript strict mode, Tailwind utility‑first styling, and ESLint rules defined in `.eslintrc.json`.
@@ -39,8 +40,7 @@ src/
 1. **Explore the code** – start with `src/app/layout.tsx` to understand the global layout and Tailwind theme.
 2. **Locate related components** – use `grep_search` for component names (e.g., `InvoiceForm`).
 3. **Add/modify** – use `replace_file_content` for single‑block edits or `multi_replace_file_content` for dispersed changes.
-4. **Run tests** – the repo currently has no explicit test suite; rely on manual dev server (`pnpm dev`) and visual inspection.
-5. **Commit guidelines** – follow conventional commits (`feat:`, `fix:`, `chore:`) and keep commit messages concise.
+4. **Commit guidelines** – follow conventional commits (`feat:`, `fix:`, `chore:`) and keep commit messages concise.
 
 ## 📂 Key Files & Their Purpose
 
@@ -54,7 +54,6 @@ src/
 
 ## 🧭 Navigation Tips for AI Agents
 
-- **When adding a new page**: create a folder under `src/app/` with an `page.tsx` and optional `layout.tsx`.
 - **When extending UI**: place new components in `src/components/` and export them via an `index.ts` barrel file if needed.
 - **When adding server logic**: use the `src/app/api/` folder; keep all server‑only code out of the client bundle.
 - **When updating styles**: modify Tailwind classes directly in JSX; avoid custom CSS files unless absolutely necessary.
@@ -75,5 +74,3 @@ Whenever you modify functionality:
 3. If UI changes affect the user flow, add a screenshot (generated via `generate_image`) and embed it in the docs.
 
 ---
-
-_Generated for AI coding agents to streamline contributions while preserving the project's premium aesthetic and architectural integrity._
