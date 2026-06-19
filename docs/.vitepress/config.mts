@@ -10,42 +10,36 @@ export default defineConfig({
     nav: [
       { text: "Accueil", link: "/" },
       { text: "Utilisation", link: "/guide/usage" },
-      { text: "Déploiement", link: "/deploy/vercel" },
+      { text: "Technique", link: "/technical/local-installation" },
     ],
     sidebar: [
       {
-        text: "Démarrage",
+        text: "Utilisateur",
         items: [
           { text: "Introduction", link: "/" },
-          { text: "Vue d’ensemble", link: "/overview" },
+          { text: "Vue d'ensemble", link: "/overview" },
+          { text: "Guide d'utilisation", link: "/guide/usage" },
         ],
       },
       {
-        text: "Guide",
+        text: "Deploiement",
+        collapsed: true,
         items: [
-          { text: "Utilisation", link: "/guide/usage" },
-          { text: "Installation locale", link: "/guide/local-installation" },
-        ],
-      },
-      {
-        text: "Déploiement",
-        items: [
-          { text: "Vercel", link: "/deploy/vercel" },
-          { text: "Docker", link: "/deploy/docker" },
-        ],
-      },
-      {
-        text: "Référence",
-        items: [
+          {
+            text: "Installation locale",
+            link: "/technical/local-installation",
+          },
+          { text: "Configuration", link: "/technical/configuration" },
           {
             text: "Variables d'environnement",
-            link: "/reference/environment-variables",
+            link: "/technical/environment-variables",
           },
-          { text: "Configuration", link: "/configuration" },
-          { text: "Dépannage", link: "/troubleshooting/index" },
+          { text: "Déploiement Vercel", link: "/technical/vercel" },
+          { text: "Déploiement Docker", link: "/technical/docker" },
+          { text: "Dépannage", link: "/technical/troubleshooting" },
           {
             text: "Méta documentation VitePress",
-            link: "/meta/vitepress-docs",
+            link: "/technical/vitepress-docs",
           },
         ],
       },
@@ -56,5 +50,9 @@ export default defineConfig({
         link: "https://github.com/yipfram/sgdf-notes-de-frais",
       },
     ],
+  },
+  sitemap: {
+    hostname: "https://yipfram.github.io/sgdf-notes-de-frais/",
+    lastmodDateOnly: false,
   },
 });

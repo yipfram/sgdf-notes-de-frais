@@ -2,7 +2,7 @@
 
 ## Variables d'environnement
 
-Variables optionnelles et exemples fournisseurs : [Variables d'environnement](/reference/environment-variables).
+Variables optionnelles et exemples fournisseurs : [Variables d'environnement](/technical/environment-variables).
 
 ## Etapes
 

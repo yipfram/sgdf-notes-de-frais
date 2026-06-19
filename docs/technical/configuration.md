@@ -1,6 +1,6 @@
 # Configuration
 
-Voir aussi la reference centralisee : [Variables d'environnement](/reference/environment-variables).
+Voir aussi la reference centralisee : [Variables d'environnement](/technical/environment-variables).
 
 ## Variables d'environnement
 
