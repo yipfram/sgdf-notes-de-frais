@@ -6,12 +6,16 @@
 docs/
   index.md
   overview.md
-  configuration.md
-  roadmap.md
   guide/
-  deploy/
-  troubleshooting/
-  meta/
+    usage.md
+  technical/
+    local-installation.md
+    configuration.md
+    environment-variables.md
+    vercel.md
+    docker.md
+    troubleshooting.md
+    vitepress-docs.md
   .vitepress/config.mts
 ```
 
