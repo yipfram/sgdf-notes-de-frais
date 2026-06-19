@@ -27,9 +27,9 @@ Frontend (Next.js + Clerk)
 
 ## Informations personnelles
 
-L'application n'a pas de mémoire, ou de base de donnée en dehors de celle gérée par Clerk.
+L'application n'a pas de base de données persistante en dehors de celle gérée par Clerk.
 Clerk est utilisé pour connecter les utilisateurs à la plateforme.
 
-Concernant https://treso.romain-rochas.fr/ Les informations des utilisateurs ne sont pas utilisés en dehors de la connection de ces dernier à la plateforme, et l'utilisation de l'adresse email pour définir le destinataire du mail.
+Concernant https://treso.romain-rochas.fr/ Les informations des utilisateurs ne sont pas utilisée en dehors de la connexion de ces derniers à la plateforme, et l'utilisation de l'adresse email pour définir le destinataire du mail.
 
 Plus d'information, contactez moi ! (yipfram)
