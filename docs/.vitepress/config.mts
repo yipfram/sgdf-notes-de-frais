@@ -22,7 +22,7 @@ export default defineConfig({
         ],
       },
       {
-        text: "Deploiement",
+        text: "Déploiement",
         collapsed: true,
         items: [
           {
