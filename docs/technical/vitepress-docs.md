@@ -5,10 +5,10 @@
 ```text
 docs/
   index.md
-  overview.md
   guide/
     usage.md
   technical/
+    overview.md
     local-installation.md
     configuration.md
     environment-variables.md

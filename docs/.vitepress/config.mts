@@ -10,14 +10,13 @@ export default defineConfig({
     nav: [
       { text: "Accueil", link: "/" },
       { text: "Utilisation", link: "/guide/usage" },
-      { text: "Technique", link: "/technical/local-installation" },
+      { text: "Technique", link: "/technical/overview" },
     ],
     sidebar: [
       {
         text: "Utilisateur",
         items: [
           { text: "Introduction", link: "/" },
-          { text: "Vue d'ensemble", link: "/overview" },
           { text: "Guide d'utilisation", link: "/guide/usage" },
         ],
       },
@@ -25,6 +24,7 @@ export default defineConfig({
         text: "Déploiement",
         collapsed: true,
         items: [
+          { text: "Vue d'ensemble", link: "/technical/overview" },
           {
             text: "Installation locale",
             link: "/technical/local-installation",
