@@ -96,25 +96,4 @@ export function InstallPrompt() {
     }
     setDeferredPrompt(null);
   };
-
-  // Old implementation for Desktop, outdated
-
-  // const onDismiss = () => {
-  //   setVisible(false)
-  // }
-
-  // return (
-  //   <div className="fixed bottom-4 inset-x-0 px-4 z-50">
-  //     <div className="max-w-md mx-auto bg-white shadow-lg rounded-xl border border-gray-200 p-4 flex items-center gap-4">
-  //       <div className="flex-1">
-  //         <p className="text-sm font-medium text-gray-800">Installer l&apos;application</p>
-  //         <p className="text-xs text-gray-500">Accès rapide hors navigateur, meilleure expérience mobile.</p>
-  //       </div>
-  //       <div className="flex gap-2">
-  //         <button onClick={onDismiss} className="text-xs px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600">Plus tard</button>
-  //         <button onClick={onInstall} className="text-xs px-3 py-2 rounded-lg bg-sgdf-blue text-white hover:bg-blue-700 font-semibold">Installer</button>
-  //       </div>
-  //     </div>
-  //   </div>
-  // )
 }
