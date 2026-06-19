@@ -14,7 +14,7 @@ Un outil qui travaille pour tous, ça prend 2 secondes :)
 
 ::: details Psst! Quelques informations techniques :)
 
-- Lire la [vue d’ensemble](/techical/overview)
+- Lire la [vue d’ensemble](/technical/overview)
 - Voir le [déploiement Vercel](/technical/vercel)
 
 :::
