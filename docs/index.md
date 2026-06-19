@@ -6,7 +6,7 @@
 
 Permettre aux chefs/équipe de groupe d’envoyer rapidement leurs justificatifs à la trésorerie, avec copie automatique, via email.
 
-Un outil qui travaille pour tous, ça prends 2 secondes :)
+Un outil qui travaille pour tous, ça prend 2 secondes :)
 
 ## Démarrer
 
