@@ -1,76 +1,74 @@
-# AI Coding Agent Instructions
+# Instructions pour les agents IA de développement
 
-## 📚 Repository Overview
+## 📚 Vue d'ensemble du dépôt
 
-This repository hosts a **Next.js 16** application (App Router) for managing SGDF procurement card invoices. The stack includes:
+Ce dépôt héberge une application **Next.js 16** (App Router) pour la gestion des factures de cartes d'achat SGDF. La stack comprend :
 
 - **TypeScript**
-- **Tailwind CSS** for styling
-- **Clerk** for authentication
-- **Nodemailer** (SMTP) for server‑side email sending
-- **Progressive Web App (PWA)** features (manifest, service worker, offline support)
+- **Tailwind CSS** pour le style
+- **Clerk** pour l'authentification
+- **Nodemailer** (SMTP) pour l'envoi d'e-mails côté serveur
+- Des fonctionnalités **Progressive Web App (PWA)** (manifest, service worker, support hors-ligne)
 
-The source lives under the `src/` folder and follows a conventional Next.js layout:
+Le code source se trouve dans le dossier `src/` et suit la structure conventionnelle de Next.js :
 
 ```
 src/
-├─ app/               # App Router pages & API routes
+├─ app/               # Pages App Router & routes API
 │   ├─ layout.tsx
-│   ├─ (main)          # Home page + app
-│   ├─ (auth)          # Clerk auth Logic
-│   ├─ offline/        # Offline‑only UI
-│   └─ api/            # Server‑side route handlers
-├─ components/        # Re‑usable UI components (forms, modals, etc.)
-├─ lib/               # Utility functions, types, and API clients
-└─ middleware.ts      # Global request handling (auth, redirects)
+│   ├─ (main)          # Page d'accueil + app
+│   ├─ (auth)          # Logique d'authentification Clerk
+│   ├─ offline/        # UI spécifique hors-ligne
+│   └─ api/            # Gestionnaires de routes côté serveur
+├─ components/        # Composants UI réutilisables (formulaires, modales, etc.)
+├─ lib/               # Fonctions utilitaires, types et clients API
+└─ middleware.ts      # Gestion globale des requêtes (auth, redirections)
 ```
 
-## 🎯 Goals for AI Agents
+## 🎯 Objectifs pour les agents IA
 
-MOST IMPORTANT: Keep it stupid simple. Only make necessary code, always prefer other solution over adding new code !
+**PRIMORDIAL : Rester le plus simple possible. N'écris que le code strictement nécessaire, privilégie toujours une solution existante plutôt qu'ajouter du nouveau code !**
 
-1. **Maintain architectural consistency** – keep new files in the appropriate `app/`, `components/`, or `lib/` sub‑folders.
-2. **Follow the existing coding style** – TypeScript strict mode, Tailwind utility‑first styling, and ESLint rules defined in `.eslintrc.json`.
-3. **Preserve user experience** – any UI change must respect the dark‑mode / glass‑morphism aesthetic already present.
-4. **Ensure security & privacy** – never store uploaded images on the server; always send them via email.
-5. **Write comprehensive documentation** – update `README.md` or `SETUP.md` when adding features.
+1. **Maintenir la cohérence architecturale** – placer les nouveaux fichiers dans les sous-dossiers appropriés : `app/`, `components/` ou `lib/`.
+2. **Respecter le style de code existant** – TypeScript en mode strict, styles Tailwind utilitaires, et règles ESLint définies dans `.eslintrc.json`.
+3. **Préserver l'expérience utilisateur** – toute modification d'interface doit respecter l'esthétique dark mode / glassmorphisme déjà en place.
+4. **Garantir sécurité et confidentialité** – ne jamais stocker les images uploadées sur le serveur ; les transmettre uniquement par e-mail.
+5. **Rédiger une documentation complète** – mettre à jour `README.md` ou `SETUP.md` lors de l'ajout de fonctionnalités.
 
-## 🛠️ Development Workflow
+## 🛠️ Workflow de développement
 
-1. **Explore the code** – start with `src/app/layout.tsx` to understand the global layout and Tailwind theme.
-2. **Locate related components** – use `grep_search` for component names (e.g., `InvoiceForm`).
-3. **Add/modify** – use `replace_file_content` for single‑block edits or `multi_replace_file_content` for dispersed changes.
-4. **Commit guidelines** – follow conventional commits (`feat:`, `fix:`, `chore:`) and keep commit messages concise.
+1. **Explorer le code** – commencer par `src/app/layout.tsx` pour comprendre la mise en page globale et le thème Tailwind.
+2. **Localiser les composants concernés** – utiliser `grep_search` avec les noms de composants (ex. : `InvoiceForm`).
+3. **Ajouter/modifier** – utiliser `replace_file_content` pour des modifications en un seul bloc, ou `multi_replace_file_content` pour des changements dispersés.
+4. **Conventions de commit** – suivre les commits conventionnels (`feat:`, `fix:`, `chore:`) et garder les messages concis.
 
-## 📂 Key Files & Their Purpose
+## 📂 Fichiers clés et leur rôle
 
-- **`src/app/layout.tsx`** – wraps every page, injects Tailwind globals, and sets up the Clerk provider.
-- **`src/app/api/`** – contains server‑side route handlers (`POST` endpoints) for email dispatch.
-- **`src/components/`** – UI building blocks (e.g., `CaptureButton`, `InvoiceForm`).
-- **`src/lib/`** – helper utilities such as `formatFileName.ts`, `emailSender.ts`.
-- **`middleware.ts`** – protects routes, redirects unauthenticated users to Clerk sign‑in.
-- **`public/`** – static assets (icons, manifest for PWA).
-- **`tailwind.config.js`** – custom color palette and dark‑mode configuration.
+- **`src/app/layout.tsx`** – encapsule toutes les pages, injecte les styles globaux Tailwind et configure le provider Clerk.
+- **`src/app/api/`** – contient les gestionnaires de routes côté serveur (endpoints `POST`) pour l'envoi d'e-mails.
+- **`src/components/`** – blocs de construction UI (ex. : `CaptureButton`, `InvoiceForm`).
+- **`src/lib/`** – utilitaires comme `formatFileName.ts`, `emailSender.ts`.
+- **`middleware.ts`** – protège les routes, redirige les utilisateurs non authentifiés vers la page de connexion Clerk.
+- **`public/`** – assets statiques (icônes, manifest PWA).
+- **`tailwind.config.js`** – palette de couleurs personnalisée et configuration du dark mode.
 
-## 🧭 Navigation Tips for AI Agents
+## 🧭 Conseils de navigation pour les agents IA
 
-- **When extending UI**: place new components in `src/components/` and export them via an `index.ts` barrel file if needed.
-- **When adding server logic**: use the `src/app/api/` folder; keep all server‑only code out of the client bundle.
-- **When updating styles**: modify Tailwind classes directly in JSX; avoid custom CSS files unless absolutely necessary.
+- **Pour étendre l'UI** : placer les nouveaux composants dans `src/components/` et les exporter via un fichier barrel `index.ts` si nécessaire.
+- **Pour ajouter de la logique serveur** : utiliser le dossier `src/app/api/` ; garder tout le code serveur hors du bundle client.
+- **Pour modifier les styles** : modifier directement les classes Tailwind dans le JSX ; éviter les fichiers CSS personnalisés sauf absolue nécessité.
 
-## 📦 Build & Deploy
+## 📦 Build & Déploiement
 
-- Development: `pnpm dev`
-- Production build: `pnpm build`
-- Start production server: `pnpm start`
-- Deploy to Vercel – ensure all environment variables listed in `SETUP.md` are provided.
+- Développement : `pnpm dev`
+- Build de production : `pnpm build`
+- Démarrer le serveur de production : `pnpm start`
+- Déploiement sur Vercel – s'assurer que toutes les variables d'environnement listées dans `SETUP.md` sont bien renseignées.
 
-## 📝 Documentation Updates
+## 📝 Mises à jour de la documentation
 
-Whenever you modify functionality:
+À chaque modification de fonctionnalité :
 
-1. Add a short description to `README.md` under the appropriate section.
-2. Update `SETUP.md` if new environment variables are required.
-3. If UI changes affect the user flow, add a screenshot (generated via `generate_image`) and embed it in the docs.
-
----
+1. Ajouter une courte description dans `README.md` sous la section appropriée.
+2. Mettre à jour `SETUP.md` si de nouvelles variables d'environnement sont nécessaires.
+3. Si les modifications d'UI affectent le parcours utilisateur, ajouter une capture d'écran (générée via `generate_image`) et l'intégrer dans la documentation.
