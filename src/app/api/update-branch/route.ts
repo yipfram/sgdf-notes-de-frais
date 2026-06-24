@@ -1,6 +1,6 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { ALL_BRANCHES } from "@/lib/branches";
+import { SGDF_BRANCHES } from "@/constants/configScoute";
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
     const branch = body.branch.trim();
 
-    if (!ALL_BRANCHES.includes(branch)) {
+    if (!SGDF_BRANCHES.includes(branch)) {
       return NextResponse.json(
         { error: "Valeur de branche invalide" },
         { status: 400 },

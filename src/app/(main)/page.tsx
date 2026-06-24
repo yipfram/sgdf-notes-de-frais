@@ -5,12 +5,12 @@ import { useUser, UserButton } from "@clerk/nextjs";
 import { ExpenseForm } from "@/components/ExpenseForm";
 import { FeatureNotice } from "@/components/FeatureNotice";
 import { PhotoCapture } from "@/components/PhotoCapture";
-import { useOnlineStatus } from "@/lib/useOnlineStatus";
+import { StatusEstEnligne } from "@/lib/useOnlineStatus";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import {
   MAX_ATTACHMENT_COUNT,
   type ExpenseAttachment,
-} from "@/lib/attachments";
+} from "@/constants/piecesJointes";
 import Image from "next/image";
 
 export default function Home() {
@@ -21,7 +21,7 @@ export default function Home() {
     type: "success" | "error" | null;
     message: string;
   }>({ type: null, message: "" });
-  const isOnline = useOnlineStatus();
+  const isOnline = StatusEstEnligne();
 
   useEffect(() => {
     if (!branchSaveStatus.type) {

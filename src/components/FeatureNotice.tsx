@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { MAX_ATTACHMENT_COUNT } from "@/lib/attachments";
+import { MAX_ATTACHMENT_COUNT } from "@/constants/piecesJointes";
 
 const STORAGE_KEY = "sgdf-multiple-attachments-notice-dismissed";
 const DISMISS_EVENT = "sgdf-multiple-attachments-notice-dismissed-change";

@@ -2,12 +2,12 @@
 
 import { useState, useRef } from "react";
 import { CameraIcon, ArrowUpOnSquareIcon } from "@heroicons/react/24/outline";
+import { isAllowedAttachmentMimeType } from "@/lib/attachments";
 import {
-  type ExpenseAttachment,
   MAX_ATTACHMENT_COUNT,
   MAX_ATTACHMENT_SIZE_BYTES,
-  isAllowedAttachmentMimeType,
-} from "@/lib/attachments";
+  ExpenseAttachment,
+} from "@/constants/piecesJointes";
 
 // --- Utilitaires ---
 async function blobToDataUrl(blob: Blob): Promise<string> {

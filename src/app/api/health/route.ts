@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ALL_BRANCHES } from "@/lib/branches";
+import { SGDF_BRANCHES } from "@/constants/configScoute";
 
 export async function GET() {
   const timestamp = new Date().toISOString();
@@ -17,7 +17,7 @@ export async function GET() {
   const envOk = missingEnv.length === 0;
 
   // Branches check
-  const branchesOk = Array.isArray(ALL_BRANCHES) && ALL_BRANCHES.length > 0;
+  const branchesOk = Array.isArray(SGDF_BRANCHES) && SGDF_BRANCHES.length > 0;
 
   // Overall health: env vars present + branches configured
   const allOk = envOk && branchesOk;
@@ -32,7 +32,7 @@ export async function GET() {
     },
     branches: {
       ok: branchesOk,
-      count: Array.isArray(ALL_BRANCHES) ? ALL_BRANCHES.length : 0,
+      count: Array.isArray(SGDF_BRANCHES) ? SGDF_BRANCHES.length : 0,
     },
   };
 
