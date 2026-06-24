@@ -1,12 +1,30 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { ALL_BRANCHES } from "@/lib/branches";
+import {
+  reponseRateLimit,
+  verifierOrigineRequete,
+  verifierRateLimit,
+} from "@/lib/api/securiteRequetes";
 
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    const erreurOrigine = verifierOrigineRequete(req);
+    if (erreurOrigine) return erreurOrigine;
+
+    // max 30 mises à jour par minute pour cet utilisateur
+    const limitation = verifierRateLimit(
+      `maj-branche:${userId}`,
+      30,
+      60 * 1000,
+    );
+    if (!limitation.autorise) {
+      return reponseRateLimit(limitation.attenteSecondes);
     }
 
     const body = await req.json().catch(() => null);

@@ -3,6 +3,11 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { envoyerEmail } from "@/lib/email";
 import { jsonError, verifierErreur } from "@/lib/api/utils";
 import { validateBody } from "@/lib/api/validateBody";
+import {
+  reponseRateLimit,
+  verifierOrigineRequete,
+  verifierRateLimit,
+} from "@/lib/api/securiteRequetes";
 
 function validateEnv() {
   if (
@@ -22,6 +27,30 @@ export async function POST(req: NextRequest) {
     // Auth
     const { userId } = await auth();
     if (!userId) return jsonError("Non autorisé", 401);
+
+    const erreurOrigine = verifierOrigineRequete(req);
+    if (erreurOrigine) return erreurOrigine;
+
+    // Max 2 envois par 30 secondes
+    const limiteCourte = verifierRateLimit(
+      `envoi-email:court:${userId}`,
+      2,
+      30 * 1000,
+    );
+    if (!limiteCourte.autorise) {
+      return reponseRateLimit(limiteCourte.attenteSecondes);
+    }
+
+    // Max 5 envois par 10 minutes
+    const limiteLongue = verifierRateLimit(
+      `envoi-email:long:${userId}`,
+      5,
+      10 * 60 * 1000,
+    );
+    if (!limiteLongue.autorise) {
+      return reponseRateLimit(limiteLongue.attenteSecondes);
+    }
+
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
 
