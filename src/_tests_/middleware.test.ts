@@ -26,7 +26,7 @@ vi.mock("@clerk/nextjs/server", () => ({
   }),
 }));
 
-describe("middleware Clerk", () => {
+describe("Proxy(middleware) Clerk", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -34,8 +34,9 @@ describe("middleware Clerk", () => {
   it.each(["/", "/api/send-expense", "/api/update-branch"])(
     "protege la route %s",
     async (pathname) => {
-      const { default: middleware } = await import("../middleware");
-      const handleRequest = middleware as unknown as MockedClerkMiddlewareHandler;
+      const { default: middleware } = await import("../proxy");
+      const handleRequest =
+        middleware as unknown as MockedClerkMiddlewareHandler;
       const auth = { protect: vi.fn().mockResolvedValue(undefined) };
 
       await handleRequest(auth, {
@@ -48,7 +49,7 @@ describe("middleware Clerk", () => {
   );
 
   it("ne protege pas les routes publiques", async () => {
-    const { default: middleware } = await import("../middleware");
+    const { default: middleware } = await import("../proxy");
     const handleRequest = middleware as unknown as MockedClerkMiddlewareHandler;
     const auth = { protect: vi.fn().mockResolvedValue(undefined) };
 
