@@ -4,7 +4,7 @@ export default function AuthSkeleton(): React.ReactElement {
   return (
     <div className="flex flex-col items-center justify-center py-8 gap-4">
       <span className="sr-only" aria-live="polite">
-        Chargement de l&apos;interface...
+        Chargement ...
       </span>
       <svg
         className="animate-spin h-8 w-8 text-zinc-400"
