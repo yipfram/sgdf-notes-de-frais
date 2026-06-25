@@ -20,228 +20,231 @@ import {
 } from "@/constants/piecesJointes";
 import { TYPES_DEPENSES, BRANCHES_ASC } from "@/constants/configScoute";
 
-interface ExpenseFormProps {
-  readonly attachments: ExpenseAttachment[];
-  readonly userEmail: string;
-  readonly initialBranch?: string; // From Clerk public metadata
-  readonly onPersistBranch?: (branch: string) => Promise<void> | void;
-  readonly onCreateNewNote?: () => void;
-  readonly onBranchChange?: (branch: string) => void;
-  readonly onRemoveAttachment?: (index: number) => void;
+interface FormulaireDepenseProps {
+  readonly piecesJointes: ExpenseAttachment[];
+  readonly emailUtilisateur: string;
+  readonly brancheInitiale?: string; // Depuis les métadonnées publiques Clerk
+  readonly onMemoriserBranche?: (branche: string) => Promise<void> | void;
+  readonly onCreerNouvelleNote?: () => void;
+  readonly onChangementBranche?: (branche: string) => void;
+  readonly onSupprimerPieceJointe?: (index: number) => void;
 }
 
-export function ExpenseForm({
-  attachments,
-  userEmail,
-  initialBranch = "",
-  onPersistBranch,
-  onCreateNewNote,
-  onBranchChange,
-  onRemoveAttachment,
-  isOnline = true,
-}: ExpenseFormProps & { isOnline?: boolean }) {
-  const [formData, setFormData] = useState({
+export function FormulaireDepense({
+  piecesJointes,
+  emailUtilisateur,
+  brancheInitiale = "",
+  onMemoriserBranche,
+  onCreerNouvelleNote,
+  onChangementBranche,
+  onSupprimerPieceJointe,
+  estEnLigne = true,
+}: FormulaireDepenseProps & { estEnLigne?: boolean }) {
+  const [formulaire, setFormulaire] = useState({
     date: new Date().toISOString().split("T")[0],
-    branch: initialBranch || "",
-    expenseType: "",
-    amount: "",
+    branche: brancheInitiale || "",
+    typeDepense: "",
+    montant: "",
     description: "",
   });
   const emailTresorier = process.env.NEXT_PUBLIC_TREASURY_EMAIL ?? "";
 
-  const [branchPersistStatus, setBranchPersistStatus] = useState<
-    "idle" | "saving" | "saved" | "error"
-  >("idle");
+  const [statutMemoBranche, setStatutMemoBranche] = useState<
+    "repos" | "sauvegarde" | "sauvegardee" | "erreur"
+  >("repos");
 
-  // Sync initialBranch prop when Clerk metadata loads (after initial render)
+  // Synchronise la branche initiale quand les métadonnées Clerk arrivent.
   useEffect(() => {
-    if (initialBranch !== formData.branch) {
-      // Allow clearing when metadata is empty; avoid overriding user input once they changed it
-      if (!formData.branch || initialBranch === "") {
-        setFormData((prev) => ({ ...prev, branch: initialBranch }));
+    if (brancheInitiale !== formulaire.branche) {
+      // Permet de vider la valeur, sans écraser une saisie déjà modifiée.
+      if (!formulaire.branche || brancheInitiale === "") {
+        setFormulaire((prev) => ({ ...prev, branche: brancheInitiale }));
       }
     }
-  }, [initialBranch, formData.branch]);
+  }, [brancheInitiale, formulaire.branche]);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<{
-    type: "success" | "error" | null;
+  const [envoiEnCours, setEnvoiEnCours] = useState(false);
+  const [statutEnvoi, setStatutEnvoi] = useState<{
+    type: "succes" | "erreur" | null;
     message: string;
   }>({ type: null, message: "" });
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (field === "branch") {
-      if (onBranchChange) {
-        onBranchChange(value);
+  const modifierChamp = (
+    champ: "date" | "branche" | "typeDepense" | "montant" | "description",
+    valeur: string,
+  ) => {
+    setFormulaire((prev) => ({ ...prev, [champ]: valeur }));
+    if (champ === "branche") {
+      if (onChangementBranche) {
+        onChangementBranche(valeur);
       }
-      // Persist branch selection to user metadata (fire & forget)
-      if (onPersistBranch && value) {
-        setBranchPersistStatus("saving");
-        Promise.resolve(onPersistBranch(value))
-          .then(() => setBranchPersistStatus("saved"))
-          .catch(() => setBranchPersistStatus("error"));
+      // Mémorise la branche dans les métadonnées utilisateur.
+      if (onMemoriserBranche && valeur) {
+        setStatutMemoBranche("sauvegarde");
+        Promise.resolve(onMemoriserBranche(valeur))
+          .then(() => setStatutMemoBranche("sauvegardee"))
+          .catch(() => setStatutMemoBranche("erreur"));
       }
     }
-    // Clear status when user starts typing
-    if (submitStatus.type) {
-      setSubmitStatus({ type: null, message: "" });
+    if (statutEnvoi.type) {
+      setStatutEnvoi({ type: null, message: "" });
     }
   };
 
-  const formatAmount = (amount: string) => {
-    return amount.replace(",", ".");
+  const normaliserMontant = (montant: string) => {
+    return montant.replace(",", ".");
   };
 
-  const generateFileNames = () => {
-    if (attachments.length === 0) return [];
-    return buildNormalizedFileNames(attachments, {
-      date: formData.date,
-      branch: formData.branch,
-      expenseType: formData.expenseType,
-      amount: formatAmount(formData.amount),
+  const genererNomsFichiers = () => {
+    if (piecesJointes.length === 0) return [];
+    return buildNormalizedFileNames(piecesJointes, {
+      date: formulaire.date,
+      branch: formulaire.branche,
+      expenseType: formulaire.typeDepense,
+      amount: normaliserMontant(formulaire.montant),
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const envoyerDepense = async (evenement: React.FormEvent) => {
+    evenement.preventDefault();
 
     if (
-      attachments.length === 0 ||
-      !formData.branch ||
-      !formData.expenseType ||
-      !formData.amount
+      piecesJointes.length === 0 ||
+      !formulaire.branche ||
+      !formulaire.typeDepense ||
+      !formulaire.montant
     ) {
-      setSubmitStatus({
-        type: "error",
+      setStatutEnvoi({
+        type: "erreur",
         message:
           "Veuillez remplir tous les champs obligatoires et ajouter au moins un justificatif.",
       });
       return;
     }
 
-    setIsSubmitting(true);
-    setSubmitStatus({ type: null, message: "" });
+    setEnvoiEnCours(true);
+    setStatutEnvoi({ type: null, message: "" });
 
     try {
-      const normalizedFileNames = generateFileNames();
-      const payloadAttachments = attachments.map((attachment, index) => ({
-        ...attachment,
+      const nomsFichiersNormalises = genererNomsFichiers();
+      const piecesJointesPourApi = piecesJointes.map((pieceJointe, index) => ({
+        ...pieceJointe,
         normalizedFileName:
-          normalizedFileNames[index] ||
-          attachment.normalizedFileName ||
-          attachment.originalFileName,
+          nomsFichiersNormalises[index] ||
+          pieceJointe.normalizedFileName ||
+          pieceJointe.originalFileName,
       }));
 
-      const response = await fetch("/api/send-expense", {
+      const reponse = await fetch("/api/send-expense", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userEmail,
-          date: formData.date,
-          branch: formData.branch,
-          expenseType: formData.expenseType,
-          amount: formatAmount(formData.amount),
-          description: formData.description,
-          attachments: payloadAttachments,
+          userEmail: emailUtilisateur,
+          date: formulaire.date,
+          branch: formulaire.branche,
+          expenseType: formulaire.typeDepense,
+          amount: normaliserMontant(formulaire.montant),
+          description: formulaire.description,
+          attachments: piecesJointesPourApi,
         }),
       });
 
-      const responseText = await response.text();
-      let resultError = "";
-      if (responseText) {
+      const texteReponse = await reponse.text();
+      let erreurApi = "";
+      if (texteReponse) {
         try {
-          const parsed = JSON.parse(responseText) as { error?: string };
-          resultError = parsed.error || "";
+          const donnees = JSON.parse(texteReponse) as { error?: string };
+          erreurApi = donnees.error || "";
         } catch {
-          // Non-JSON error bodies (e.g. platform 413 pages)
+          // Certaines erreurs plateforme (ex. 413) ne renvoient pas du JSON.
         }
       }
 
-      if (response.ok) {
-        setSubmitStatus({
-          type: "success",
+      if (reponse.ok) {
+        setStatutEnvoi({
+          type: "succes",
           message:
             "Email envoyé avec succès ! La facture a été transmise à la trésorerie et une copie vous a été envoyée.",
         });
-        // Reset only variable fields but keep branch (souvent même branche pour plusieurs notes)
-        setFormData((prev) => ({
+        // Réinitialise les champs variables, mais garde la branche.
+        setFormulaire((prev) => ({
           date: new Date().toISOString().split("T")[0],
-          branch: prev.branch,
-          expenseType: "",
-          amount: "",
+          branche: prev.branche,
+          typeDepense: "",
+          montant: "",
           description: "",
         }));
       } else {
-        const isPayloadTooLarge =
-          response.status === 413 ||
+        const piecesJointesTropLourdes =
+          reponse.status === 413 ||
           /payload too large|request entity too large|function_payload_too_large/i.test(
-            responseText,
+            texteReponse,
           );
-        const isValidationError = response.status === 400;
-        const isAuthError = response.status === 401 || response.status === 403;
-        const isRateLimited = response.status === 429;
-        const isServerError = response.status >= 500;
+        const erreurValidation = reponse.status === 400;
+        const erreurAuth = reponse.status === 401 || reponse.status === 403;
+        const tropDeTentatives = reponse.status === 429;
+        const erreurServeur = reponse.status >= 500;
 
-        let errorMessage = resultError || "Erreur lors de l'envoi de l'email";
+        let messageErreur = erreurApi || "Erreur lors de l'envoi de l'email";
 
-        if (isPayloadTooLarge) {
-          errorMessage = `Pièces jointes trop volumineuses. Réduisez la taille ou le nombre de fichiers (max ${MAX_ATTACHMENT_COUNT} fichiers, ${(MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB/fichier, ${(MAX_TOTAL_ATTACHMENTS_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB au total), puis réessayez.`;
-        } else if (isAuthError) {
-          errorMessage =
+        if (piecesJointesTropLourdes) {
+          messageErreur = `Pièces jointes trop volumineuses. Réduisez la taille ou le nombre de fichiers (max ${MAX_ATTACHMENT_COUNT} fichiers, ${(MAX_ATTACHMENT_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB/fichier, ${(MAX_TOTAL_ATTACHMENTS_SIZE_BYTES / (1024 * 1024)).toFixed(0)}MB au total), puis réessayez.`;
+        } else if (erreurAuth) {
+          messageErreur =
             "Session expirée ou accès refusé. Veuillez vous reconnecter puis réessayer.";
-        } else if (isRateLimited) {
-          errorMessage =
+        } else if (tropDeTentatives) {
+          messageErreur =
             "Trop de tentatives. Veuillez patienter quelques minutes puis réessayer.";
-        } else if (isServerError) {
-          errorMessage =
+        } else if (erreurServeur) {
+          messageErreur =
             "Erreur serveur temporaire. Veuillez réessayer plus tard.";
-        } else if (isValidationError && !resultError) {
-          errorMessage =
+        } else if (erreurValidation && !erreurApi) {
+          messageErreur =
             "Données invalides. Vérifiez le formulaire puis réessayez.";
         }
 
-        setSubmitStatus({
-          type: "error",
-          message: errorMessage,
+        setStatutEnvoi({
+          type: "erreur",
+          message: messageErreur,
         });
       }
-    } catch (error) {
-      console.error("Erreur:", error);
-      setSubmitStatus({
-        type: "error",
+    } catch (erreur) {
+      console.error("Erreur:", erreur);
+      setStatutEnvoi({
+        type: "erreur",
         message: "Erreur de connexion. Veuillez réessayer.",
       });
     } finally {
-      setIsSubmitting(false);
+      setEnvoiEnCours(false);
     }
   };
 
   // Validation complète (inclut type de dépense)
-  const isFormValid =
-    attachments.length > 0 &&
-    formData.branch &&
-    formData.expenseType &&
-    formData.amount;
-  const previewFileNames = isFormValid ? generateFileNames() : [];
+  const formulaireEstValide = Boolean(
+    piecesJointes.length > 0 &&
+      formulaire.branche &&
+      formulaire.typeDepense &&
+      formulaire.montant,
+  );
+  const nomsFichiersApercu = formulaireEstValide ? genererNomsFichiers() : [];
 
-  const handleNewNote = () => {
-    // Clear form (keep branch), clear status, notify parent to reset image & OCR amount
-    setFormData((prev) => ({
+  const creerNouvelleNote = () => {
+    // Vide le formulaire, garde la branche et demande au parent de retirer les fichiers.
+    setFormulaire((prev) => ({
       date: new Date().toISOString().split("T")[0],
-      branch: prev.branch,
-      expenseType: "",
-      amount: "",
+      branche: prev.branche,
+      typeDepense: "",
+      montant: "",
       description: "",
     }));
-    setSubmitStatus({ type: null, message: "" });
-    if (onCreateNewNote) onCreateNewNote();
+    setStatutEnvoi({ type: null, message: "" });
+    if (onCreerNouvelleNote) onCreerNouvelleNote();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={envoyerDepense} className="space-y-6">
       <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
         <ClipboardDocumentListIcon
           className="w-5 h-5 text-zinc-700"
@@ -250,23 +253,23 @@ export function ExpenseForm({
         Informations de la dépense
       </h2>
 
-      {attachments.length > 0 && (
+      {piecesJointes.length > 0 && (
         <div className="space-y-2">
           <label className="block text-sm font-medium text-zinc-700">
-            Justificatifs ({attachments.length})
+            Justificatifs ({piecesJointes.length})
           </label>
           <div className="space-y-2">
-            {attachments.map((attachment, index) => {
-              const isImage = attachment.mimeType.startsWith("image/");
+            {piecesJointes.map((pieceJointe, index) => {
+              const estImage = pieceJointe.mimeType.startsWith("image/");
               return (
                 <div
-                  key={`${attachment.displayName}-${index}`}
+                  key={`${pieceJointe.displayName}-${index}`}
                   className="flex items-center gap-3 p-3 rounded-lg border border-zinc-200 bg-zinc-50"
                 >
-                  {isImage ? (
+                  {estImage ? (
                     <Image
-                      src={`data:${attachment.mimeType};base64,${attachment.base64Data}`}
-                      alt={attachment.displayName}
+                      src={`data:${pieceJointe.mimeType};base64,${pieceJointe.base64Data}`}
+                      alt={pieceJointe.displayName}
                       width={56}
                       height={56}
                       className="w-14 h-14 object-cover rounded-md border border-zinc-200"
@@ -281,20 +284,20 @@ export function ExpenseForm({
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-zinc-900 truncate font-medium">
-                      {attachment.displayName}
+                      {pieceJointe.displayName}
                     </p>
                     <p className="text-xs text-zinc-500">
-                      {attachment.mimeType === "application/pdf"
+                      {pieceJointe.mimeType === "application/pdf"
                         ? "PDF"
                         : "Image"}
                     </p>
                   </div>
-                  {onRemoveAttachment && (
+                  {onSupprimerPieceJointe && (
                     <button
                       type="button"
-                      onClick={() => onRemoveAttachment(index)}
+                      onClick={() => onSupprimerPieceJointe(index)}
                       className="p-2 rounded-md text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors"
-                      aria-label={`Supprimer ${attachment.displayName}`}
+                      aria-label={`Supprimer ${pieceJointe.displayName}`}
                     >
                       <TrashIcon className="w-5 h-5" aria-hidden="true" />
                     </button>
@@ -308,15 +311,15 @@ export function ExpenseForm({
 
       <div className="space-y-2">
         <label
-          htmlFor="expenseType"
+          htmlFor="typeDepense"
           className="block text-sm font-medium text-zinc-700"
         >
           Type de dépense *
         </label>
         <select
-          id="expenseType"
-          value={formData.expenseType}
-          onChange={(e) => handleInputChange("expenseType", e.target.value)}
+          id="typeDepense"
+          value={formulaire.typeDepense}
+          onChange={(e) => modifierChamp("typeDepense", e.target.value)}
           className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         >
@@ -339,8 +342,8 @@ export function ExpenseForm({
         <input
           id="date"
           type="date"
-          value={formData.date}
-          onChange={(e) => handleInputChange("date", e.target.value)}
+          value={formulaire.date}
+          onChange={(e) => modifierChamp("date", e.target.value)}
           className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         />
@@ -348,29 +351,29 @@ export function ExpenseForm({
 
       <div className="space-y-2">
         <label
-          htmlFor="branch"
+          htmlFor="branche"
           className="block text-sm font-medium text-zinc-700"
         >
           Branche *
         </label>
         <select
-          id="branch"
-          value={formData.branch}
-          onChange={(e) => handleInputChange("branch", e.target.value)}
+          id="branche"
+          value={formulaire.branche}
+          onChange={(e) => modifierChamp("branche", e.target.value)}
           className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         >
           <option value="">Sélectionner une branche</option>
-          {BRANCHES_ASC.map((branch) => (
-            <option key={branch} value={branch}>
-              {branch}
+          {BRANCHES_ASC.map((branche) => (
+            <option key={branche} value={branche}>
+              {branche}
             </option>
           ))}
         </select>
-        {formData.branch && (
+        {formulaire.branche && (
           <div className="mt-1 flex items-center justify-between">
             <p className="text-xs text-zinc-500 flex items-center gap-1">
-              {branchPersistStatus === "saving" && (
+              {statutMemoBranche === "sauvegarde" && (
                 <span className="inline-flex items-center gap-1">
                   <svg
                     className="animate-spin h-3.5 w-3.5 text-zinc-500"
@@ -394,13 +397,13 @@ export function ExpenseForm({
                   Sauvegarde…
                 </span>
               )}
-              {branchPersistStatus === "saved" && (
+              {statutMemoBranche === "sauvegardee" && (
                 <span className="inline-flex items-center gap-1 text-emerald-700">
                   <CheckCircleIcon className="w-4 h-4" aria-hidden="true" />{" "}
                   Branche mémorisée
                 </span>
               )}
-              {branchPersistStatus === "error" && (
+              {statutMemoBranche === "erreur" && (
                 <span className="inline-flex items-center gap-1 text-rose-700">
                   <ExclamationTriangleIcon
                     className="w-4 h-4"
@@ -416,18 +419,18 @@ export function ExpenseForm({
 
       <div className="space-y-2">
         <label
-          htmlFor="amount"
+          htmlFor="montant"
           className="block text-sm font-medium text-zinc-700"
         >
           Montant (€) *
         </label>
         <input
-          id="amount"
+          id="montant"
           type="number"
           step="0.01"
           placeholder="0.00"
-          value={formData.amount}
-          onChange={(e) => handleInputChange("amount", e.target.value)}
+          value={formulaire.montant}
+          onChange={(e) => modifierChamp("montant", e.target.value)}
           className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         />
@@ -443,24 +446,24 @@ export function ExpenseForm({
         <textarea
           id="description"
           placeholder="Description de la dépense..."
-          value={formData.description}
-          onChange={(e) => handleInputChange("description", e.target.value)}
+          value={formulaire.description}
+          onChange={(e) => modifierChamp("description", e.target.value)}
           rows={3}
           className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 resize-none bg-white text-zinc-900"
         />
       </div>
 
-      {/* Status messages */}
-      {submitStatus.type && (
+      {/* Messages de statut */}
+      {statutEnvoi.type && (
         <div
           className={`p-4 rounded-lg space-y-3 ${
-            submitStatus.type === "success"
+            statutEnvoi.type === "succes"
               ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
               : "bg-rose-50 border border-rose-200 text-rose-800"
           }`}
         >
           <p className="text-sm flex items-start gap-2">
-            {submitStatus.type === "success" ? (
+            {statutEnvoi.type === "succes" ? (
               <CheckCircleIcon
                 className="w-5 h-5 flex-none"
                 aria-hidden="true"
@@ -471,12 +474,12 @@ export function ExpenseForm({
                 aria-hidden="true"
               />
             )}
-            <span>{submitStatus.message}</span>
+            <span>{statutEnvoi.message}</span>
           </p>
-          {submitStatus.type === "success" && (
+          {statutEnvoi.type === "succes" && (
             <button
               type="button"
-              onClick={handleNewNote}
+              onClick={creerNouvelleNote}
               className="w-full p-3 rounded-lg font-medium bg-zinc-900 text-white hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
             >
               <span className="inline-flex items-center justify-center gap-2">
@@ -489,7 +492,7 @@ export function ExpenseForm({
       )}
 
       <div className="space-y-4">
-        {isFormValid && !submitStatus.type && (
+        {formulaireEstValide && !statutEnvoi.type && (
           <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg">
             <p className="text-sm text-zinc-800">
               <span className="inline-flex items-center gap-2 font-medium">
@@ -497,7 +500,7 @@ export function ExpenseForm({
                 Email sera envoyé à :
               </span>
               <br />• Trésorerie : {emailTresorier}
-              <br />• Vous : {userEmail}
+              <br />• Vous : {emailUtilisateur}
               <br />
               <span className="inline-flex items-center gap-2 font-medium">
                 <svg
@@ -517,9 +520,9 @@ export function ExpenseForm({
                 Pièce(s) jointe(s) :
               </span>
               <br />
-              {previewFileNames.map((name) => (
-                <span key={name}>
-                  • {name}
+              {nomsFichiersApercu.map((nom) => (
+                <span key={nom}>
+                  • {nom}
                   <br />
                 </span>
               ))}
@@ -527,7 +530,7 @@ export function ExpenseForm({
           </div>
         )}
 
-        {!isOnline && (
+        {!estEnLigne && (
           <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm flex items-start gap-2">
             <ExclamationTriangleIcon
               className="w-5 h-5 mt-0.5"
@@ -542,14 +545,14 @@ export function ExpenseForm({
 
         <button
           type="submit"
-          disabled={!isFormValid || isSubmitting || !isOnline}
+          disabled={!formulaireEstValide || envoiEnCours || !estEnLigne}
           className={`w-full p-4 rounded-lg font-semibold text-white transition-colors focus:outline-none ${
-            isFormValid && !isSubmitting && isOnline
+            formulaireEstValide && !envoiEnCours && estEnLigne
               ? "bg-zinc-900 hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-400"
               : "bg-zinc-300 cursor-not-allowed"
           }`}
         >
-          {isSubmitting ? (
+          {envoiEnCours ? (
             <span className="flex items-center justify-center">
               <svg
                 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
