@@ -224,9 +224,9 @@ export function FormulaireDepense({
   // Validation complète (inclut type de dépense)
   const formulaireEstValide = Boolean(
     piecesJointes.length > 0 &&
-      formulaire.branche &&
-      formulaire.typeDepense &&
-      formulaire.montant,
+    formulaire.branche &&
+    formulaire.typeDepense &&
+    formulaire.montant,
   );
   const nomsFichiersApercu = formulaireEstValide ? genererNomsFichiers() : [];
 
