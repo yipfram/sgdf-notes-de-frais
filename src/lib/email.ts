@@ -1,9 +1,7 @@
 import nodemailer from "nodemailer";
-import { getBranchColor } from "./branches";
-import {
-  isAllowedAttachmentMimeType,
-  type ExpenseAttachment,
-} from "./attachments";
+import { getBranchColor } from "@/constants/configScoute";
+import { isAllowedAttachmentMimeType } from "./attachments";
+import { type ExpenseAttachment } from "@/constants/piecesJointes";
 
 export interface EmailData {
   userEmail: string;

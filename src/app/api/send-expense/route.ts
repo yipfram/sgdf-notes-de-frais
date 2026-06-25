@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { envoyerEmail } from "@/lib/email";
-import { jsonError, verifierErreur } from "@/lib/api/utils";
+import { jsonError, verifierErreurSmtp } from "@/lib/api/utils";
 import { validateBody } from "@/lib/api/validateBody";
 import {
   reponseRateLimit,
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Erreur lors de l'envoi de l'email:", error);
     if (error instanceof Error) {
-      return verifierErreur(error);
+      return verifierErreurSmtp(error);
     }
     return jsonError("Erreur interne du serveur", 500);
   }
