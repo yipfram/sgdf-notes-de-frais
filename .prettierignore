@@ -1,0 +1,17 @@
+node_modules
+.next
+out
+build
+coverage
+.vercel
+
+docs/.vitepress/dist
+docs/.vitepress/cache
+
+.env
+.env*.local
+*.tsbuildinfo
+next-env.d.ts
+
+pnpm-lock.yaml
+package-lock.json

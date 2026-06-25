@@ -80,6 +80,10 @@ pnpm test
 # Lancer les tests en mode watch
 pnpm test:watch
 
+# Lancer les vérifications de PR
+pnpm validate
+pnpm format
+
 # Lancer en production (si déployé localement)
 pnpm start
 ```
