@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useUser, UserButton } from "@clerk/nextjs";
-import { ExpenseForm } from "@/components/ExpenseForm";
+import { FormulaireDepense } from "@/components/FormulaireDepense";
 import { FeatureNotice } from "@/components/FeatureNotice";
 import { PhotoCapture } from "@/components/PhotoCapture";
 import { StatusEstEnligne } from "@/lib/useOnlineStatus";
@@ -115,30 +115,30 @@ export default function Home() {
             currentCount={attachments.length}
           />
 
-          <ExpenseForm
-            attachments={attachments}
-            userEmail={user?.emailAddresses[0]?.emailAddress || ""}
-            initialBranch={activeBranch}
-            onCreateNewNote={() => {
+          <FormulaireDepense
+            piecesJointes={attachments}
+            emailUtilisateur={user?.emailAddresses[0]?.emailAddress || ""}
+            brancheInitiale={activeBranch}
+            onCreerNouvelleNote={() => {
               setAttachments([]);
             }}
-            onRemoveAttachment={(index) => {
+            onSupprimerPieceJointe={(index) => {
               setAttachments((prev) => prev.filter((_, i) => i !== index));
             }}
-            onPersistBranch={async (branch: string) => {
+            onMemoriserBranche={async (branche: string) => {
               try {
                 setBranchSaveStatus({ type: null, message: "" });
                 const res = await fetch("/api/update-branch", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ branch }),
+                  body: JSON.stringify({ branch: branche }),
                 });
                 if (!res.ok) {
                   const data = await res.json().catch(() => ({}));
                   throw new Error(data.error || "Erreur API");
                 }
                 await user?.reload();
-                setActiveBranch(branch);
+                setActiveBranch(branche);
                 setBranchSaveStatus({
                   type: "success",
                   message: "Branche sauvegardée.",
@@ -155,8 +155,8 @@ export default function Home() {
                 });
               }
             }}
-            onBranchChange={(b) => setActiveBranch(b)}
-            isOnline={isOnline}
+            onChangementBranche={(branche) => setActiveBranch(branche)}
+            estEnLigne={isOnline}
           />
         </div>
       </div>
