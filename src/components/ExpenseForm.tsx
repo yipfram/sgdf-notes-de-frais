@@ -11,14 +11,14 @@ import {
   DocumentTextIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import { BRANCHES_BY_AGE } from "@/lib/branches";
+import { buildNormalizedFileNames } from "@/lib/attachments";
 import {
-  buildNormalizedFileNames,
   MAX_ATTACHMENT_COUNT,
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
   type ExpenseAttachment,
-} from "@/lib/attachments";
+} from "@/constants/piecesJointes";
+import { TYPES_DEPENSES, BRANCHES_ASC } from "@/constants/configScoute";
 
 interface ExpenseFormProps {
   readonly attachments: ExpenseAttachment[];
@@ -321,21 +321,7 @@ export function ExpenseForm({
           required
         >
           <option value="">Sélectionner un type</option>
-          {[
-            "Alimentation, Intendance",
-            "Achat Petit Materiel",
-            "Achat Materiel PÈdagogique",
-            "Transport collectif Train",
-            "Transport collectif : en Autocar",
-            "Transport collectif en commun (RER, metro, Tram, bus, etc.)",
-            "Medecin, Pharmacie",
-            "Hebergement",
-            "Achat Gros Materiel",
-            "Participation Activites",
-            "Carburants",
-            "Peage-Parking",
-            "Autres",
-          ].map((type) => (
+          {TYPES_DEPENSES.map((type) => (
             <option key={type} value={type}>
               {type}
             </option>
@@ -375,7 +361,7 @@ export function ExpenseForm({
           required
         >
           <option value="">Sélectionner une branche</option>
-          {BRANCHES_BY_AGE.map((branch) => (
+          {BRANCHES_ASC.map((branch) => (
             <option key={branch} value={branch}>
               {branch}
             </option>

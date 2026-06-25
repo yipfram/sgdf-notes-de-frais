@@ -1,11 +1,12 @@
 import { jsonError } from "@/lib/api/utils";
+import { isAllowedAttachmentMimeType } from "@/lib/attachments";
+import { type ExpenseAttachment } from "@/constants/piecesJointes";
 import {
-  type ExpenseAttachment,
   MAX_ATTACHMENT_COUNT,
-  isAllowedAttachmentMimeType,
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
-} from "@/lib/attachments";
+} from "@/constants/piecesJointes";
+
 import type { EmailData } from "@/lib/email";
 import type { NextResponse } from "next/server";
 import { z } from "zod";

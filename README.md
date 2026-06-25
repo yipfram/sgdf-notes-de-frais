@@ -74,6 +74,12 @@ pnpm dev
 # Build pour production
 pnpm build
 
+# Lancer les tests
+pnpm test
+
+# Lancer les tests en mode watch
+pnpm test:watch
+
 # Lancer en production (si déployé localement)
 pnpm start
 ```
