@@ -35,19 +35,33 @@ function isApiRequest(url) {
   return url.pathname.startsWith("/api/");
 }
 
+function isCacheableRequest(request, url) {
+  return (
+    request.method === "GET" &&
+    url.origin === self.location.origin &&
+    (url.protocol === "http:" || url.protocol === "https:")
+  );
+}
+
+function putInCache(request, response) {
+  if (!response || !response.ok) {
+    return;
+  }
+
+  const clone = response.clone();
+  caches.open(CACHE_VERSION).then((cache) => cache.put(request, clone));
+}
+
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
-  if (event.request.method !== "GET") return; // passthrough non-GET
+  if (!isCacheableRequest(event.request, url)) return;
 
   if (isApiRequest(url)) {
     // Network first for API; fallback to cache (likely empty) then offline page
     event.respondWith(
       fetch(event.request)
         .then((res) => {
-          const clone = res.clone();
-          caches
-            .open(CACHE_VERSION)
-            .then((cache) => cache.put(event.request, clone));
+          putInCache(event.request, res);
           return res;
         })
         .catch(() =>
@@ -64,10 +78,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(event.request)
         .then((res) => {
-          const clone = res.clone();
-          caches
-            .open(CACHE_VERSION)
-            .then((cache) => cache.put(event.request, clone));
+          putInCache(event.request, res);
           return res;
         })
         .catch(() =>
@@ -84,12 +95,7 @@ self.addEventListener("fetch", (event) => {
     caches.match(event.request).then((cached) => {
       const fetchPromise = fetch(event.request)
         .then((networkRes) => {
-          if (networkRes && networkRes.status === 200) {
-            const clone = networkRes.clone();
-            caches
-              .open(CACHE_VERSION)
-              .then((cache) => cache.put(event.request, clone));
-          }
+          putInCache(event.request, networkRes);
           return networkRes;
         })
         .catch(() => cached || caches.match("/offline.html"));

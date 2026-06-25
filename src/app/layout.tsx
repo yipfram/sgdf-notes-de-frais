@@ -28,6 +28,7 @@ export default function RootLayout({
   return (
     <ClerkProvider
       localization={frFR}
+      afterSignOutUrl="/sign-in"
       appearance={{
         variables: {
           colorPrimary: "#18181B",

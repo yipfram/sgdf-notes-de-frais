@@ -46,7 +46,7 @@ export default function ClerkSignInClient(): React.ReactElement {
       >
         <AuthSkeleton />
       </div>
-      <SignInDynamic />
+      <SignInDynamic forceRedirectUrl="/" />
     </div>
   );
 }

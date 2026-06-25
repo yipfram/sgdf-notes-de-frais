@@ -5,3 +5,5 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+overrides:
+  "@clerk/shared": 4.20.0
