@@ -168,7 +168,7 @@ export function FormulaireDepense({
           message:
             "Email envoyé avec succès ! La facture a été transmise à la trésorerie et une copie vous a été envoyée.",
         });
-        // Réinitialise les champs variables, mais garde la branche.
+        // Réinitialise les champs variables, garde la branche, puis vide les fichiers côté parent.
         setFormulaire((prev) => ({
           date: new Date().toISOString().split("T")[0],
           branche: prev.branche,
@@ -176,6 +176,7 @@ export function FormulaireDepense({
           montant: "",
           description: "",
         }));
+        onCreerNouvelleNote?.();
       } else {
         const piecesJointesTropLourdes =
           reponse.status === 413 ||

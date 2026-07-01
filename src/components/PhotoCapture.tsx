@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { CameraIcon, ArrowUpOnSquareIcon } from "@heroicons/react/24/outline";
 import { isAllowedAttachmentMimeType } from "@/lib/attachments";
 import {
@@ -123,6 +123,13 @@ export function PhotoCapture({
   const [compressedInfo, setCompressedInfo] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileBrowseInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (currentCount === 0) {
+      setCompressedInfo(null);
+      setErrorMessages([]);
+    }
+  }, [currentCount]);
 
   const processFiles = async (files: FileList, fromCamera = false) => {
     const selectedFiles = Array.from(files);
