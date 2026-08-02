@@ -35,7 +35,7 @@ export async function envoyerDemandeRemboursement(
     });
     return depense.piecesJointes.map((pieceJointe, indexPieceJointe) => {
       if (!isAllowedAttachmentMimeType(pieceJointe.mimeType))
-        throw new Error("Pièce jointe invalide");
+        throw new Error("INVALID_ATTACHMENT: type MIME non autorisé");
       pieceJointe.normalizedFileName = `D${indexDepense + 1}-${noms[indexPieceJointe]}`;
       return {
         filename: pieceJointe.normalizedFileName,
