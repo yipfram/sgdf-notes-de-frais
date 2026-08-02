@@ -143,7 +143,9 @@ export function validerDemandeRemboursement(
 }
 
 function echapperCsv(valeur: string | number): string {
-  return `"${String(valeur).replace(/"/g, '""')}"`;
+  const chaine = String(valeur);
+  const securisee = /^[=+\-@\t\r]/.test(chaine) ? `'${chaine}` : chaine;
+  return `"${securisee.replace(/"/g, '""')}"`;
 }
 
 export function genererCsvRemboursement(demande: DemandeRemboursement): string {
