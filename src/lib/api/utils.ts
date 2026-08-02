@@ -5,6 +5,19 @@ export function jsonError(message: string, status: number): NextResponse {
   return NextResponse.json({ error: message }, { status });
 }
 
+export function verifierConfigurationSmtp(): NextResponse | null {
+  if (
+    !process.env.SMTP_HOST ||
+    !process.env.SMTP_USER ||
+    !process.env.SMTP_PASSWORD ||
+    !process.env.NEXT_PUBLIC_TREASURY_EMAIL
+  ) {
+    console.error("Variables d'environnement manquantes pour SMTP");
+    return jsonError("Configuration serveur manquante", 500);
+  }
+  return null;
+}
+
 export function verifierErreurSmtp(error: Error): NextResponse {
   if (error.message.startsWith("INVALID_ATTACHMENT:"))
     return jsonError(

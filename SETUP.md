@@ -27,6 +27,8 @@ L'application permet aux membres de votre groupe SGDF de :
 
 **Aucune donnée n'est stockée sur un serveur**, tout passe par des emails sécurisés.
 
+Pour les remboursements, seul le titulaire du compte est mémorisé dans les métadonnées privées Clerk afin de préremplir le formulaire. Les justificatifs, RIB, IBAN et BIC ne sont jamais stockés par l'application.
+
 **Temps estimé :** 30-45 minutes pour une première installation.
 
 ---

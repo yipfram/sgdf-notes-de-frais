@@ -113,11 +113,13 @@ async function downscaleImage(
 interface PhotoCaptureProps {
   readonly onAttachmentsAdd: (attachments: ExpenseAttachment[]) => void;
   readonly currentCount: number;
+  readonly messageErreur?: string;
 }
 
 export function PhotoCapture({
   onAttachmentsAdd,
   currentCount,
+  messageErreur,
 }: Readonly<PhotoCaptureProps>) {
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [compressedInfo, setCompressedInfo] = useState<string | null>(null);
@@ -243,6 +245,7 @@ export function PhotoCapture({
 
       <div className="grid grid-cols-2 gap-3">
         <button
+          type="button"
           onClick={handleCameraCapture}
           className="flex flex-col items-center p-4 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
         >
@@ -250,6 +253,7 @@ export function PhotoCapture({
           <span className="text-sm font-medium">Prendre photo</span>
         </button>
         <button
+          type="button"
           onClick={handleFileBrowse}
           className="flex flex-col items-center p-4 bg-white text-zinc-900 rounded-lg border border-zinc-200 hover:bg-zinc-100 transition-colors"
         >
@@ -291,6 +295,12 @@ export function PhotoCapture({
             ))}
           </ul>
         </div>
+      )}
+
+      {messageErreur && (
+        <p className="text-sm text-rose-700" role="alert">
+          {messageErreur}
+        </p>
       )}
     </div>
   );

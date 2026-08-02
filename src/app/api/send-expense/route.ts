@@ -1,26 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { envoyerEmail } from "@/lib/email";
-import { jsonError, verifierErreurSmtp } from "@/lib/api/utils";
+import { RATE_LIMIT_COURT, RATE_LIMIT_LONG } from "@/constants/rateLimit";
+import {
+  jsonError,
+  verifierConfigurationSmtp,
+  verifierErreurSmtp,
+} from "@/lib/api/utils";
 import { validateBody } from "@/lib/api/validateBody";
 import {
   reponseRateLimit,
   verifierOrigineRequete,
   verifierRateLimit,
 } from "@/lib/api/securiteRequetes";
-
-function validateEnv() {
-  if (
-    !process.env.SMTP_HOST ||
-    !process.env.SMTP_USER ||
-    !process.env.SMTP_PASSWORD ||
-    !process.env.NEXT_PUBLIC_TREASURY_EMAIL
-  ) {
-    console.error("Variables d'environnement manquantes pour SMTP");
-    return jsonError("Configuration serveur manquante", 500);
-  }
-  return null;
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,8 +26,8 @@ export async function POST(req: NextRequest) {
     // Max 2 envois par 30 secondes
     const limiteCourte = verifierRateLimit(
       `envoi-email:court:${userId}`,
-      2,
-      30 * 1000,
+      RATE_LIMIT_COURT.limite,
+      RATE_LIMIT_COURT.fenetreMs,
     );
     if (!limiteCourte.autorise) {
       return reponseRateLimit(limiteCourte.attenteSecondes);
@@ -44,8 +36,8 @@ export async function POST(req: NextRequest) {
     // Max 5 envois par 10 minutes
     const limiteLongue = verifierRateLimit(
       `envoi-email:long:${userId}`,
-      5,
-      10 * 60 * 1000,
+      RATE_LIMIT_LONG.limite,
+      RATE_LIMIT_LONG.fenetreMs,
     );
     if (!limiteLongue.autorise) {
       return reponseRateLimit(limiteLongue.attenteSecondes);
@@ -56,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     const userEmail = user.primaryEmailAddress?.emailAddress;
     // Env vars
-    const envError = validateEnv();
+    const envError = verifierConfigurationSmtp();
     if (envError) return envError;
 
     // Body & validation
