@@ -99,7 +99,6 @@ pnpm start
 4. Envoyer : un email est généré côté serveur et envoyé à la trésorerie et à l'utilisateur
 5. Pour un remboursement, ouvrir l'onglet dédié, renseigner le titulaire du compte puis ajouter chaque dépense et son justificatif. L'e-mail contient le CSV et les pièces jointes.
 6. Installer l'application sur l'écran d'accueil pour un accès rapide
-7.
 
 ---
 
