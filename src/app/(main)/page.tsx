@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useUser, UserButton } from "@clerk/nextjs";
+import dynamic from "next/dynamic";
 import { FormulaireDepense } from "@/components/FormulaireDepense";
 import { FeatureNotice } from "@/components/FeatureNotice";
+import { NavigationBas, type VueApplication } from "@/components/NavigationBas";
 import { PhotoCapture } from "@/components/PhotoCapture";
 import { StatusEstEnligne } from "@/lib/useOnlineStatus";
 import { InstallPrompt } from "@/components/InstallPrompt";
@@ -13,8 +15,16 @@ import {
 } from "@/constants/piecesJointes";
 import Image from "next/image";
 
+const VueRemboursement = dynamic(() =>
+  import("@/components/VueRemboursement").then(
+    (module) => module.VueRemboursement,
+  ),
+);
+
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser();
+  const [vueActive, setVueActive] = useState<VueApplication>("carte");
+  const [remboursementCharge, setRemboursementCharge] = useState(false);
   const [attachments, setAttachments] = useState<ExpenseAttachment[]>([]);
   const [activeBranch, setActiveBranch] = useState<string>("");
   const [branchSaveStatus, setBranchSaveStatus] = useState<{
@@ -53,114 +63,140 @@ export default function Home() {
     );
   }
 
+  const changerVue = (vue: VueApplication) => {
+    setVueActive(vue);
+    if (vue === "remboursement") {
+      setRemboursementCharge(true);
+    }
+    window.scrollTo({ top: 0, behavior: "auto" });
+  };
+
   return (
-    <main className="min-h-screen p-4 bg-zinc-50">
-      <div className="max-w-md mx-auto bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
-        <div className="bg-white p-6 border-b border-zinc-200">
-          <div className="flex justify-between items-center">
-            <div>
-              <div className="flex items-center gap-2">
-                <Image
-                  src="/SGDF_symbole_RVB.png"
-                  alt="SGDF"
-                  width={28}
-                  height={20}
-                  className="rounded-sm"
-                  style={{ height: "auto" }}
-                />
-                <h1 className="text-2xl font-semibold text-zinc-900">
-                  Factures carte procurement SGDF
-                </h1>
+    <>
+      <div className="min-h-screen bg-zinc-50 pb-20">
+        <div hidden={vueActive !== "carte"}>
+          <main className="min-h-screen p-4 bg-zinc-50">
+            <div className="max-w-md mx-auto bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
+              <div className="bg-white p-6 border-b border-zinc-200">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src="/SGDF_symbole_RVB.png"
+                        alt="SGDF"
+                        width={28}
+                        height={20}
+                        className="rounded-sm"
+                        style={{ height: "auto" }}
+                      />
+                      <h1 className="text-2xl font-semibold text-zinc-900">
+                        Factures carte procurement SGDF
+                      </h1>
+                    </div>
+                    <p className="text-zinc-500 mt-2">La Guillotière</p>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <UserButton
+                      appearance={{
+                        elements: {
+                          avatarBox: "w-10 h-10",
+                        },
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
-              <p className="text-zinc-500 mt-2">La Guillotière</p>
+
+              {!isOnline && (
+                <div className="bg-amber-50 border-t border-b border-amber-200 text-amber-800 text-center text-sm py-2">
+                  Hors ligne - certaines fonctionnalités sont limitées
+                </div>
+              )}
+
+              {branchSaveStatus.type && (
+                <div
+                  className={`border-t border-b text-center text-sm py-2 ${
+                    branchSaveStatus.type === "success"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                      : "bg-red-50 border-red-200 text-red-800"
+                  }`}
+                >
+                  {branchSaveStatus.message}
+                </div>
+              )}
+
+              <div className="p-6 space-y-6">
+                <FeatureNotice />
+                <PhotoCapture
+                  onAttachmentsAdd={(newAttachments) => {
+                    setAttachments((prev) =>
+                      [...prev, ...newAttachments].slice(
+                        0,
+                        MAX_ATTACHMENT_COUNT,
+                      ),
+                    );
+                  }}
+                  currentCount={attachments.length}
+                />
+
+                <FormulaireDepense
+                  piecesJointes={attachments}
+                  emailUtilisateur={user?.emailAddresses[0]?.emailAddress || ""}
+                  brancheInitiale={activeBranch}
+                  onCreerNouvelleNote={() => {
+                    setAttachments([]);
+                  }}
+                  onSupprimerPieceJointe={(index) => {
+                    setAttachments((prev) =>
+                      prev.filter((_, i) => i !== index),
+                    );
+                  }}
+                  onMemoriserBranche={async (branche: string) => {
+                    try {
+                      setBranchSaveStatus({ type: null, message: "" });
+                      const res = await fetch("/api/update-branch", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ branch: branche }),
+                      });
+                      if (!res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        throw new Error(data.error || "Erreur API");
+                      }
+                      await user?.reload();
+                      setActiveBranch(branche);
+                      setBranchSaveStatus({
+                        type: "success",
+                        message: "Branche sauvegardée.",
+                      });
+                    } catch (e) {
+                      console.error(
+                        "Erreur de sauvegarde de la branche dans Clerk",
+                        e,
+                      );
+                      setBranchSaveStatus({
+                        type: "error",
+                        message:
+                          "Impossible de sauvegarder la branche. Veuillez réessayer plus tard.",
+                      });
+                    }
+                  }}
+                  onChangementBranche={(branche) => setActiveBranch(branche)}
+                  estEnLigne={isOnline}
+                />
+              </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "w-10 h-10",
-                  },
-                }}
-              />
-            </div>
-          </div>
+            <InstallPrompt />
+          </main>
         </div>
 
-        {!isOnline && (
-          <div className="bg-amber-50 border-t border-b border-amber-200 text-amber-800 text-center text-sm py-2">
-            Hors ligne - certaines fonctionnalités sont limitées
+        {remboursementCharge && (
+          <div hidden={vueActive !== "remboursement"}>
+            <VueRemboursement />
           </div>
         )}
-
-        {branchSaveStatus.type && (
-          <div
-            className={`border-t border-b text-center text-sm py-2 ${
-              branchSaveStatus.type === "success"
-                ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                : "bg-red-50 border-red-200 text-red-800"
-            }`}
-          >
-            {branchSaveStatus.message}
-          </div>
-        )}
-
-        <div className="p-6 space-y-6">
-          <FeatureNotice />
-          <PhotoCapture
-            onAttachmentsAdd={(newAttachments) => {
-              setAttachments((prev) =>
-                [...prev, ...newAttachments].slice(0, MAX_ATTACHMENT_COUNT),
-              );
-            }}
-            currentCount={attachments.length}
-          />
-
-          <FormulaireDepense
-            piecesJointes={attachments}
-            emailUtilisateur={user?.emailAddresses[0]?.emailAddress || ""}
-            brancheInitiale={activeBranch}
-            onCreerNouvelleNote={() => {
-              setAttachments([]);
-            }}
-            onSupprimerPieceJointe={(index) => {
-              setAttachments((prev) => prev.filter((_, i) => i !== index));
-            }}
-            onMemoriserBranche={async (branche: string) => {
-              try {
-                setBranchSaveStatus({ type: null, message: "" });
-                const res = await fetch("/api/update-branch", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ branch: branche }),
-                });
-                if (!res.ok) {
-                  const data = await res.json().catch(() => ({}));
-                  throw new Error(data.error || "Erreur API");
-                }
-                await user?.reload();
-                setActiveBranch(branche);
-                setBranchSaveStatus({
-                  type: "success",
-                  message: "Branche sauvegardée.",
-                });
-              } catch (e) {
-                console.error(
-                  "Erreur de sauvegarde de la branche dans Clerk",
-                  e,
-                );
-                setBranchSaveStatus({
-                  type: "error",
-                  message:
-                    "Impossible de sauvegarder la branche. Veuillez réessayer plus tard.",
-                });
-              }
-            }}
-            onChangementBranche={(branche) => setActiveBranch(branche)}
-            estEnLigne={isOnline}
-          />
-        </div>
       </div>
-      <InstallPrompt />
-    </main>
+      <NavigationBas vueActive={vueActive} onChangerVue={changerVue} />
+    </>
   );
 }

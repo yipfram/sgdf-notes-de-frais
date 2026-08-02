@@ -23,6 +23,7 @@ Pour savoir comment l'utiliser avec [la documentation](https://yipfram.github.io
 - ✉️ **Envoi email automatique** : transmission à la trésorerie + copie à l'utilisateur avec une ou plusieurs pièces jointes
 - 🏷️ **Nom de fichier structuré** : `YYYY-MM-DD - Branche - Type - Montant - 01.pdf` (ou `.jpg/.png/.webp`)
 - 📲 **Installation PWA** : Ajout possible à l'écran d'accueil (Android / iOS / Desktop)
+- 🧭 **Menu mobile** : Onglets bas entre les espaces Carte et Remboursement
 - ⚡ **Mode hors ligne partiel** : Consultation et préparation possible sans réseau (l'envoi nécessite la connexion)
 - 🔔 **Bannière d'installation** : Invitation A2HS personnalisée
 - 🌙 **Affichage plein écran** : Expérience proche d'une application native
