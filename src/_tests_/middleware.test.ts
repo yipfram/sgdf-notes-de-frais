@@ -35,7 +35,6 @@ describe("Proxy(middleware) Clerk", () => {
     "/",
     "/api/send-expense",
     "/api/update-branch",
-    "/api/profil-remboursement",
     "/api/envoyer-remboursement",
   ])("protege la route %s", async (pathname) => {
     const { default: middleware } = await import("../proxy");

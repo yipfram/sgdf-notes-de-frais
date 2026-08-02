@@ -50,10 +50,6 @@ export async function POST(requete: NextRequest) {
     if (!emailUtilisateur)
       return jsonError("Adresse e-mail utilisateur introuvable", 400);
 
-    await clientClerk.users.updateUser(userId, {
-      privateMetadata: { titulaireCompte: demande.titulaireCompte },
-    });
-
     const resultat = await envoyerDemandeRemboursement(
       demande,
       emailUtilisateur,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useUser, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import {
@@ -45,11 +45,8 @@ export function VueRemboursement() {
   const estEnLigne = StatusEstEnligne();
   const [branche, setBranche] = useState("");
   const [titulaireCompte, setTitulaireCompte] = useState("");
-  const [profilRemboursementCharge, setProfilRemboursementCharge] =
-    useState(false);
   const [sectionInformationsOuverte, setSectionInformationsOuverte] =
     useState(true);
-  const informationsDejaRepliees = useRef(false);
   const [depenseEnCours, setDepenseEnCours] =
     useState<DepenseSaisie>(nouvelleDepense);
   const [depenses, setDepenses] = useState<DepenseSaisie[]>([]);
@@ -67,29 +64,6 @@ export function VueRemboursement() {
       typeof brancheUtilisateur === "string" ? brancheUtilisateur : "",
     );
   }, [user?.publicMetadata.branch]);
-
-  useEffect(() => {
-    fetch("/api/profil-remboursement")
-      .then((reponse) => (reponse.ok ? reponse.json() : null))
-      .then((donnees: { titulaireCompte?: string } | null) => {
-        if (donnees?.titulaireCompte)
-          setTitulaireCompte(donnees.titulaireCompte);
-      })
-      .catch(() => undefined)
-      .finally(() => setProfilRemboursementCharge(true));
-  }, []);
-
-  useEffect(() => {
-    if (
-      !informationsDejaRepliees.current &&
-      profilRemboursementCharge &&
-      branche &&
-      titulaireCompte
-    ) {
-      setSectionInformationsOuverte(false);
-      informationsDejaRepliees.current = true;
-    }
-  }, [branche, profilRemboursementCharge, titulaireCompte]);
 
   const total = useMemo(
     () =>
@@ -126,21 +100,6 @@ export function VueRemboursement() {
     setDepenseEnCours(nouvelleDepense());
     setChampsInvalides({});
     setMessage({ type: null, texte: "" });
-  };
-
-  const enregistrerTitulaire = async () => {
-    const valeur = titulaireCompte.trim();
-    if (valeur.length < 2) return;
-    const reponse = await fetch("/api/profil-remboursement", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ titulaireCompte: valeur }),
-    });
-    if (!reponse.ok)
-      setMessage({
-        type: "erreur",
-        texte: "Impossible de mémoriser le titulaire du compte.",
-      });
   };
 
   const memoriserBranche = async (nouvelleBranche: string) => {
@@ -286,12 +245,11 @@ export function VueRemboursement() {
                     id="titulaireCompte"
                     value={titulaireCompte}
                     onChange={(e) => setTitulaireCompte(e.target.value)}
-                    onBlur={enregistrerTitulaire}
                     placeholder="Prénom NOM"
                     className="w-full rounded-lg border border-zinc-300 bg-white p-3 text-zinc-900 [color-scheme:light] focus:border-zinc-400 focus:ring-2 focus:ring-zinc-400"
                   />
                   <p className="text-xs text-zinc-500">
-                    Mémorisé de façon privée pour vos prochaines demandes.
+                    Renseigné uniquement pour cette demande.
                   </p>
                 </div>
 

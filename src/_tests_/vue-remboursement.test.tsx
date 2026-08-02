@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { VueRemboursement } from "@/components/VueRemboursement";
 
 vi.mock("@clerk/nextjs", () => ({
@@ -24,20 +24,7 @@ vi.mock("@/lib/useOnlineStatus", () => ({
 }));
 
 describe("VueRemboursement", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it("désactive la validation native du brouillon de dépense", () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(JSON.stringify({ titulaireCompte: "Camille Martin" }), {
-          status: 200,
-        }),
-      ),
-    );
-
     render(<VueRemboursement />);
 
     expect(
