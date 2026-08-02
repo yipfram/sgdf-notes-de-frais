@@ -86,7 +86,8 @@ export function validerDemandeRemboursement(
             piecesJointes: z.array(z.unknown()).min(1),
           }),
         )
-        .min(1),
+        .min(1)
+        .max(50),
     })
     .safeParse(corps);
 
