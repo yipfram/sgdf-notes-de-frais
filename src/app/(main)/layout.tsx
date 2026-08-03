@@ -1,4 +1,5 @@
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { EnregistrementPwa } from "../pwa-registration";
 
 export default function MainLayout({
   children,
@@ -7,12 +8,7 @@ export default function MainLayout({
     <>
       {children}
       <SpeedInsights />
-      {/* Register the service worker for offline/PWA support. */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW registration failed',e));});}`,
-        }}
-      />
+      <EnregistrementPwa />
     </>
   );
 }

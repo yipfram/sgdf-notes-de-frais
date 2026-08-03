@@ -31,22 +31,23 @@ describe("Proxy(middleware) Clerk", () => {
     vi.clearAllMocks();
   });
 
-  it.each(["/", "/api/send-expense", "/api/update-branch"])(
-    "protege la route %s",
-    async (pathname) => {
-      const { default: middleware } = await import("../proxy");
-      const handleRequest =
-        middleware as unknown as MockedClerkMiddlewareHandler;
-      const auth = { protect: vi.fn().mockResolvedValue(undefined) };
+  it.each([
+    "/",
+    "/api/send-expense",
+    "/api/update-branch",
+    "/api/envoyer-remboursement",
+  ])("protege la route %s", async (pathname) => {
+    const { default: middleware } = await import("../proxy");
+    const handleRequest = middleware as unknown as MockedClerkMiddlewareHandler;
+    const auth = { protect: vi.fn().mockResolvedValue(undefined) };
 
-      await handleRequest(auth, {
-        nextUrl: { pathname },
-        url: `https://example.test${pathname}`,
-      });
+    await handleRequest(auth, {
+      nextUrl: { pathname },
+      url: `https://example.test${pathname}`,
+    });
 
-      expect(auth.protect).toHaveBeenCalledTimes(1);
-    },
-  );
+    expect(auth.protect).toHaveBeenCalledTimes(1);
+  });
 
   it("ne protege pas les routes publiques", async () => {
     const { default: middleware } = await import("../proxy");

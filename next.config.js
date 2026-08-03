@@ -17,6 +17,7 @@ const nextConfig = {
     }
     return config;
   },
+  allowedDevOrigins: ["192.168.0.36"],
   // Désactiver l'export statique pour permettre les API routes
   // output: 'export'
 };

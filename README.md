@@ -23,6 +23,9 @@ Pour savoir comment l'utiliser avec [la documentation](https://yipfram.github.io
 - ✉️ **Envoi email automatique** : transmission à la trésorerie + copie à l'utilisateur avec une ou plusieurs pièces jointes
 - 🏷️ **Nom de fichier structuré** : `YYYY-MM-DD - Branche - Type - Montant - 01.pdf` (ou `.jpg/.png/.webp`)
 - 📲 **Installation PWA** : Ajout possible à l'écran d'accueil (Android / iOS / Desktop)
+- 🧭 **Menu mobile** : Onglets bas entre les espaces Carte et Remboursement
+- 💶 **Demandes de remboursement** : plusieurs dépenses par demande, CSV récapitulatif et justificatifs transmis à la trésorerie
+- 🔒 **Titulaire du compte** : requis pour chaque demande de remboursement et transmis uniquement dans l'e-mail ; aucun RIB ou IBAN n'est demandé ou stocké
 - ⚡ **Mode hors ligne partiel** : Consultation et préparation possible sans réseau (l'envoi nécessite la connexion)
 - 🔔 **Bannière d'installation** : Invitation A2HS personnalisée
 - 🌙 **Affichage plein écran** : Expérience proche d'une application native
@@ -94,8 +97,8 @@ pnpm start
 2. Capturer une photo ou importer un/des justificatif(s) (images/PDF)
 3. Saisir la date, la branche, le montant et la description
 4. Envoyer : un email est généré côté serveur et envoyé à la trésorerie et à l'utilisateur
-5. Installer l'application sur l'écran d'accueil pour un accès rapide
-6.
+5. Pour un remboursement, ouvrir l'onglet dédié, renseigner le titulaire du compte puis ajouter chaque dépense et son justificatif. L'e-mail contient le CSV et les pièces jointes.
+6. Installer l'application sur l'écran d'accueil pour un accès rapide
 
 ---
 

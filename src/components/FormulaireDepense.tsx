@@ -1,15 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import {
   ClipboardDocumentListIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   PlusCircleIcon,
   PaperAirplaneIcon,
-  DocumentTextIcon,
-  TrashIcon,
 } from "@heroicons/react/24/outline";
 import { buildNormalizedFileNames } from "@/lib/attachments";
 import {
@@ -18,7 +15,9 @@ import {
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
   type ExpenseAttachment,
 } from "@/constants/piecesJointes";
-import { TYPES_DEPENSES, BRANCHES_ASC } from "@/constants/configScoute";
+import { BRANCHES_ASC } from "@/constants/configScoute";
+import { ChampsDepense } from "@/components/ChampsDepense";
+import { ListePiecesJointes } from "@/components/ListePiecesJointes";
 
 interface FormulaireDepenseProps {
   readonly piecesJointes: ExpenseAttachment[];
@@ -43,7 +42,7 @@ export function FormulaireDepense({
   const [formulaire, setFormulaire] = useState({
     date: new Date().toISOString().split("T")[0],
     branche: brancheInitiale || "",
-    typeDepense: "",
+    categorie: "",
     montant: "",
     description: "",
   });
@@ -70,7 +69,7 @@ export function FormulaireDepense({
   }>({ type: null, message: "" });
 
   const modifierChamp = (
-    champ: "date" | "branche" | "typeDepense" | "montant" | "description",
+    champ: "date" | "branche" | "categorie" | "montant" | "description",
     valeur: string,
   ) => {
     setFormulaire((prev) => ({ ...prev, [champ]: valeur }));
@@ -100,7 +99,7 @@ export function FormulaireDepense({
     return buildNormalizedFileNames(piecesJointes, {
       date: formulaire.date,
       branch: formulaire.branche,
-      expenseType: formulaire.typeDepense,
+      expenseType: formulaire.categorie,
       amount: normaliserMontant(formulaire.montant),
     });
   };
@@ -111,7 +110,7 @@ export function FormulaireDepense({
     if (
       piecesJointes.length === 0 ||
       !formulaire.branche ||
-      !formulaire.typeDepense ||
+      !formulaire.categorie ||
       !formulaire.montant
     ) {
       setStatutEnvoi({
@@ -144,7 +143,7 @@ export function FormulaireDepense({
           userEmail: emailUtilisateur,
           date: formulaire.date,
           branch: formulaire.branche,
-          expenseType: formulaire.typeDepense,
+          expenseType: formulaire.categorie,
           amount: normaliserMontant(formulaire.montant),
           description: formulaire.description,
           attachments: piecesJointesPourApi,
@@ -172,7 +171,7 @@ export function FormulaireDepense({
         setFormulaire((prev) => ({
           date: new Date().toISOString().split("T")[0],
           branche: prev.branche,
-          typeDepense: "",
+          categorie: "",
           montant: "",
           description: "",
         }));
@@ -226,7 +225,7 @@ export function FormulaireDepense({
   const formulaireEstValide = Boolean(
     piecesJointes.length > 0 &&
     formulaire.branche &&
-    formulaire.typeDepense &&
+    formulaire.categorie &&
     formulaire.montant,
   );
   const nomsFichiersApercu = formulaireEstValide ? genererNomsFichiers() : [];
@@ -236,7 +235,7 @@ export function FormulaireDepense({
     setFormulaire((prev) => ({
       date: new Date().toISOString().split("T")[0],
       branche: prev.branche,
-      typeDepense: "",
+      categorie: "",
       montant: "",
       description: "",
     }));
@@ -254,101 +253,10 @@ export function FormulaireDepense({
         Informations de la dépense
       </h2>
 
-      {piecesJointes.length > 0 && (
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-zinc-700">
-            Justificatifs ({piecesJointes.length})
-          </label>
-          <div className="space-y-2">
-            {piecesJointes.map((pieceJointe, index) => {
-              const estImage = pieceJointe.mimeType.startsWith("image/");
-              return (
-                <div
-                  key={`${pieceJointe.displayName}-${index}`}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-zinc-200 bg-zinc-50"
-                >
-                  {estImage ? (
-                    <Image
-                      src={`data:${pieceJointe.mimeType};base64,${pieceJointe.base64Data}`}
-                      alt={pieceJointe.displayName}
-                      width={56}
-                      height={56}
-                      className="w-14 h-14 object-cover rounded-md border border-zinc-200"
-                    />
-                  ) : (
-                    <div className="w-14 h-14 rounded-md border border-zinc-200 bg-white flex items-center justify-center">
-                      <DocumentTextIcon
-                        className="w-8 h-8 text-zinc-500"
-                        aria-hidden="true"
-                      />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-zinc-900 truncate font-medium">
-                      {pieceJointe.displayName}
-                    </p>
-                    <p className="text-xs text-zinc-500">
-                      {pieceJointe.mimeType === "application/pdf"
-                        ? "PDF"
-                        : "Image"}
-                    </p>
-                  </div>
-                  {onSupprimerPieceJointe && (
-                    <button
-                      type="button"
-                      onClick={() => onSupprimerPieceJointe(index)}
-                      className="p-2 rounded-md text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors"
-                      aria-label={`Supprimer ${pieceJointe.displayName}`}
-                    >
-                      <TrashIcon className="w-5 h-5" aria-hidden="true" />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-2">
-        <label
-          htmlFor="typeDepense"
-          className="block text-sm font-medium text-zinc-700"
-        >
-          Type de dépense *
-        </label>
-        <select
-          id="typeDepense"
-          value={formulaire.typeDepense}
-          onChange={(e) => modifierChamp("typeDepense", e.target.value)}
-          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
-          required
-        >
-          <option value="">Sélectionner un type</option>
-          {TYPES_DEPENSES.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="space-y-2">
-        <label
-          htmlFor="date"
-          className="block text-sm font-medium text-zinc-700"
-        >
-          Date *
-        </label>
-        <input
-          id="date"
-          type="date"
-          value={formulaire.date}
-          onChange={(e) => modifierChamp("date", e.target.value)}
-          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
-          required
-        />
-      </div>
+      <ListePiecesJointes
+        piecesJointes={piecesJointes}
+        onSupprimer={onSupprimerPieceJointe}
+      />
 
       <div className="space-y-2">
         <label
@@ -361,7 +269,7 @@ export function FormulaireDepense({
           id="branche"
           value={formulaire.branche}
           onChange={(e) => modifierChamp("branche", e.target.value)}
-          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
+          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900 [color-scheme:light]"
           required
         >
           <option value="">Sélectionner une branche</option>
@@ -418,41 +326,11 @@ export function FormulaireDepense({
         )}
       </div>
 
-      <div className="space-y-2">
-        <label
-          htmlFor="montant"
-          className="block text-sm font-medium text-zinc-700"
-        >
-          Montant (€) *
-        </label>
-        <input
-          id="montant"
-          type="number"
-          step="0.01"
-          placeholder="0.00"
-          value={formulaire.montant}
-          onChange={(e) => modifierChamp("montant", e.target.value)}
-          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label
-          htmlFor="description"
-          className="block text-sm font-medium text-zinc-700"
-        >
-          Description (optionnel)
-        </label>
-        <textarea
-          id="description"
-          placeholder="Description de la dépense..."
-          value={formulaire.description}
-          onChange={(e) => modifierChamp("description", e.target.value)}
-          rows={3}
-          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 resize-none bg-white text-zinc-900"
-        />
-      </div>
+      <ChampsDepense
+        valeurs={formulaire}
+        onModifier={(champ, valeur) => modifierChamp(champ, valeur)}
+        prefixeId="carte"
+      />
 
       {/* Messages de statut */}
       {statutEnvoi.type && (
