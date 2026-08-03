@@ -63,14 +63,14 @@ export async function envoyerDemandeRemboursement(
         `<tr><td>${echapperHtml(depense.date)}</td><td>${echapperHtml(depense.categorie)}</td><td>${echapperHtml(depense.description)}</td><td>${depense.montant.toFixed(2)} EUR</td></tr>`,
     )
     .join("");
-  const html = `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto"><div style="background:${couleur};color:#fff;padding:20px"><h1 style="margin:0">Demande de remboursement SGDF</h1></div><div style="padding:20px"><p><strong>Branche :</strong> ${echapperHtml(demande.branche)}<br><strong>Titulaire du compte :</strong> ${echapperHtml(demande.titulaireCompte)}<br><strong>Demandeur :</strong> ${echapperHtml(emailUtilisateur)}</p><table style="width:100%;border-collapse:collapse"><thead><tr><th align="left">Date</th><th align="left">Catégorie</th><th align="left">Description</th><th align="left">Montant</th></tr></thead><tbody>${lignes}</tbody></table><p style="font-size:18px"><strong>Total : ${total.toFixed(2)} EUR</strong></p><p>Le fichier CSV et les justificatifs sont joints à cet e-mail.</p></div></div>`;
+  const html = `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto"><div style="background:${couleur};color:#fff;padding:20px"><h1 style="margin:0">Demande de remboursement SGDF</h1></div><div style="padding:20px"><p><strong>Branche :</strong> ${echapperHtml(demande.branche)}<br><strong>Titulaire du compte :</strong> ${echapperHtml(demande.titulaireCompte)}<br><strong>RIB :</strong> ${echapperHtml(demande.rib)}<br><strong>Demandeur :</strong> ${echapperHtml(emailUtilisateur)}</p><table style="width:100%;border-collapse:collapse"><thead><tr><th align="left">Date</th><th align="left">Catégorie</th><th align="left">Description</th><th align="left">Montant</th></tr></thead><tbody>${lignes}</tbody></table><p style="font-size:18px"><strong>Total : ${total.toFixed(2)} EUR</strong></p><p>Le fichier CSV et les justificatifs sont joints à cet e-mail.</p></div></div>`;
 
   const info = await transporteur.sendMail({
     from,
     to: process.env.NEXT_PUBLIC_TREASURY_EMAIL!,
     cc: emailUtilisateur,
     subject: `Demande de remboursement - ${demande.branche} - ${dateEnvoi}`,
-    text: `Demande de remboursement\nBranche : ${demande.branche}\nTitulaire : ${demande.titulaireCompte}\nDemandeur : ${emailUtilisateur}\nTotal : ${total.toFixed(2)} EUR`,
+    text: `Demande de remboursement\nBranche : ${demande.branche}\nTitulaire : ${demande.titulaireCompte}\nRIB : ${demande.rib}\nDemandeur : ${emailUtilisateur}\nTotal : ${total.toFixed(2)} EUR`,
     html,
     attachments: [
       {

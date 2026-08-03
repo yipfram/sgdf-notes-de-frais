@@ -19,6 +19,7 @@ export interface DepenseRemboursement {
 export interface DemandeRemboursement {
   branche: string;
   titulaireCompte: string;
+  rib: string;
   depenses: DepenseRemboursement[];
 }
 
@@ -76,6 +77,7 @@ export function validerDemandeRemboursement(
     .object({
       branche: z.string().trim(),
       titulaireCompte: z.string().trim().min(2).max(120),
+      rib: z.string().trim().min(10).max(200),
       depenses: z
         .array(
           z.object({
@@ -139,6 +141,7 @@ export function validerDemandeRemboursement(
   return {
     branche: resultat.data.branche,
     titulaireCompte: resultat.data.titulaireCompte,
+    rib: resultat.data.rib,
     depenses,
   };
 }

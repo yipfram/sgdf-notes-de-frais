@@ -6,6 +6,7 @@ describe("genererCsvRemboursement", () => {
     const csv = genererCsvRemboursement({
       branche: "Groupe",
       titulaireCompte: "Camille Martin",
+      rib: "FR76 3000 4000 5000 6000 7000 890",
       depenses: [
         {
           date: "2026-08-02",
