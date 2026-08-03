@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { genererCsvRemboursement } from "@/lib/remboursement";
+import { estIbanValide } from "@/lib/iban";
+import {
+  genererCsvRemboursement,
+  validerDemandeRemboursement,
+} from "@/lib/remboursement";
 
 describe("genererCsvRemboursement", () => {
   it("produit un CSV Excel et échappe les descriptions", () => {
     const csv = genererCsvRemboursement({
       branche: "Groupe",
       titulaireCompte: "Camille Martin",
-      rib: "FR76 3000 4000 5000 6000 7000 890",
+      iban: "FR1420041010050500013M02606",
       depenses: [
         {
           date: "2026-08-02",
@@ -29,5 +33,36 @@ describe("genererCsvRemboursement", () => {
     expect(csv.startsWith("\uFEFF")).toBe(true);
     expect(csv).toContain('"Repas ; ""réunion"""');
     expect(csv).toContain('"12,50"');
+  });
+
+  it("valide le format IBAN", () => {
+    expect(estIbanValide("FR14 2004 1010 0505 0001 3M02 606")).toBe(true);
+    expect(estIbanValide("BIC12345678")).toBe(false);
+  });
+
+  it("rejette une demande avec un BIC à la place de l'IBAN", () => {
+    const demande = validerDemandeRemboursement({
+      branche: "Groupe",
+      titulaireCompte: "Camille Martin",
+      iban: "AGRIFRPP",
+      depenses: [
+        {
+          date: "2026-08-02",
+          categorie: "Autres",
+          description: "Repas",
+          montant: "12.50",
+          piecesJointes: [
+            {
+              displayName: "facture.jpg",
+              originalFileName: "facture.jpg",
+              mimeType: "image/jpeg",
+              base64Data: "Zg==",
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(demande).toBeNull();
   });
 });

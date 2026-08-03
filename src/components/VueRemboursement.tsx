@@ -18,6 +18,7 @@ import { ChampsDepense, type ValeursDepense } from "@/components/ChampsDepense";
 import { ListePiecesJointes } from "@/components/ListePiecesJointes";
 import { BRANCHES_ASC } from "@/constants/configScoute";
 import { type ExpenseAttachment } from "@/constants/piecesJointes";
+import { estIbanValide, normaliserIban } from "@/lib/iban";
 import { StatusEstEnligne } from "@/lib/useOnlineStatus";
 
 interface DepenseSaisie {
@@ -45,7 +46,7 @@ export function VueRemboursement() {
   const estEnLigne = StatusEstEnligne();
   const [branche, setBranche] = useState("");
   const [titulaireCompte, setTitulaireCompte] = useState("");
-  const [rib, setRib] = useState("");
+  const [iban, setIban] = useState("");
   const [sectionInformationsOuverte, setSectionInformationsOuverte] =
     useState(true);
   const [depenseEnCours, setDepenseEnCours] =
@@ -124,17 +125,25 @@ export function VueRemboursement() {
 
   const envoyerDemande = async (evenement: React.FormEvent) => {
     evenement.preventDefault();
+    const ibanNormalise = normaliserIban(iban.trim());
     if (
       !estEnLigne ||
       !branche ||
       titulaireCompte.trim().length < 2 ||
-      rib.trim().length < 10 ||
+      !ibanNormalise ||
       depenses.length === 0
     ) {
       setMessage({
         type: "erreur",
         texte:
-          "Ajoutez au moins une dépense et renseignez la branche, le titulaire du compte et le RIB.",
+          "Ajoutez au moins une dépense et renseignez la branche, le titulaire du compte et l'IBAN.",
+      });
+      return;
+    }
+    if (!estIbanValide(ibanNormalise)) {
+      setMessage({
+        type: "erreur",
+        texte: "IBAN invalide. Le BIC n'est pas accepté.",
       });
       return;
     }
@@ -147,7 +156,7 @@ export function VueRemboursement() {
         body: JSON.stringify({
           branche,
           titulaireCompte: titulaireCompte.trim(),
-          rib: rib.trim(),
+          iban: ibanNormalise,
           depenses: depenses.map((depense) => ({
             ...depense,
             montant: depense.montant.replace(",", "."),
@@ -159,7 +168,7 @@ export function VueRemboursement() {
         throw new Error(donnees.error || "Erreur lors de l'envoi");
       setDepenses([]);
       setDepenseEnCours(nouvelleDepense());
-      setRib("");
+      setIban("");
       setMessage({
         type: "succes",
         texte:
@@ -259,20 +268,20 @@ export function VueRemboursement() {
 
                 <div className="space-y-2">
                   <label
-                    htmlFor="rib"
+                    htmlFor="iban"
                     className="block text-sm font-medium text-zinc-700"
                   >
-                    RIB *
+                    IBAN *
                   </label>
                   <input
-                    id="rib"
-                    value={rib}
-                    onChange={(e) => setRib(e.target.value)}
-                    placeholder="IBAN et/ou BIC"
+                    id="iban"
+                    value={iban}
+                    onChange={(e) => setIban(e.target.value)}
+                    placeholder="FR14 2004 1010 0505 0001 3M02 606"
                     className="w-full rounded-lg border border-zinc-300 bg-white p-3 text-zinc-900 [color-scheme:light] focus:border-zinc-400 focus:ring-2 focus:ring-zinc-400"
                   />
                   <p className="text-xs text-amber-700">
-                    Vérifiez attentivement ces informations avant l&apos;envoi.
+                    Vérifiez attentivement cet IBAN avant l&apos;envoi.
                   </p>
                 </div>
 

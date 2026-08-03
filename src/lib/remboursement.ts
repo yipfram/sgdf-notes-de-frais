@@ -7,6 +7,7 @@ import {
   type ExpenseAttachment,
 } from "@/constants/piecesJointes";
 import { isAllowedAttachmentMimeType } from "@/lib/attachments";
+import { estIbanValide, normaliserIban } from "@/lib/iban";
 
 export interface DepenseRemboursement {
   date: string;
@@ -19,7 +20,7 @@ export interface DepenseRemboursement {
 export interface DemandeRemboursement {
   branche: string;
   titulaireCompte: string;
-  rib: string;
+  iban: string;
   depenses: DepenseRemboursement[];
 }
 
@@ -77,7 +78,7 @@ export function validerDemandeRemboursement(
     .object({
       branche: z.string().trim(),
       titulaireCompte: z.string().trim().min(2).max(120),
-      rib: z.string().trim().min(10).max(200),
+      iban: z.string().trim().min(1).max(64),
       depenses: z
         .array(
           z.object({
@@ -100,6 +101,8 @@ export function validerDemandeRemboursement(
   ) {
     return null;
   }
+  const iban = normaliserIban(resultat.data.iban);
+  if (!estIbanValide(iban)) return null;
 
   let nombrePiecesJointes = 0;
   let tailleTotale = 0;
@@ -141,7 +144,7 @@ export function validerDemandeRemboursement(
   return {
     branche: resultat.data.branche,
     titulaireCompte: resultat.data.titulaireCompte,
-    rib: resultat.data.rib,
+    iban,
     depenses,
   };
 }
