@@ -37,10 +37,10 @@ describe("genererCsvRemboursement", () => {
 
   it("valide le format IBAN", () => {
     expect(estIbanValide("FR14 2004 1010 0505 0001 3M02 606")).toBe(true);
-    expect(estIbanValide("BIC12345678")).toBe(false);
+    expect(estIbanValide("12345678")).toBe(false);
   });
 
-  it("rejette une demande avec un BIC à la place de l'IBAN", () => {
+  it("rejette une demande avec un IBAN invalide", () => {
     const demande = validerDemandeRemboursement({
       branche: "Groupe",
       titulaireCompte: "Camille Martin",

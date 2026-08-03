@@ -25,7 +25,7 @@ Pour savoir comment l'utiliser avec [la documentation](https://yipfram.github.io
 - 📲 **Installation PWA** : Ajout possible à l'écran d'accueil (Android / iOS / Desktop)
 - 🧭 **Menu mobile** : Onglets bas entre les espaces Carte et Remboursement
 - 💶 **Demandes de remboursement** : plusieurs dépenses par demande, CSV récapitulatif et justificatifs transmis à la trésorerie
-- 🔒 **Titulaire du compte** : requis pour chaque demande de remboursement et transmis uniquement dans l'e-mail ; aucun RIB, IBAN ou BIC n'est demandé ou stocké
+- 🔒 **Titulaire du compte** : requis pour chaque demande de remboursement et transmis uniquement dans l'e-mail ; aucun RIB ou IBAN n'est demandé ou stocké
 - ⚡ **Mode hors ligne partiel** : Consultation et préparation possible sans réseau (l'envoi nécessite la connexion)
 - 🔔 **Bannière d'installation** : Invitation A2HS personnalisée
 - 🌙 **Affichage plein écran** : Expérience proche d'une application native

@@ -143,7 +143,7 @@ export function VueRemboursement() {
     if (!estIbanValide(ibanNormalise)) {
       setMessage({
         type: "erreur",
-        texte: "IBAN invalide. Le BIC n'est pas accepté.",
+        texte: "IBAN invalide.",
       });
       return;
     }

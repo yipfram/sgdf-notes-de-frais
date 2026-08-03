@@ -27,7 +27,7 @@ L'application permet aux membres de votre groupe SGDF de :
 
 **Aucune donnée n'est stockée sur un serveur**, tout passe par des emails sécurisés.
 
-Pour les remboursements, le titulaire du compte est renseigné à chaque demande et transmis uniquement dans l'e-mail. Les justificatifs, RIB, IBAN et BIC ne sont jamais stockés par l'application.
+Pour les remboursements, le titulaire du compte est renseigné à chaque demande et transmis uniquement dans l'e-mail. Les justificatifs, RIB et IBAN ne sont jamais stockés par l'application.
 
 **Temps estimé :** 30-45 minutes pour une première installation.
 
