@@ -23,3 +23,8 @@ export interface ExpenseAttachment {
   originalFileName: string;
   normalizedFileName: string;
 }
+
+export interface ExpenseDetail {
+  expenseType: string;
+  amount: number;
+}

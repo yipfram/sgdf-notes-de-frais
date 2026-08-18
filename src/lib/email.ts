@@ -1,7 +1,10 @@
 import nodemailer from "nodemailer";
 import { getBranchColor } from "@/constants/configScoute";
 import { isAllowedAttachmentMimeType } from "./attachments";
-import { type ExpenseAttachment } from "@/constants/piecesJointes";
+import {
+  type ExpenseAttachment,
+  type ExpenseDetail,
+} from "@/constants/piecesJointes";
 
 export interface EmailData {
   userEmail: string;
@@ -11,6 +14,7 @@ export interface EmailData {
   amount: number;
   description?: string;
   attachments: ExpenseAttachment[];
+  expenseDetails?: ExpenseDetail[];
 }
 
 // Configuration du transporteur SMTP générique
@@ -47,6 +51,7 @@ export const envoyerEmail = async (data: EmailData) => {
     amount,
     description,
     attachments,
+    expenseDetails,
   } = data;
 
   // Helper pour extraire le buffer depuis une data URL ou une chaîne base64 brute
@@ -154,6 +159,8 @@ export const envoyerEmail = async (data: EmailData) => {
   // Accent: If the primary color is a warm tone, keep gold, else use a light variant
   const accentColor = "#FBB042";
   const textOnPrimary = "#ffffff";
+  const hasMultipleExpenses =
+    attachments.length > 1 && expenseDetails?.length === attachments.length;
 
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -171,6 +178,23 @@ export const envoyerEmail = async (data: EmailData) => {
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Date :</td>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${date}</td>
             </tr>
+            ${
+              hasMultipleExpenses
+                ? `
+            <tr>
+              <td colspan="2" style="padding: 14px 0 6px; font-weight: bold; color: #374151;">Détail des dépenses :</td>
+            </tr>
+            ${expenseDetails!
+              .map(
+                (detail, index) => `
+            <tr>
+              <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151;">${escapeHtml(parsedAttachments[index].filename)} — ${escapeHtml(detail.expenseType)}</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151; text-align: right;">${detail.amount} €</td>
+            </tr>`,
+              )
+              .join("")}`
+                : ""
+            }
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Branche :</td>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${branch}</td>
@@ -220,8 +244,18 @@ Nouvelle facture
 
 Date : ${date}
 Branche : ${branch}
-Type : ${expenseType}
-Montant : ${amount} €
+${hasMultipleExpenses ? "Dépenses :" : `Type : ${expenseType}`}
+${
+  hasMultipleExpenses
+    ? expenseDetails!
+        .map(
+          (detail, index) =>
+            `- ${parsedAttachments[index].filename} — ${detail.expenseType} : ${detail.amount} €`,
+        )
+        .join("\n")
+    : ""
+}
+${hasMultipleExpenses ? "Total" : "Montant"} : ${amount} €
 Demandeur : ${userEmail}
 ${description ? `Description : ${description}` : ""}
 
