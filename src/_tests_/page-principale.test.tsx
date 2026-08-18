@@ -23,11 +23,11 @@ vi.mock("next/image", () => ({
 }));
 
 vi.mock("@/components/FeatureNotice", () => ({
-  FeatureNotice: () => <div>Information fonctionnalite</div>,
+  AvertissementNouveaute: () => <div>Information fonctionnalite</div>,
 }));
 
 vi.mock("@/components/PhotoCapture", () => ({
-  PhotoCapture: () => <div>Ajout piece jointe</div>,
+  CapturePhoto: () => <div>Ajout piece jointe</div>,
 }));
 
 vi.mock("@/components/FormulaireDepense", () => ({
@@ -37,11 +37,11 @@ vi.mock("@/components/FormulaireDepense", () => ({
 }));
 
 vi.mock("@/components/InstallPrompt", () => ({
-  InstallPrompt: () => null,
+  InviteInstallation: () => null,
 }));
 
 vi.mock("@/lib/useOnlineStatus", () => ({
-  StatusEstEnligne: () => true,
+  useStatutEnLigne: () => true,
 }));
 
 describe("Page principale", () => {

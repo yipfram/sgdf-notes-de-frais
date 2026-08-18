@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 
-export function StatusEstEnligne() {
-  const [isOnline, setIsOnline] = useState<boolean>(true);
+export function useStatutEnLigne() {
+  const [estEnLigne, definirEstEnLigne] = useState<boolean>(true);
 
   useEffect(() => {
-    const update = () => setIsOnline(navigator.onLine);
-    update();
-    window.addEventListener("online", update);
-    window.addEventListener("offline", update);
+    const actualiser = () => definirEstEnLigne(navigator.onLine);
+    actualiser();
+    window.addEventListener("online", actualiser);
+    window.addEventListener("offline", actualiser);
     return () => {
-      window.removeEventListener("online", update);
-      window.removeEventListener("offline", update);
+      window.removeEventListener("online", actualiser);
+      window.removeEventListener("offline", actualiser);
     };
   }, []);
 
-  return isOnline;
+  return estEnLigne;
 }

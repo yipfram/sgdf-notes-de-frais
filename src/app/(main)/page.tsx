@@ -3,25 +3,25 @@
 import { useState, useEffect } from "react";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { FormulaireDepense } from "@/components/FormulaireDepense";
-import { FeatureNotice } from "@/components/FeatureNotice";
-import { PhotoCapture } from "@/components/PhotoCapture";
-import { StatusEstEnligne } from "@/lib/useOnlineStatus";
-import { InstallPrompt } from "@/components/InstallPrompt";
+import { AvertissementNouveaute } from "@/components/FeatureNotice";
+import { CapturePhoto } from "@/components/PhotoCapture";
+import { useStatutEnLigne } from "@/lib/useOnlineStatus";
+import { InviteInstallation } from "@/components/InstallPrompt";
 import {
   MAX_ATTACHMENT_COUNT,
-  type ExpenseAttachment,
+  type PieceJointeDepense,
 } from "@/constants/piecesJointes";
 import Image from "next/image";
 
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser();
-  const [attachments, setAttachments] = useState<ExpenseAttachment[]>([]);
+  const [piecesJointes, setPiecesJointes] = useState<PieceJointeDepense[]>([]);
   const [activeBranch, setActiveBranch] = useState<string>("");
   const [branchSaveStatus, setBranchSaveStatus] = useState<{
     type: "success" | "error" | null;
     message: string;
   }>({ type: null, message: "" });
-  const isOnline = StatusEstEnligne();
+  const estEnLigne = useStatutEnLigne();
 
   useEffect(() => {
     if (!branchSaveStatus.type) {
@@ -86,7 +86,7 @@ export default function Home() {
           </div>
         </div>
 
-        {!isOnline && (
+        {!estEnLigne && (
           <div className="bg-amber-50 border-t border-b border-amber-200 text-amber-800 text-center text-sm py-2">
             Hors ligne - certaines fonctionnalités sont limitées
           </div>
@@ -105,25 +105,30 @@ export default function Home() {
         )}
 
         <div className="p-6 space-y-6">
-          <FeatureNotice />
-          <PhotoCapture
-            onAttachmentsAdd={(newAttachments) => {
-              setAttachments((prev) =>
-                [...prev, ...newAttachments].slice(0, MAX_ATTACHMENT_COUNT),
+          <AvertissementNouveaute />
+          <CapturePhoto
+            onAttachmentsAdd={(nouvellesPiecesJointes) => {
+              setPiecesJointes((precedentes) =>
+                [...precedentes, ...nouvellesPiecesJointes].slice(
+                  0,
+                  MAX_ATTACHMENT_COUNT,
+                ),
               );
             }}
-            currentCount={attachments.length}
+            currentCount={piecesJointes.length}
           />
 
           <FormulaireDepense
-            piecesJointes={attachments}
+            piecesJointes={piecesJointes}
             emailUtilisateur={user?.emailAddresses[0]?.emailAddress || ""}
             brancheInitiale={activeBranch}
             onCreerNouvelleNote={() => {
-              setAttachments([]);
+              setPiecesJointes([]);
             }}
             onSupprimerPieceJointe={(index) => {
-              setAttachments((prev) => prev.filter((_, i) => i !== index));
+              setPiecesJointes((precedentes) =>
+                precedentes.filter((_, i) => i !== index),
+              );
             }}
             onMemoriserBranche={async (branche: string) => {
               try {
@@ -156,11 +161,11 @@ export default function Home() {
               }
             }}
             onChangementBranche={(branche) => setActiveBranch(branche)}
-            estEnLigne={isOnline}
+            estEnLigne={estEnLigne}
           />
         </div>
       </div>
-      <InstallPrompt />
+      <InviteInstallation />
     </main>
   );
 }

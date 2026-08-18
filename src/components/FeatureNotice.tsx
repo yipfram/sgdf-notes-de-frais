@@ -25,7 +25,7 @@ function subscribeToDismissedState(onStoreChange: () => void) {
   };
 }
 
-export function FeatureNotice() {
+export function AvertissementNouveaute() {
   const isDismissed = useSyncExternalStore(
     subscribeToDismissedState,
     getDismissedSnapshot,
