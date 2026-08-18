@@ -17,6 +17,7 @@ import {
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
   type ExpenseAttachment,
+  type ExpenseDetail,
 } from "@/constants/piecesJointes";
 import { TYPES_DEPENSES, BRANCHES_ASC } from "@/constants/configScoute";
 
@@ -47,6 +48,7 @@ export function FormulaireDepense({
     montant: "",
     description: "",
   });
+  const [detailsDepenses, setDetailsDepenses] = useState<ExpenseDetail[]>([]);
   const emailTresorier = process.env.NEXT_PUBLIC_TREASURY_EMAIL ?? "";
 
   const [statutMemoBranche, setStatutMemoBranche] = useState<
@@ -95,8 +97,62 @@ export function FormulaireDepense({
     return montant.replace(",", ".");
   };
 
+  const plusieursDepenses = piecesJointes.length > 1;
+
+  useEffect(() => {
+    setDetailsDepenses((precedents) =>
+      piecesJointes.map(
+        (_, index) =>
+          precedents[index] ?? { expenseType: "", amount: Number.NaN },
+      ),
+    );
+  }, [piecesJointes]);
+
+  const modifierDetailDepense = (
+    index: number,
+    champ: keyof ExpenseDetail,
+    valeur: string,
+  ) => {
+    setDetailsDepenses((precedents) =>
+      precedents.map((detail, detailIndex) =>
+        detailIndex === index
+          ? {
+              ...detail,
+              [champ]: champ === "amount" ? Number(valeur) : valeur,
+            }
+          : detail,
+      ),
+    );
+    if (statutEnvoi.type) setStatutEnvoi({ type: null, message: "" });
+  };
+
+  const totalDepenses = detailsDepenses.reduce(
+    (total, detail) =>
+      total + (Number.isFinite(detail.amount) ? detail.amount : 0),
+    0,
+  );
+  const detailsDepensesValides =
+    detailsDepenses.length === piecesJointes.length &&
+    detailsDepenses.every(
+      (detail) =>
+        detail.expenseType &&
+        Number.isFinite(detail.amount) &&
+        detail.amount > 0,
+    );
+
   const genererNomsFichiers = () => {
     if (piecesJointes.length === 0) return [];
+    if (plusieursDepenses) {
+      return piecesJointes.map((pieceJointe, index) => {
+        const detail = detailsDepenses[index];
+        return buildNormalizedFileNames([pieceJointe], {
+          date: formulaire.date,
+          branch: formulaire.branche,
+          expenseType: detail?.expenseType ?? "",
+          amount: String(detail?.amount ?? ""),
+        })[0];
+      });
+    }
     return buildNormalizedFileNames(piecesJointes, {
       date: formulaire.date,
       branch: formulaire.branche,
@@ -111,8 +167,9 @@ export function FormulaireDepense({
     if (
       piecesJointes.length === 0 ||
       !formulaire.branche ||
-      !formulaire.typeDepense ||
-      !formulaire.montant
+      (plusieursDepenses
+        ? !detailsDepensesValides
+        : !formulaire.typeDepense || !formulaire.montant)
     ) {
       setStatutEnvoi({
         type: "erreur",
@@ -144,10 +201,13 @@ export function FormulaireDepense({
           userEmail: emailUtilisateur,
           date: formulaire.date,
           branch: formulaire.branche,
-          expenseType: formulaire.typeDepense,
-          amount: normaliserMontant(formulaire.montant),
+          expenseType: plusieursDepenses ? undefined : formulaire.typeDepense,
+          amount: plusieursDepenses
+            ? undefined
+            : normaliserMontant(formulaire.montant),
           description: formulaire.description,
           attachments: piecesJointesPourApi,
+          expenseDetails: plusieursDepenses ? detailsDepenses : undefined,
         }),
       });
 
@@ -176,6 +236,7 @@ export function FormulaireDepense({
           montant: "",
           description: "",
         }));
+        setDetailsDepenses([]);
         onCreerNouvelleNote?.();
       } else {
         const piecesJointesTropLourdes =
@@ -226,8 +287,9 @@ export function FormulaireDepense({
   const formulaireEstValide = Boolean(
     piecesJointes.length > 0 &&
     formulaire.branche &&
-    formulaire.typeDepense &&
-    formulaire.montant,
+    (plusieursDepenses
+      ? detailsDepensesValides
+      : formulaire.typeDepense && formulaire.montant),
   );
   const nomsFichiersApercu = formulaireEstValide ? genererNomsFichiers() : [];
 
@@ -241,6 +303,7 @@ export function FormulaireDepense({
       description: "",
     }));
     setStatutEnvoi({ type: null, message: "" });
+    setDetailsDepenses([]);
     if (onCreerNouvelleNote) onCreerNouvelleNote();
   };
 
@@ -283,7 +346,7 @@ export function FormulaireDepense({
                       />
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 space-y-3">
                     <p className="text-sm text-zinc-900 truncate font-medium">
                       {pieceJointe.displayName}
                     </p>
@@ -292,11 +355,63 @@ export function FormulaireDepense({
                         ? "PDF"
                         : "Image"}
                     </p>
+                    {plusieursDepenses && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <select
+                          aria-label={`Catégorie pour ${pieceJointe.displayName}`}
+                          value={detailsDepenses[index]?.expenseType ?? ""}
+                          onChange={(e) =>
+                            modifierDetailDepense(
+                              index,
+                              "expenseType",
+                              e.target.value,
+                            )
+                          }
+                          className="p-2 border border-zinc-300 rounded-md bg-white text-sm text-zinc-900"
+                          required
+                        >
+                          <option value="">Catégorie *</option>
+                          {TYPES_DEPENSES.map((type) => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          aria-label={`Montant pour ${pieceJointe.displayName}`}
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          placeholder="Montant (€) *"
+                          value={
+                            Number.isFinite(detailsDepenses[index]?.amount)
+                              ? detailsDepenses[index].amount
+                              : ""
+                          }
+                          onChange={(e) =>
+                            modifierDetailDepense(
+                              index,
+                              "amount",
+                              e.target.value,
+                            )
+                          }
+                          className="p-2 border border-zinc-300 rounded-md bg-white text-sm text-zinc-900"
+                          required
+                        />
+                      </div>
+                    )}
                   </div>
                   {onSupprimerPieceJointe && (
                     <button
                       type="button"
-                      onClick={() => onSupprimerPieceJointe(index)}
+                      onClick={() => {
+                        setDetailsDepenses((precedents) =>
+                          precedents.filter(
+                            (_, detailIndex) => detailIndex !== index,
+                          ),
+                        );
+                        onSupprimerPieceJointe(index);
+                      }}
                       className="p-2 rounded-md text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors"
                       aria-label={`Supprimer ${pieceJointe.displayName}`}
                     >
@@ -310,28 +425,30 @@ export function FormulaireDepense({
         </div>
       )}
 
-      <div className="space-y-2">
-        <label
-          htmlFor="typeDepense"
-          className="block text-sm font-medium text-zinc-700"
-        >
-          Type de dépense *
-        </label>
-        <select
-          id="typeDepense"
-          value={formulaire.typeDepense}
-          onChange={(e) => modifierChamp("typeDepense", e.target.value)}
-          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
-          required
-        >
-          <option value="">Sélectionner un type</option>
-          {TYPES_DEPENSES.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-      </div>
+      {!plusieursDepenses && (
+        <div className="space-y-2">
+          <label
+            htmlFor="typeDepense"
+            className="block text-sm font-medium text-zinc-700"
+          >
+            Type de dépense *
+          </label>
+          <select
+            id="typeDepense"
+            value={formulaire.typeDepense}
+            onChange={(e) => modifierChamp("typeDepense", e.target.value)}
+            className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
+            required
+          >
+            <option value="">Sélectionner un type</option>
+            {TYPES_DEPENSES.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="space-y-2">
         <label
@@ -418,24 +535,37 @@ export function FormulaireDepense({
         )}
       </div>
 
-      <div className="space-y-2">
-        <label
-          htmlFor="montant"
-          className="block text-sm font-medium text-zinc-700"
-        >
-          Montant (€) *
-        </label>
-        <input
-          id="montant"
-          type="number"
-          step="0.01"
-          placeholder="0.00"
-          value={formulaire.montant}
-          onChange={(e) => modifierChamp("montant", e.target.value)}
-          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
-          required
-        />
-      </div>
+      {plusieursDepenses && (
+        <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg flex items-center justify-between">
+          <span className="text-sm font-medium text-zinc-700">
+            Total des dépenses
+          </span>
+          <span className="text-lg font-bold text-zinc-900">
+            {totalDepenses.toFixed(2)} €
+          </span>
+        </div>
+      )}
+
+      {!plusieursDepenses && (
+        <div className="space-y-2">
+          <label
+            htmlFor="montant"
+            className="block text-sm font-medium text-zinc-700"
+          >
+            Montant (€) *
+          </label>
+          <input
+            id="montant"
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            value={formulaire.montant}
+            onChange={(e) => modifierChamp("montant", e.target.value)}
+            className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
+            required
+          />
+        </div>
+      )}
 
       <div className="space-y-2">
         <label
@@ -521,8 +651,8 @@ export function FormulaireDepense({
                 Pièce(s) jointe(s) :
               </span>
               <br />
-              {nomsFichiersApercu.map((nom) => (
-                <span key={nom}>
+              {nomsFichiersApercu.map((nom, index) => (
+                <span key={`${nom}-${index}`}>
                   • {nom}
                   <br />
                 </span>

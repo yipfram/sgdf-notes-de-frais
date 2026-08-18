@@ -1,6 +1,9 @@
 import { jsonError } from "@/lib/api/utils";
 import { isAllowedAttachmentMimeType } from "@/lib/attachments";
-import { type ExpenseAttachment } from "@/constants/piecesJointes";
+import {
+  type ExpenseAttachment,
+  type ExpenseDetail,
+} from "@/constants/piecesJointes";
 import {
   MAX_ATTACHMENT_COUNT,
   MAX_ATTACHMENT_SIZE_BYTES,
@@ -10,6 +13,7 @@ import {
 import type { EmailData } from "@/lib/email";
 import type { NextResponse } from "next/server";
 import { z } from "zod";
+import { TYPES_DEPENSES } from "@/constants/configScoute";
 
 export function validateBody(body: unknown): {
   emailData?: EmailData;
@@ -20,9 +24,17 @@ export function validateBody(body: unknown): {
       userEmail: z.email(),
       date: z.string(),
       branch: z.string(),
-      expenseType: z.string(),
-      amount: z.union([z.string(), z.number()]),
+      expenseType: z.string().optional(),
+      amount: z.union([z.string(), z.number()]).optional(),
       description: z.string().optional(),
+      expenseDetails: z
+        .array(
+          z.object({
+            expenseType: z.string(),
+            amount: z.union([z.string(), z.number()]),
+          }),
+        )
+        .optional(),
       attachments: z.array(z.any()).optional(),
       imageBase64: z.string().optional(),
       fileName: z.string().optional(),
@@ -35,12 +47,6 @@ export function validateBody(body: unknown): {
   }
 
   const b = bodyParsed.data;
-
-  // ─── Montant ───
-  const amount = Number(b.amount);
-  if (!Number.isFinite(amount) || amount <= 0) {
-    return { error: jsonError("Montant invalide", 400) };
-  }
 
   // ─── Pièces jointes ───
   let attachments: unknown[] = b.attachments ?? [];
@@ -153,15 +159,59 @@ export function validateBody(body: unknown): {
     });
   }
 
+  const isExpenseTypeValid = (expenseType: string) =>
+    TYPES_DEPENSES.includes(expenseType as (typeof TYPES_DEPENSES)[number]);
+  let amount: number;
+  let expenseType: string;
+  let expenseDetails: ExpenseDetail[] | undefined;
+
+  if (normalizedAttachments.length > 1) {
+    if (
+      !b.expenseDetails ||
+      b.expenseDetails.length !== normalizedAttachments.length
+    ) {
+      return { error: jsonError("Détails des dépenses incomplets", 400) };
+    }
+
+    expenseDetails = [];
+    for (let i = 0; i < b.expenseDetails.length; i++) {
+      const detail = b.expenseDetails[i];
+      const detailAmount = Number(detail.amount);
+      if (
+        !isExpenseTypeValid(detail.expenseType) ||
+        !Number.isFinite(detailAmount) ||
+        detailAmount <= 0
+      ) {
+        return { error: jsonError(`Dépense invalide (#${i + 1})`, 400) };
+      }
+      expenseDetails.push({
+        expenseType: detail.expenseType,
+        amount: detailAmount,
+      });
+    }
+    amount = expenseDetails.reduce((total, detail) => total + detail.amount, 0);
+    expenseType = "Dépenses multiples";
+  } else {
+    amount = Number(b.amount);
+    expenseType = b.expenseType?.trim() ?? "";
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return { error: jsonError("Montant invalide", 400) };
+    }
+    if (!isExpenseTypeValid(expenseType)) {
+      return { error: jsonError("Type de dépense invalide", 400) };
+    }
+  }
+
   return {
     emailData: {
       userEmail: b.userEmail,
       date: b.date,
       branch: b.branch,
-      expenseType: b.expenseType,
+      expenseType,
       amount,
       description: b.description ?? "",
       attachments: normalizedAttachments,
+      expenseDetails,
     },
   };
 }
