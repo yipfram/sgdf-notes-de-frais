@@ -1,24 +1,24 @@
 import nodemailer from "nodemailer";
 import { getBranchColor } from "@/constants/configScoute";
-import { isAllowedAttachmentMimeType } from "./attachments";
+import { estTypeMimePieceJointeAutorise } from "./attachments";
 import {
-  type ExpenseAttachment,
-  type ExpenseDetail,
+  type PieceJointeDepense,
+  type DetailDepense,
 } from "@/constants/piecesJointes";
 
-export interface EmailData {
-  userEmail: string;
+export interface DonneesEmail {
+  emailUtilisateur: string;
   date: string;
-  branch: string;
-  expenseType: string;
-  amount: number;
+  branche: string;
+  typeDepense: string;
+  montant: number;
   description?: string;
-  attachments: ExpenseAttachment[];
-  expenseDetails?: ExpenseDetail[];
+  piecesJointes: PieceJointeDepense[];
+  detailsDepenses?: DetailDepense[];
 }
 
 // Configuration du transporteur SMTP générique
-export const createEmailTransporter = () => {
+export const creerTransporteurEmail = () => {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number.parseInt(process.env.SMTP_PORT || "587"),
@@ -31,12 +31,12 @@ export const createEmailTransporter = () => {
 };
 
 // Fonction pour envoyer un email avec pièce jointe
-export const envoyerEmail = async (data: EmailData) => {
-  const transporter = createEmailTransporter();
+export const envoyerEmail = async (donnees: DonneesEmail) => {
+  const transporteur = creerTransporteurEmail();
 
   // Vérifier la connexion SMTP
   try {
-    await transporter.verify();
+    await transporteur.verify();
     console.log("Serveur SMTP prêt à envoyer des emails");
   } catch (error) {
     console.error("Erreur de configuration SMTP:", error);
@@ -44,51 +44,52 @@ export const envoyerEmail = async (data: EmailData) => {
   }
 
   const {
-    userEmail,
+    emailUtilisateur,
     date,
-    branch,
-    expenseType,
-    amount,
+    branche,
+    typeDepense,
+    montant,
     description,
-    attachments,
-    expenseDetails,
-  } = data;
+    piecesJointes,
+    detailsDepenses,
+  } = donnees;
 
   // Helper pour extraire le buffer depuis une data URL ou une chaîne base64 brute
-  const extractAttachmentBuffer = (input: string, mimeType: string) => {
-    if (!input || !mimeType) {
+  const extraireTamponPieceJointe = (entree: string, typeMime: string) => {
+    if (!entree || !typeMime) {
       throw new Error("ATTACHMENT_MISSING");
     }
 
-    let mime = mimeType;
-    let base64Part = input;
+    let mime = typeMime;
+    let partieBase64 = entree;
 
     // Format attendu: data:<type>;base64,<data>
-    if (input.startsWith("data:")) {
-      const match = /^data:([a-zA-Z0-9.+/-]+);base64,(.*)$/.exec(input);
+    if (entree.startsWith("data:")) {
+      const match = /^data:([a-zA-Z0-9.+/-]+);base64,(.*)$/.exec(entree);
       if (!match || match.length < 3) {
         throw new Error("ATTACHMENT_DATA_URL_INVALID");
       }
       mime = match[1];
-      base64Part = match[2];
-    } else if (input.includes(",")) {
+      partieBase64 = match[2];
+    } else if (entree.includes(",")) {
       // Cas dégradé: on prend tout après la première virgule
-      const commaIndex = input.indexOf(",");
-      base64Part = commaIndex >= 0 ? input.slice(commaIndex + 1) : input;
+      const indexVirgule = entree.indexOf(",");
+      partieBase64 =
+        indexVirgule >= 0 ? entree.slice(indexVirgule + 1) : entree;
     }
 
-    base64Part = base64Part.replace(/\s+/g, "");
-    if (!/^[A-Za-z0-9+/=]+$/.test(base64Part)) {
+    partieBase64 = partieBase64.replace(/\s+/g, "");
+    if (!/^[A-Za-z0-9+/=]+$/.test(partieBase64)) {
       // Vérification minimale que la chaîne ressemble à du base64
       throw new Error("ATTACHMENT_NOT_BASE64");
     }
 
-    if (!isAllowedAttachmentMimeType(mime)) {
+    if (!estTypeMimePieceJointeAutorise(mime)) {
       throw new Error("ATTACHMENT_MIME_NOT_ALLOWED");
     }
 
     try {
-      const buffer = Buffer.from(base64Part, "base64");
+      const buffer = Buffer.from(partieBase64, "base64");
       if (buffer.length === 0) {
         throw new Error("ATTACHMENT_EMPTY_BUFFER");
       }
@@ -99,17 +100,17 @@ export const envoyerEmail = async (data: EmailData) => {
     }
   };
 
-  const parsedAttachments = attachments.map((attachment) => {
+  const piecesJointesAnalysees = piecesJointes.map((pieceJointe) => {
     try {
-      const info = extractAttachmentBuffer(
-        attachment.base64Data,
-        attachment.mimeType,
+      const info = extraireTamponPieceJointe(
+        pieceJointe.donneesBase64,
+        pieceJointe.typeMime,
       );
       return {
         filename:
-          attachment.normalizedFileName ||
-          attachment.displayName ||
-          attachment.originalFileName,
+          pieceJointe.nomFichierNormalise ||
+          pieceJointe.nomAffiche ||
+          pieceJointe.nomFichierOriginal,
         content: info.buffer,
         contentType: info.mime,
       };
@@ -128,12 +129,12 @@ export const envoyerEmail = async (data: EmailData) => {
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
 
-  const defaultFromName =
+  const nomExpediteurDefaut =
     process.env.SMTP_FROM_NAME || "Factures carte procurement SGDF";
   const fromRaw = process.env.SMTP_FROM?.trim();
-  const fallbackAddress = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
+  const adresseRepli = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
 
-  if (!fromRaw && !fallbackAddress) {
+  if (!fromRaw && !adresseRepli) {
     throw new Error("SMTP_FROM_UNDEFINED");
   }
 
@@ -144,33 +145,34 @@ export const envoyerEmail = async (data: EmailData) => {
         return fromRaw;
       }
       return {
-        name: defaultFromName,
+        name: nomExpediteurDefaut,
         address: fromRaw,
       };
     }
     return {
-      name: defaultFromName,
-      address: fallbackAddress!,
+      name: nomExpediteurDefaut,
+      address: adresseRepli!,
     };
   })();
 
-  const subject = `Facture carte procurement - ${branch} - ${date}`;
-  const primaryColor = getBranchColor(branch);
+  const sujet = `Facture carte procurement - ${branche} - ${date}`;
+  const couleurPrincipale = getBranchColor(branche);
   // Accent: If the primary color is a warm tone, keep gold, else use a light variant
   const accentColor = "#FBB042";
-  const textOnPrimary = "#ffffff";
-  const hasMultipleExpenses =
-    attachments.length > 1 && expenseDetails?.length === attachments.length;
+  const texteSurCouleurPrincipale = "#ffffff";
+  const plusieursDepenses =
+    piecesJointes.length > 1 &&
+    detailsDepenses?.length === piecesJointes.length;
 
-  const htmlContent = `
+  const contenuHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <div style="background-color: ${primaryColor}; color: ${textOnPrimary}; padding: 20px; text-align: center;">
+      <div style="background-color: ${couleurPrincipale}; color: ${texteSurCouleurPrincipale}; padding: 20px; text-align: center;">
   <h1 style="margin: 0; font-size: 24px;">📜 Facture carte procurement SGDF</h1>
         <p style="margin: 10px 0 0 0; opacity: 0.9;">La Guillotière</p>
       </div>
 
       <div style="padding: 30px; background-color: #f9f9f9;">
-  <h2 style="color: ${primaryColor}; margin-top: 0;">Nouvelle facture</h2>
+  <h2 style="color: ${couleurPrincipale}; margin-top: 0;">Nouvelle facture</h2>
 
         <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <table style="width: 100%; border-collapse: collapse;">
@@ -179,17 +181,17 @@ export const envoyerEmail = async (data: EmailData) => {
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${date}</td>
             </tr>
             ${
-              hasMultipleExpenses
+              plusieursDepenses
                 ? `
             <tr>
               <td colspan="2" style="padding: 14px 0 6px; font-weight: bold; color: #374151;">Détail des dépenses :</td>
             </tr>
-            ${expenseDetails!
+            ${detailsDepenses!
               .map(
                 (detail, index) => `
             <tr>
-              <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151;">${escapeHtml(parsedAttachments[index].filename)} — ${escapeHtml(detail.expenseType)}</td>
-              <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151; text-align: right;">${detail.amount} €</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151;">${escapeHtml(piecesJointesAnalysees[index].filename)} — ${escapeHtml(detail.typeDepense)}</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151; text-align: right;">${detail.montant} €</td>
             </tr>`,
               )
               .join("")}`
@@ -197,19 +199,19 @@ export const envoyerEmail = async (data: EmailData) => {
             }
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Branche :</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${branch}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${branche}</td>
             </tr>
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Type :</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${expenseType}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${typeDepense}</td>
             </tr>
             <tr>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: ${primaryColor};">Montant :</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: ${primaryColor}; font-weight: bold; font-size: 18px;">${amount} €</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: ${couleurPrincipale};">Montant :</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: ${couleurPrincipale}; font-weight: bold; font-size: 18px;">${montant} €</td>
             </tr>
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Demandeur :</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${userEmail}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${emailUtilisateur}</td>
             </tr>
             ${
               description
@@ -223,10 +225,10 @@ export const envoyerEmail = async (data: EmailData) => {
           </table>
         </div>
 
-        <div style="background-color: ${accentColor}; color: ${primaryColor}; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <strong>📎 ${parsedAttachments.length} pièce(s) jointe(s) :</strong>
+        <div style="background-color: ${accentColor}; color: ${couleurPrincipale}; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <strong>📎 ${piecesJointesAnalysees.length} pièce(s) jointe(s) :</strong>
           <ul style="margin: 8px 0 0 18px; padding: 0;">
-            ${parsedAttachments.map((a) => `<li>${escapeHtml(a.filename)}</li>`).join("")}
+            ${piecesJointesAnalysees.map((pieceJointe) => `<li>${escapeHtml(pieceJointe.filename)}</li>`).join("")}
           </ul>
         </div>
 
@@ -237,41 +239,41 @@ export const envoyerEmail = async (data: EmailData) => {
     </div>
   `;
 
-  const textContent = `
+  const contenuTexte = `
 Facture carte procurement SGDF - La Guillotière
 
 Nouvelle facture
 
 Date : ${date}
-Branche : ${branch}
-${hasMultipleExpenses ? "Dépenses :" : `Type : ${expenseType}`}
+Branche : ${branche}
+${plusieursDepenses ? "Dépenses :" : `Type : ${typeDepense}`}
 ${
-  hasMultipleExpenses
-    ? expenseDetails!
+  plusieursDepenses
+    ? detailsDepenses!
         .map(
           (detail, index) =>
-            `- ${parsedAttachments[index].filename} — ${detail.expenseType} : ${detail.amount} €`,
+            `- ${piecesJointesAnalysees[index].filename} — ${detail.typeDepense} : ${detail.montant} €`,
         )
         .join("\n")
     : ""
 }
-${hasMultipleExpenses ? "Total" : "Montant"} : ${amount} €
-Demandeur : ${userEmail}
+${plusieursDepenses ? "Total" : "Montant"} : ${montant} €
+Demandeur : ${emailUtilisateur}
 ${description ? `Description : ${description}` : ""}
 
-Pièce(s) jointe(s) (${parsedAttachments.length}) :
-${parsedAttachments.map((a) => `- ${a.filename}`).join("\n")}
+Pièce(s) jointe(s) (${piecesJointesAnalysees.length}) :
+${piecesJointesAnalysees.map((pieceJointe) => `- ${pieceJointe.filename}`).join("\n")}
 
 Email envoyé automatiquement par l'application Factures carte procurement SGDF.
   `;
 
-  const mailOptions = {
+  const optionsEmail = {
     from,
     to: process.env.NEXT_PUBLIC_TREASURY_EMAIL!,
-    cc: userEmail,
-    subject,
-    text: textContent,
-    html: htmlContent,
+    cc: emailUtilisateur,
+    subject: sujet,
+    text: contenuTexte,
+    html: contenuHtml,
     // Mark the message as important/high priority for most email clients
     priority: "high" as const,
     headers: {
@@ -279,13 +281,13 @@ Email envoyé automatiquement par l'application Factures carte procurement SGDF.
       "X-Priority": "1 (Highest)",
       "X-MSMail-Priority": "High",
     },
-    attachments: parsedAttachments,
+    attachments: piecesJointesAnalysees,
   };
 
   try {
     // Some nodemailer typings present overloads that make the return type awkward;
     // cast to any so we can access messageId reliably at runtime.
-    const info: any = await transporter.sendMail(mailOptions);
+    const info: any = await transporteur.sendMail(optionsEmail);
     console.log("Email envoyé avec succès:", info?.messageId);
     return { success: true, messageId: info?.messageId };
   } catch (error) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateBody } from "@/lib/api/validateBody";
+import { validerCorpsRequete } from "@/lib/api/validateBody";
 
 const attachment = (name: string) => ({
   displayName: name,
@@ -15,9 +15,9 @@ const baseBody = {
   branch: "Groupe",
 };
 
-describe("validateBody avec plusieurs dépenses", () => {
+describe("validerCorpsRequete avec plusieurs dépenses", () => {
   it("calcule le total à partir des détails de chaque justificatif", () => {
-    const result = validateBody({
+    const resultat = validerCorpsRequete({
       ...baseBody,
       attachments: [attachment("ticket-1.jpg"), attachment("ticket-2.jpg")],
       expenseDetails: [
@@ -26,24 +26,24 @@ describe("validateBody avec plusieurs dépenses", () => {
       ],
     });
 
-    expect(result.error).toBeUndefined();
-    expect(result.emailData).toMatchObject({
-      expenseType: "Dépenses multiples",
-      amount: 42.5,
-      expenseDetails: [
-        { expenseType: "Alimentation, Intendance", amount: 12.5 },
-        { expenseType: "Carburants", amount: 30 },
+    expect(resultat.error).toBeUndefined();
+    expect(resultat.donneesEmail).toMatchObject({
+      typeDepense: "Dépenses multiples",
+      montant: 42.5,
+      detailsDepenses: [
+        { typeDepense: "Alimentation, Intendance", montant: 12.5 },
+        { typeDepense: "Carburants", montant: 30 },
       ],
     });
   });
 
   it("refuse un détail manquant ou une catégorie inconnue", () => {
-    const missingDetail = validateBody({
+    const detailManquant = validerCorpsRequete({
       ...baseBody,
       attachments: [attachment("ticket-1.jpg"), attachment("ticket-2.jpg")],
       expenseDetails: [{ expenseType: "Carburants", amount: 20 }],
     });
-    const invalidCategory = validateBody({
+    const categorieInvalide = validerCorpsRequete({
       ...baseBody,
       attachments: [attachment("ticket-1.jpg"), attachment("ticket-2.jpg")],
       expenseDetails: [
@@ -52,22 +52,35 @@ describe("validateBody avec plusieurs dépenses", () => {
       ],
     });
 
-    expect(missingDetail.error?.status).toBe(400);
-    expect(invalidCategory.error?.status).toBe(400);
+    expect(detailManquant.error?.status).toBe(400);
+    expect(categorieInvalide.error?.status).toBe(400);
+  });
+
+  it("refuse des détails pour un justificatif unique", () => {
+    const resultat = validerCorpsRequete({
+      ...baseBody,
+      attachments: [attachment("ticket.jpg")],
+      expenseDetails: [
+        { expenseType: "Carburants", amount: 22 },
+        { expenseType: "Carburants", amount: 222 },
+      ],
+    });
+
+    expect(resultat.error?.status).toBe(400);
   });
 
   it("conserve le format d'une dépense unique", () => {
-    const result = validateBody({
+    const resultat = validerCorpsRequete({
       ...baseBody,
       expenseType: "Carburants",
       amount: "18.40",
       attachments: [attachment("ticket.jpg")],
     });
 
-    expect(result.emailData).toMatchObject({
-      expenseType: "Carburants",
-      amount: 18.4,
-      expenseDetails: undefined,
+    expect(resultat.donneesEmail).toMatchObject({
+      typeDepense: "Carburants",
+      montant: 18.4,
+      detailsDepenses: undefined,
     });
   });
 });

@@ -11,18 +11,18 @@ import {
   DocumentTextIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import { buildNormalizedFileNames } from "@/lib/attachments";
+import { construireNomsFichiersNormalises } from "@/lib/attachments";
 import {
   MAX_ATTACHMENT_COUNT,
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
-  type ExpenseAttachment,
-  type ExpenseDetail,
+  type PieceJointeDepense,
+  type DetailDepense,
 } from "@/constants/piecesJointes";
 import { TYPES_DEPENSES, BRANCHES_ASC } from "@/constants/configScoute";
 
 interface FormulaireDepenseProps {
-  readonly piecesJointes: ExpenseAttachment[];
+  readonly piecesJointes: PieceJointeDepense[];
   readonly emailUtilisateur: string;
   readonly brancheInitiale?: string; // Depuis les métadonnées publiques Clerk
   readonly onMemoriserBranche?: (branche: string) => Promise<void> | void;
@@ -48,7 +48,7 @@ export function FormulaireDepense({
     montant: "",
     description: "",
   });
-  const [detailsDepenses, setDetailsDepenses] = useState<ExpenseDetail[]>([]);
+  const [detailsDepenses, setDetailsDepenses] = useState<DetailDepense[]>([]);
   const emailTresorier = process.env.NEXT_PUBLIC_TREASURY_EMAIL ?? "";
 
   const [statutMemoBranche, setStatutMemoBranche] = useState<
@@ -103,14 +103,14 @@ export function FormulaireDepense({
     setDetailsDepenses((precedents) =>
       piecesJointes.map(
         (_, index) =>
-          precedents[index] ?? { expenseType: "", amount: Number.NaN },
+          precedents[index] ?? { typeDepense: "", montant: Number.NaN },
       ),
     );
   }, [piecesJointes]);
 
   const modifierDetailDepense = (
     index: number,
-    champ: keyof ExpenseDetail,
+    champ: keyof DetailDepense,
     valeur: string,
   ) => {
     setDetailsDepenses((precedents) =>
@@ -118,7 +118,7 @@ export function FormulaireDepense({
         detailIndex === index
           ? {
               ...detail,
-              [champ]: champ === "amount" ? Number(valeur) : valeur,
+              [champ]: champ === "montant" ? Number(valeur) : valeur,
             }
           : detail,
       ),
@@ -128,16 +128,16 @@ export function FormulaireDepense({
 
   const totalDepenses = detailsDepenses.reduce(
     (total, detail) =>
-      total + (Number.isFinite(detail.amount) ? detail.amount : 0),
+      total + (Number.isFinite(detail.montant) ? detail.montant : 0),
     0,
   );
   const detailsDepensesValides =
     detailsDepenses.length === piecesJointes.length &&
     detailsDepenses.every(
       (detail) =>
-        detail.expenseType &&
-        Number.isFinite(detail.amount) &&
-        detail.amount > 0,
+        detail.typeDepense &&
+        Number.isFinite(detail.montant) &&
+        detail.montant > 0,
     );
 
   const genererNomsFichiers = () => {
@@ -145,15 +145,15 @@ export function FormulaireDepense({
     if (plusieursDepenses) {
       return piecesJointes.map((pieceJointe, index) => {
         const detail = detailsDepenses[index];
-        return buildNormalizedFileNames([pieceJointe], {
+        return construireNomsFichiersNormalises([pieceJointe], {
           date: formulaire.date,
           branch: formulaire.branche,
-          expenseType: detail?.expenseType ?? "",
-          amount: String(detail?.amount ?? ""),
+          expenseType: detail?.typeDepense ?? "",
+          amount: String(detail?.montant ?? ""),
         })[0];
       });
     }
-    return buildNormalizedFileNames(piecesJointes, {
+    return construireNomsFichiersNormalises(piecesJointes, {
       date: formulaire.date,
       branch: formulaire.branche,
       expenseType: formulaire.typeDepense,
@@ -163,6 +163,15 @@ export function FormulaireDepense({
 
   const envoyerDepense = async (evenement: React.FormEvent) => {
     evenement.preventDefault();
+
+    if (plusieursDepenses && detailsDepenses.length !== piecesJointes.length) {
+      setStatutEnvoi({
+        type: "erreur",
+        message:
+          "Les justificatifs et leurs détails ne sont plus synchronisés. Veuillez actualiser la page avant de réessayer.",
+      });
+      return;
+    }
 
     if (
       piecesJointes.length === 0 ||
@@ -185,11 +194,14 @@ export function FormulaireDepense({
     try {
       const nomsFichiersNormalises = genererNomsFichiers();
       const piecesJointesPourApi = piecesJointes.map((pieceJointe, index) => ({
-        ...pieceJointe,
+        displayName: pieceJointe.nomAffiche,
+        mimeType: pieceJointe.typeMime,
+        base64Data: pieceJointe.donneesBase64,
+        originalFileName: pieceJointe.nomFichierOriginal,
         normalizedFileName:
           nomsFichiersNormalises[index] ||
-          pieceJointe.normalizedFileName ||
-          pieceJointe.originalFileName,
+          pieceJointe.nomFichierNormalise ||
+          pieceJointe.nomFichierOriginal,
       }));
 
       const reponse = await fetch("/api/send-expense", {
@@ -207,7 +219,12 @@ export function FormulaireDepense({
             : normaliserMontant(formulaire.montant),
           description: formulaire.description,
           attachments: piecesJointesPourApi,
-          expenseDetails: plusieursDepenses ? detailsDepenses : undefined,
+          expenseDetails: plusieursDepenses
+            ? detailsDepenses.map((detail) => ({
+                expenseType: detail.typeDepense,
+                amount: detail.montant,
+              }))
+            : undefined,
         }),
       });
 
@@ -324,16 +341,16 @@ export function FormulaireDepense({
           </label>
           <div className="space-y-2">
             {piecesJointes.map((pieceJointe, index) => {
-              const estImage = pieceJointe.mimeType.startsWith("image/");
+              const estImage = pieceJointe.typeMime.startsWith("image/");
               return (
                 <div
-                  key={`${pieceJointe.displayName}-${index}`}
+                  key={`${pieceJointe.nomAffiche}-${index}`}
                   className="flex items-center gap-3 p-3 rounded-lg border border-zinc-200 bg-zinc-50"
                 >
                   {estImage ? (
                     <Image
-                      src={`data:${pieceJointe.mimeType};base64,${pieceJointe.base64Data}`}
-                      alt={pieceJointe.displayName}
+                      src={`data:${pieceJointe.typeMime};base64,${pieceJointe.donneesBase64}`}
+                      alt={pieceJointe.nomAffiche}
                       width={56}
                       height={56}
                       className="w-14 h-14 object-cover rounded-md border border-zinc-200"
@@ -348,22 +365,22 @@ export function FormulaireDepense({
                   )}
                   <div className="flex-1 min-w-0 space-y-3">
                     <p className="text-sm text-zinc-900 truncate font-medium">
-                      {pieceJointe.displayName}
+                      {pieceJointe.nomAffiche}
                     </p>
                     <p className="text-xs text-zinc-500">
-                      {pieceJointe.mimeType === "application/pdf"
+                      {pieceJointe.typeMime === "application/pdf"
                         ? "PDF"
                         : "Image"}
                     </p>
                     {plusieursDepenses && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <select
-                          aria-label={`Catégorie pour ${pieceJointe.displayName}`}
-                          value={detailsDepenses[index]?.expenseType ?? ""}
+                          aria-label={`Catégorie pour ${pieceJointe.nomAffiche}`}
+                          value={detailsDepenses[index]?.typeDepense ?? ""}
                           onChange={(e) =>
                             modifierDetailDepense(
                               index,
-                              "expenseType",
+                              "typeDepense",
                               e.target.value,
                             )
                           }
@@ -378,20 +395,20 @@ export function FormulaireDepense({
                           ))}
                         </select>
                         <input
-                          aria-label={`Montant pour ${pieceJointe.displayName}`}
+                          aria-label={`Montant pour ${pieceJointe.nomAffiche}`}
                           type="number"
                           min="0.01"
                           step="0.01"
                           placeholder="Montant (€) *"
                           value={
-                            Number.isFinite(detailsDepenses[index]?.amount)
-                              ? detailsDepenses[index].amount
+                            Number.isFinite(detailsDepenses[index]?.montant)
+                              ? detailsDepenses[index].montant
                               : ""
                           }
                           onChange={(e) =>
                             modifierDetailDepense(
                               index,
-                              "amount",
+                              "montant",
                               e.target.value,
                             )
                           }
@@ -413,7 +430,7 @@ export function FormulaireDepense({
                         onSupprimerPieceJointe(index);
                       }}
                       className="p-2 rounded-md text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors"
-                      aria-label={`Supprimer ${pieceJointe.displayName}`}
+                      aria-label={`Supprimer ${pieceJointe.nomAffiche}`}
                     >
                       <TrashIcon className="w-5 h-5" aria-hidden="true" />
                     </button>

@@ -1,5 +1,5 @@
 /* Service Worker for Factures carte procurement SGDF PWA */
-const CACHE_VERSION = "v3";
+const CACHE_VERSION = "v4";
 const APP_SHELL = [
   "/",
   "/manifest.json",

@@ -16,15 +16,15 @@ export const MIME_EXTENSION_MAP: Record<string, string> = {
   "application/pdf": "pdf",
 };
 
-export interface ExpenseAttachment {
-  displayName: string;
-  mimeType: string;
-  base64Data: string;
-  originalFileName: string;
-  normalizedFileName: string;
+export interface PieceJointeDepense {
+  nomAffiche: string;
+  typeMime: string;
+  donneesBase64: string;
+  nomFichierOriginal: string;
+  nomFichierNormalise: string;
 }
 
-export interface ExpenseDetail {
-  expenseType: string;
-  amount: number;
+export interface DetailDepense {
+  typeDepense: string;
+  montant: number;
 }
