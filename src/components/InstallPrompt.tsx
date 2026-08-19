@@ -96,4 +96,34 @@ export function InviteInstallation() {
     }
     setDeferredPrompt(null);
   };
+
+  return (
+    <div className="fixed bottom-4 inset-x-0 px-4 z-50">
+      <div className="max-w-md mx-auto bg-white shadow-lg rounded-xl border border-gray-200 p-4 flex items-start gap-4">
+        <div className="flex-1 text-sm text-gray-700 space-y-1">
+          <p className="font-medium text-gray-900">
+            Installer l&apos;application
+          </p>
+          <p className="text-xs">
+            Ajoutez cette application à votre écran d&apos;accueil pour un accès
+            rapide.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onInstall}
+            className="text-xs px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Installer
+          </button>
+          <button
+            onClick={() => setVisible(false)}
+            className="text-xs px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600"
+          >
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
