@@ -21,7 +21,7 @@ export function validerCorpsRequete(body: unknown): {
 } {
   const bodyParsed = z
     .object({
-      userEmail: z.email(),
+      userEmail: z.string().email(),
       date: z.string(),
       branch: z.string(),
       expenseType: z.string().optional(),
