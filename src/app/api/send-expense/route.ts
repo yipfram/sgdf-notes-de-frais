@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { envoyerEmail } from "@/lib/email";
 import { jsonError, verifierErreurSmtp } from "@/lib/api/utils";
-import { validateBody } from "@/lib/api/validateBody";
+import { validerCorpsRequete } from "@/lib/api/validateBody";
 import {
   reponseRateLimit,
   verifierOrigineRequete,
@@ -60,18 +60,24 @@ export async function POST(req: NextRequest) {
     if (envError) return envError;
 
     // Body & validation
-    const body = await req.json().catch(() => null);
+    const body = await req.json().catch(() => {
+      console.error("Corps JSON illisible", {
+        contentType: req.headers.get("content-type"),
+        contentLength: req.headers.get("content-length"),
+      });
+      return null;
+    });
     if (!body) return jsonError("Corps de requête invalide", 400);
     if (body.userEmail !== userEmail) return jsonError("Email invalide", 403);
 
-    const { emailData, error } = validateBody(body);
-    if (error || !emailData) return error as NextResponse;
+    const { donneesEmail, error } = validerCorpsRequete(body);
+    if (error || !donneesEmail) return error as NextResponse;
 
-    const result = await envoyerEmail(emailData);
+    const resultat = await envoyerEmail(donneesEmail);
     return NextResponse.json({
       success: true,
       message: "Email envoyé avec succès",
-      messageId: result.messageId,
+      messageId: resultat.messageId,
     });
   } catch (error) {
     console.error("Erreur lors de l'envoi de l'email:", error);

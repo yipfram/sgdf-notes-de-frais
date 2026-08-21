@@ -6,6 +6,10 @@ const nextConfig = {
     // Empty config to silence the migration warning
     // The webpack fallback config below will be used if --webpack flag is passed
   },
+  experimental: {
+    // 20 Mo de fichiers encodés en Base64 représentent environ 27 Mo de JSON.
+    proxyClientMaxBodySize: "30mb",
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {

@@ -11,17 +11,18 @@ import {
   DocumentTextIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-import { buildNormalizedFileNames } from "@/lib/attachments";
+import { construireNomsFichiersNormalises } from "@/lib/attachments";
 import {
   MAX_ATTACHMENT_COUNT,
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
-  type ExpenseAttachment,
+  type PieceJointeDepense,
+  type DetailDepense,
 } from "@/constants/piecesJointes";
 import { TYPES_DEPENSES, BRANCHES_ASC } from "@/constants/configScoute";
 
 interface FormulaireDepenseProps {
-  readonly piecesJointes: ExpenseAttachment[];
+  readonly piecesJointes: PieceJointeDepense[];
   readonly emailUtilisateur: string;
   readonly brancheInitiale?: string; // Depuis les métadonnées publiques Clerk
   readonly onMemoriserBranche?: (branche: string) => Promise<void> | void;
@@ -47,6 +48,7 @@ export function FormulaireDepense({
     montant: "",
     description: "",
   });
+  const [detailsDepenses, setDetailsDepenses] = useState<DetailDepense[]>([]);
   const emailTresorier = process.env.NEXT_PUBLIC_TREASURY_EMAIL ?? "";
 
   const [statutMemoBranche, setStatutMemoBranche] = useState<
@@ -95,9 +97,68 @@ export function FormulaireDepense({
     return montant.replace(",", ".");
   };
 
+  const plusieursDepenses = piecesJointes.length > 1;
+
+  useEffect(() => {
+    setDetailsDepenses((precedents) =>
+      piecesJointes.map(
+        (_, index) =>
+          precedents[index] ?? { typeDepense: "", montant: Number.NaN },
+      ),
+    );
+  }, [piecesJointes]);
+
+  const modifierDetailDepense = (
+    index: number,
+    champ: keyof DetailDepense,
+    valeur: string,
+  ) => {
+    setDetailsDepenses((precedents) =>
+      precedents.map((detail, detailIndex) =>
+        detailIndex === index
+          ? {
+              ...detail,
+              [champ]: champ === "montant" ? Number(valeur) : valeur,
+            }
+          : detail,
+      ),
+    );
+    if (statutEnvoi.type) setStatutEnvoi({ type: null, message: "" });
+  };
+
+  const totalDepenses = detailsDepenses.reduce(
+    (total, detail) =>
+      total + (Number.isFinite(detail.montant) ? detail.montant : 0),
+    0,
+  );
+  const detailsDepensesValides =
+    detailsDepenses.length === piecesJointes.length &&
+    detailsDepenses.every(
+      (detail) =>
+        detail.typeDepense &&
+        Number.isFinite(detail.montant) &&
+        detail.montant > 0,
+    );
+
   const genererNomsFichiers = () => {
     if (piecesJointes.length === 0) return [];
-    return buildNormalizedFileNames(piecesJointes, {
+    if (plusieursDepenses) {
+      return piecesJointes.map((pieceJointe, index) => {
+        const detail = detailsDepenses[index];
+        const [nom] = construireNomsFichiersNormalises([pieceJointe], {
+          date: formulaire.date,
+          branch: formulaire.branche,
+          expenseType: detail?.typeDepense ?? "",
+          amount: String(detail?.montant ?? ""),
+        });
+        const suffixe = ` - ${String(index + 1).padStart(2, "0")}`;
+        const point = nom.lastIndexOf(".");
+        return point === -1
+          ? `${nom}${suffixe}`
+          : `${nom.slice(0, point)}${suffixe}${nom.slice(point)}`;
+      });
+    }
+    return construireNomsFichiersNormalises(piecesJointes, {
       date: formulaire.date,
       branch: formulaire.branche,
       expenseType: formulaire.typeDepense,
@@ -108,11 +169,21 @@ export function FormulaireDepense({
   const envoyerDepense = async (evenement: React.FormEvent) => {
     evenement.preventDefault();
 
+    if (plusieursDepenses && detailsDepenses.length !== piecesJointes.length) {
+      setStatutEnvoi({
+        type: "erreur",
+        message:
+          "Les justificatifs et leurs détails ne sont plus synchronisés. Veuillez actualiser la page avant de réessayer.",
+      });
+      return;
+    }
+
     if (
       piecesJointes.length === 0 ||
       !formulaire.branche ||
-      !formulaire.typeDepense ||
-      !formulaire.montant
+      (plusieursDepenses
+        ? !detailsDepensesValides
+        : !formulaire.typeDepense || !formulaire.montant)
     ) {
       setStatutEnvoi({
         type: "erreur",
@@ -128,11 +199,14 @@ export function FormulaireDepense({
     try {
       const nomsFichiersNormalises = genererNomsFichiers();
       const piecesJointesPourApi = piecesJointes.map((pieceJointe, index) => ({
-        ...pieceJointe,
+        displayName: pieceJointe.nomAffiche,
+        mimeType: pieceJointe.typeMime,
+        base64Data: pieceJointe.donneesBase64,
+        originalFileName: pieceJointe.nomFichierOriginal,
         normalizedFileName:
           nomsFichiersNormalises[index] ||
-          pieceJointe.normalizedFileName ||
-          pieceJointe.originalFileName,
+          pieceJointe.nomFichierNormalise ||
+          pieceJointe.nomFichierOriginal,
       }));
 
       const reponse = await fetch("/api/send-expense", {
@@ -144,10 +218,18 @@ export function FormulaireDepense({
           userEmail: emailUtilisateur,
           date: formulaire.date,
           branch: formulaire.branche,
-          expenseType: formulaire.typeDepense,
-          amount: normaliserMontant(formulaire.montant),
+          expenseType: plusieursDepenses ? undefined : formulaire.typeDepense,
+          amount: plusieursDepenses
+            ? undefined
+            : normaliserMontant(formulaire.montant),
           description: formulaire.description,
           attachments: piecesJointesPourApi,
+          expenseDetails: plusieursDepenses
+            ? detailsDepenses.map((detail) => ({
+                expenseType: detail.typeDepense,
+                amount: detail.montant,
+              }))
+            : undefined,
         }),
       });
 
@@ -176,6 +258,7 @@ export function FormulaireDepense({
           montant: "",
           description: "",
         }));
+        setDetailsDepenses([]);
         onCreerNouvelleNote?.();
       } else {
         const piecesJointesTropLourdes =
@@ -226,8 +309,9 @@ export function FormulaireDepense({
   const formulaireEstValide = Boolean(
     piecesJointes.length > 0 &&
     formulaire.branche &&
-    formulaire.typeDepense &&
-    formulaire.montant,
+    (plusieursDepenses
+      ? detailsDepensesValides
+      : formulaire.typeDepense && formulaire.montant),
   );
   const nomsFichiersApercu = formulaireEstValide ? genererNomsFichiers() : [];
 
@@ -241,6 +325,7 @@ export function FormulaireDepense({
       description: "",
     }));
     setStatutEnvoi({ type: null, message: "" });
+    setDetailsDepenses([]);
     if (onCreerNouvelleNote) onCreerNouvelleNote();
   };
 
@@ -261,16 +346,16 @@ export function FormulaireDepense({
           </label>
           <div className="space-y-2">
             {piecesJointes.map((pieceJointe, index) => {
-              const estImage = pieceJointe.mimeType.startsWith("image/");
+              const estImage = pieceJointe.typeMime.startsWith("image/");
               return (
                 <div
-                  key={`${pieceJointe.displayName}-${index}`}
+                  key={`${pieceJointe.nomAffiche}-${index}`}
                   className="flex items-center gap-3 p-3 rounded-lg border border-zinc-200 bg-zinc-50"
                 >
                   {estImage ? (
                     <Image
-                      src={`data:${pieceJointe.mimeType};base64,${pieceJointe.base64Data}`}
-                      alt={pieceJointe.displayName}
+                      src={`data:${pieceJointe.typeMime};base64,${pieceJointe.donneesBase64}`}
+                      alt={pieceJointe.nomAffiche}
                       width={56}
                       height={56}
                       className="w-14 h-14 object-cover rounded-md border border-zinc-200"
@@ -283,22 +368,74 @@ export function FormulaireDepense({
                       />
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 space-y-3">
                     <p className="text-sm text-zinc-900 truncate font-medium">
-                      {pieceJointe.displayName}
+                      {pieceJointe.nomAffiche}
                     </p>
                     <p className="text-xs text-zinc-500">
-                      {pieceJointe.mimeType === "application/pdf"
+                      {pieceJointe.typeMime === "application/pdf"
                         ? "PDF"
                         : "Image"}
                     </p>
+                    {plusieursDepenses && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <select
+                          aria-label={`Catégorie pour ${pieceJointe.nomAffiche}`}
+                          value={detailsDepenses[index]?.typeDepense ?? ""}
+                          onChange={(e) =>
+                            modifierDetailDepense(
+                              index,
+                              "typeDepense",
+                              e.target.value,
+                            )
+                          }
+                          className="p-2 border border-zinc-300 rounded-md bg-white text-sm text-zinc-900"
+                          required
+                        >
+                          <option value="">Catégorie *</option>
+                          {TYPES_DEPENSES.map((type) => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          aria-label={`Montant pour ${pieceJointe.nomAffiche}`}
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          placeholder="Montant (€) *"
+                          value={
+                            Number.isFinite(detailsDepenses[index]?.montant)
+                              ? detailsDepenses[index].montant
+                              : ""
+                          }
+                          onChange={(e) =>
+                            modifierDetailDepense(
+                              index,
+                              "montant",
+                              e.target.value,
+                            )
+                          }
+                          className="p-2 border border-zinc-300 rounded-md bg-white text-sm text-zinc-900"
+                          required
+                        />
+                      </div>
+                    )}
                   </div>
                   {onSupprimerPieceJointe && (
                     <button
                       type="button"
-                      onClick={() => onSupprimerPieceJointe(index)}
+                      onClick={() => {
+                        setDetailsDepenses((precedents) =>
+                          precedents.filter(
+                            (_, detailIndex) => detailIndex !== index,
+                          ),
+                        );
+                        onSupprimerPieceJointe(index);
+                      }}
                       className="p-2 rounded-md text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 transition-colors"
-                      aria-label={`Supprimer ${pieceJointe.displayName}`}
+                      aria-label={`Supprimer ${pieceJointe.nomAffiche}`}
                     >
                       <TrashIcon className="w-5 h-5" aria-hidden="true" />
                     </button>
@@ -310,28 +447,30 @@ export function FormulaireDepense({
         </div>
       )}
 
-      <div className="space-y-2">
-        <label
-          htmlFor="typeDepense"
-          className="block text-sm font-medium text-zinc-700"
-        >
-          Type de dépense *
-        </label>
-        <select
-          id="typeDepense"
-          value={formulaire.typeDepense}
-          onChange={(e) => modifierChamp("typeDepense", e.target.value)}
-          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
-          required
-        >
-          <option value="">Sélectionner un type</option>
-          {TYPES_DEPENSES.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-      </div>
+      {!plusieursDepenses && (
+        <div className="space-y-2">
+          <label
+            htmlFor="typeDepense"
+            className="block text-sm font-medium text-zinc-700"
+          >
+            Type de dépense *
+          </label>
+          <select
+            id="typeDepense"
+            value={formulaire.typeDepense}
+            onChange={(e) => modifierChamp("typeDepense", e.target.value)}
+            className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
+            required
+          >
+            <option value="">Sélectionner un type</option>
+            {TYPES_DEPENSES.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="space-y-2">
         <label
@@ -418,24 +557,37 @@ export function FormulaireDepense({
         )}
       </div>
 
-      <div className="space-y-2">
-        <label
-          htmlFor="montant"
-          className="block text-sm font-medium text-zinc-700"
-        >
-          Montant (€) *
-        </label>
-        <input
-          id="montant"
-          type="number"
-          step="0.01"
-          placeholder="0.00"
-          value={formulaire.montant}
-          onChange={(e) => modifierChamp("montant", e.target.value)}
-          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
-          required
-        />
-      </div>
+      {plusieursDepenses && (
+        <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg flex items-center justify-between">
+          <span className="text-sm font-medium text-zinc-700">
+            Total des dépenses
+          </span>
+          <span className="text-lg font-bold text-zinc-900">
+            {totalDepenses.toFixed(2)} €
+          </span>
+        </div>
+      )}
+
+      {!plusieursDepenses && (
+        <div className="space-y-2">
+          <label
+            htmlFor="montant"
+            className="block text-sm font-medium text-zinc-700"
+          >
+            Montant (€) *
+          </label>
+          <input
+            id="montant"
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            value={formulaire.montant}
+            onChange={(e) => modifierChamp("montant", e.target.value)}
+            className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
+            required
+          />
+        </div>
+      )}
 
       <div className="space-y-2">
         <label
@@ -521,8 +673,8 @@ export function FormulaireDepense({
                 Pièce(s) jointe(s) :
               </span>
               <br />
-              {nomsFichiersApercu.map((nom) => (
-                <span key={nom}>
+              {nomsFichiersApercu.map((nom, index) => (
+                <span key={`${nom}-${index}`}>
                   • {nom}
                   <br />
                 </span>

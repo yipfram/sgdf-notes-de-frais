@@ -2,11 +2,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import { CameraIcon, ArrowUpOnSquareIcon } from "@heroicons/react/24/outline";
-import { isAllowedAttachmentMimeType } from "@/lib/attachments";
+import { estTypeMimePieceJointeAutorise } from "@/lib/attachments";
 import {
   MAX_ATTACHMENT_COUNT,
   MAX_ATTACHMENT_SIZE_BYTES,
-  ExpenseAttachment,
+  PieceJointeDepense,
 } from "@/constants/piecesJointes";
 
 // --- Utilitaires ---
@@ -110,15 +110,15 @@ async function downscaleImage(
   });
 }
 
-interface PhotoCaptureProps {
-  readonly onAttachmentsAdd: (attachments: ExpenseAttachment[]) => void;
+interface CapturePhotoProps {
+  readonly onAttachmentsAdd: (piecesJointes: PieceJointeDepense[]) => void;
   readonly currentCount: number;
 }
 
-export function PhotoCapture({
+export function CapturePhoto({
   onAttachmentsAdd,
   currentCount,
-}: Readonly<PhotoCaptureProps>) {
+}: Readonly<CapturePhotoProps>) {
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [compressedInfo, setCompressedInfo] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -153,11 +153,11 @@ export function PhotoCapture({
       );
     }
 
-    const createdAttachments: ExpenseAttachment[] = [];
+    const piecesJointesCreees: PieceJointeDepense[] = [];
     const compressionMessages: string[] = [];
 
     for (const file of candidates) {
-      if (!isAllowedAttachmentMimeType(file.type)) {
+      if (!estTypeMimePieceJointeAutorise(file.type)) {
         nextErrors.push(
           `${file.name}: type non supporté (images JPG/PNG/WEBP ou PDF uniquement).`,
         );
@@ -183,14 +183,14 @@ export function PhotoCapture({
           }
         }
 
-        const mimeType = processedBlob.type || file.type;
-        const base64Data = await blobToBase64(processedBlob);
-        createdAttachments.push({
-          displayName: file.name,
-          mimeType,
-          base64Data,
-          originalFileName: file.name,
-          normalizedFileName: file.name,
+        const typeMime = processedBlob.type || file.type;
+        const donneesBase64 = await blobToBase64(processedBlob);
+        piecesJointesCreees.push({
+          nomAffiche: file.name,
+          typeMime,
+          donneesBase64,
+          nomFichierOriginal: file.name,
+          nomFichierNormalise: file.name,
         });
       } catch (e) {
         console.error("Erreur traitement justificatif:", e);
@@ -198,13 +198,13 @@ export function PhotoCapture({
       }
     }
 
-    if (createdAttachments.length > 0) {
-      onAttachmentsAdd(createdAttachments);
+    if (piecesJointesCreees.length > 0) {
+      onAttachmentsAdd(piecesJointesCreees);
     }
 
     if (
       fromCamera &&
-      createdAttachments.length === 0 &&
+      piecesJointesCreees.length === 0 &&
       nextErrors.length === 0
     ) {
       nextErrors.push("Impossible de traiter la photo capturée.");

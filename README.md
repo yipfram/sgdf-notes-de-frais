@@ -19,7 +19,7 @@ Pour savoir comment l'utiliser avec [la documentation](https://yipfram.github.io
 ## Fonctionnalités
 
 - 📸 **Capture de justificatifs** : prise de photo + import d'images/PDF, avec plusieurs fichiers possibles (jusqu'à 6 justificatifs par envoi)
-- 📝 **Saisie des informations** : Date, branche SGDF, montant, type et description
+- 📝 **Saisie des informations** : Date, branche SGDF, montant, type et description ; avec plusieurs justificatifs, un montant et une catégorie sont saisis pour chaque dépense et le total est calculé automatiquement
 - ✉️ **Envoi email automatique** : transmission à la trésorerie + copie à l'utilisateur avec une ou plusieurs pièces jointes
 - 🏷️ **Nom de fichier structuré** : `YYYY-MM-DD - Branche - Type - Montant - 01.pdf` (ou `.jpg/.png/.webp`)
 - 📲 **Installation PWA** : Ajout possible à l'écran d'accueil (Android / iOS / Desktop)
@@ -92,7 +92,7 @@ pnpm start
 
 1. Se connecter via Clerk
 2. Capturer une photo ou importer un/des justificatif(s) (images/PDF)
-3. Saisir la date, la branche, le montant et la description
+3. Saisir la date, la branche, le montant et la description. Avec plusieurs justificatifs, saisir une catégorie et un montant pour chacun.
 4. Envoyer : un email est généré côté serveur et envoyé à la trésorerie et à l'utilisateur
 5. Installer l'application sur l'écran d'accueil pour un accès rapide
 6.
