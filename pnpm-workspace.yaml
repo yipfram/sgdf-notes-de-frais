@@ -5,3 +5,6 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+overrides:
+  brace-expansion: 5.0.8
+  minimatch: 10.2.5
