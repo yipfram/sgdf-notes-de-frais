@@ -27,21 +27,6 @@ Pour savoir comment l'utiliser avec [la documentation](https://yipfram.github.io
 - 🔔 **Bannière d'installation** : Invitation A2HS personnalisée
 - 🌙 **Affichage plein écran** : Expérience proche d'une application native
 
-## PWA & Expérience Mobile
-
-L'application est maintenant une **Progressive Web App** :
-
-| Capacité       | Détails                                                                                                      |
-| -------------- | ------------------------------------------------------------------------------------------------------------ |
-| Installation   | Icône sur écran d'accueil + splash screen natif                                                              |
-| Service Worker | Cache Shell applicatif + stratégie network-first pour API                                                    |
-| Offline        | Formulaire utilisable, justificatifs conservés en mémoire, envoi différé impossible (pas de queue persistée) |
-| Icônes         | Logo SGDF bleu & blanc (maskable)                                                                            |
-| Performance    | Stratégie _stale-while-revalidate_ pour actifs statiques                                                     |
-| Sécurité       | Toujours via HTTPS (caméra + SW)                                                                             |
-
-> Limitation actuelle : pas encore de stockage local durable des brouillons. Si la page est rechargée hors ligne, la note en cours est perdue.
-
 ## Branches SGDF supportées
 
 - Farfadets
@@ -87,15 +72,6 @@ pnpm format
 # Lancer en production (si déployé localement)
 pnpm start
 ```
-
-## Utilisation
-
-1. Se connecter via Clerk
-2. Capturer une photo ou importer un/des justificatif(s) (images/PDF)
-3. Saisir la date, la branche, le montant et la description. Avec plusieurs justificatifs, saisir une catégorie et un montant pour chacun.
-4. Envoyer : un email est généré côté serveur et envoyé à la trésorerie et à l'utilisateur
-5. Installer l'application sur l'écran d'accueil pour un accès rapide
-6.
 
 ---
 
