@@ -52,7 +52,7 @@ export default defineConfig({
     ],
   },
   sitemap: {
-    hostname: "https://yipfram.github.io/sgdf-notes-de-frais/",
+    hostname: "https://sgdf.rrchs.fr",
     lastmodDateOnly: false,
   },
 });
