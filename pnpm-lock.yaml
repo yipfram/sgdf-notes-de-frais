@@ -28,8 +28,8 @@ importers:
         specifier: 16.3.1
         version: 16.3.1(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.2.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       nodemailer:
-        specifier: ^8.0.4
-        version: 8.0.11
+        specifier: ^9.0.5
+        version: 9.0.5
       react:
         specifier: 19.2.5
         version: 19.2.5
@@ -2746,8 +2746,8 @@ packages:
     resolution: {integrity: sha512-D9UOmYG3UH1V+ENW56t5QXBwJw1YEY18ruVeus89Rw+SyIgjPkCO84bRzO3uNIYosJbNwiabWVn48o3uJLjxFQ==}
     engines: {node: '>=18'}
 
-  nodemailer@8.0.11:
-    resolution: {integrity: sha512-nrO/pDAUKl+wXX+lx16tDLbnm0fW6sK/x8mgohaCpg+CdCEl482bD4tCuAZk2DyliruiNTIZxRCoWkDqJEnAiA==}
+  nodemailer@9.0.5:
+    resolution: {integrity: sha512-wvjiKvjczmsN7U/8006JOdXubgBk2XFAbioDMbT+sM7cPs0QrhJTa6KBRX7P5REGGkDcLUz/EarWidb8G8C1jQ==}
     engines: {node: '>=6.0.0'}
 
   object-assign@4.1.1:
@@ -6052,7 +6052,7 @@ snapshots:
 
   node-releases@2.0.53: {}
 
-  nodemailer@8.0.11: {}
+  nodemailer@9.0.5: {}
 
   object-assign@4.1.1: {}
 
