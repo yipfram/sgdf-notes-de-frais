@@ -4,7 +4,7 @@ export default defineConfig({
   lang: "fr-FR",
   title: "SGDF Notes de Frais",
   description: "Documentation du projet SGDF Notes de Frais",
-  base: "/sgdf-notes-de-frais/",
+  base: "/",
   lastUpdated: true,
   themeConfig: {
     nav: [
