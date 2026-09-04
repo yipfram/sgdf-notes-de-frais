@@ -6,6 +6,7 @@ import {
   useUser,
   UserButton,
   OrganizationSwitcher,
+  InviteMembersButton,
 } from "@clerk/nextjs";
 import { FormulaireDepense } from "@/components/FormulaireDepense";
 import { AvertissementNouveaute } from "@/components/FeatureNotice";
@@ -30,9 +31,13 @@ export default function Home() {
     treasuryVerified: boolean;
     isAdmin: boolean;
   } | null>(null);
+  const [etatRenvoiValidation, setEtatRenvoiValidation] = useState<
+    "repos" | "envoi" | "envoye" | "erreur"
+  >("repos");
   const estEnLigne = useStatutEnLigne();
 
   useEffect(() => {
+    setEtatRenvoiValidation("repos");
     if (!organization) {
       setGroup(null);
       return;
@@ -42,6 +47,18 @@ export default function Home() {
       .then(setGroup)
       .catch(() => setGroup(null));
   }, [organization?.id]);
+
+  const renvoyerValidationTresorerie = async () => {
+    setEtatRenvoiValidation("envoi");
+    try {
+      const reponse = await fetch("/api/group/resend-verification", {
+        method: "POST",
+      });
+      setEtatRenvoiValidation(reponse.ok ? "envoye" : "erreur");
+    } catch {
+      setEtatRenvoiValidation("erreur");
+    }
+  };
 
   // Afficher un loader pendant le chargement de l'état d'authentification
   if (!isLoaded || !isSignedIn) {
@@ -125,11 +142,48 @@ export default function Home() {
             <>
               {!group.treasuryVerified && (
                 <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-                  La trésorerie doit encore confirmer son adresse avant le
-                  premier envoi.
+                  <p>
+                    Un mail a été envoyé à l'adresse de la trésorerie pour
+                    confirmer son rattachement. Une fois validé, vous pourrez
+                    envoyer des justificatifs.
+                  </p>
+                  {group.isAdmin && (
+                    <div className="mt-3">
+                      <button
+                        type="button"
+                        onClick={renvoyerValidationTresorerie}
+                        disabled={etatRenvoiValidation === "envoi"}
+                        className="rounded-lg border border-amber-300 bg-white px-3 py-2 font-medium text-amber-900 transition-colors hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {etatRenvoiValidation === "envoi"
+                          ? "Envoi…"
+                          : "Renvoyer l’e-mail"}
+                      </button>
+                      {etatRenvoiValidation === "envoye" && (
+                        <p className="mt-2 text-emerald-800">
+                          E-mail de validation renvoyé.
+                        </p>
+                      )}
+                      {etatRenvoiValidation === "erreur" && (
+                        <p className="mt-2 text-rose-800">
+                          Impossible de renvoyer l’e-mail pour le moment.
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
               <AvertissementNouveaute />
+              {group.isAdmin && (
+                <InviteMembersButton>
+                  <button
+                    type="button"
+                    className="w-full rounded-lg border border-zinc-300 bg-white p-3 text-sm font-medium text-[#1E3A8A] transition-colors hover:border-[#1E3A8A] hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:ring-offset-2"
+                  >
+                    Inviter une personne
+                  </button>
+                </InviteMembersButton>
+              )}
               <CapturePhoto
                 onAttachmentsAdd={(nouvellesPiecesJointes) => {
                   setPiecesJointes((precedentes) =>

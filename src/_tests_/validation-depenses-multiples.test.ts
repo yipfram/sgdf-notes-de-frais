@@ -12,7 +12,7 @@ const attachment = (name: string) => ({
 const baseBody = {
   userEmail: "utilisateur@example.com",
   date: "2026-08-16",
-  branch: "Groupe",
+  unitId: "groupe",
 };
 
 describe("validerCorpsRequete avec plusieurs dépenses", () => {
