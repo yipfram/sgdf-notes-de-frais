@@ -37,6 +37,8 @@ La liste d’unités est proposée avec les branches SGDF courantes, mais chaque
 
 Dans le tableau de bord Clerk, activez **Organizations** ainsi que les invitations d’organisation. Activez également Google dans **SSO connections** si vous souhaitez afficher « Continuer avec Google » en plus de l’e-mail/mot de passe.
 
+Les responsables retrouvent les invitations et la liste des membres dans le menu **Administration** du formulaire.
+
 ## Unités proposées par défaut
 
 - Farfadets
