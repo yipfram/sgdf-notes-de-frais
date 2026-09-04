@@ -5,8 +5,11 @@
 ```text
 docs/
   index.md
+  about.md
   guide/
     usage.md
+    groupes.md
+    e-mails.md
   technical/
     overview.md
     local-installation.md
@@ -29,4 +32,4 @@ docs/
 - Français simple, orienté action
 - Titres explicites
 - Étapes numérotées pour les procédures
-- Sections `[TODO]` pour screenshots à venir
+- Blocs « Captures à venir » avec un nom de fichier et une légende pour les captures à ajouter

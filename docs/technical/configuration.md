@@ -1,67 +1,25 @@
 # Configuration
 
-Voir aussi la reference centralisee : [Variables d'environnement](/technical/environment-variables).
+## Configuration indispensable de Clerk
 
-## Variables d'environnement
+L’application utilise une organisation Clerk pour chaque groupe scout. Sans cette fonctionnalité, il est impossible de créer des groupes, de distinguer leurs configurations ou d’inviter les membres.
 
-### Tableau récapitulatif
+Dans le tableau de bord Clerk :
 
-| Variable                            | Requis | Description             | Exemple               |
-| ----------------------------------- | :----: | ----------------------- | --------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` |   ✅   | Clé publique Clerk      | `pk_test_abc123...`   |
-| `CLERK_SECRET_KEY`                  |   ✅   | Clé secrète Clerk       | `sk_test_xyz789...`   |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`     |   ✅   | URL de connexion        | `/sign-in`            |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`     |   ✅   | URL d'inscription       | `/sign-up`            |
-| `SMTP_HOST`                         |   ✅   | Serveur SMTP            | `smtp.gmail.com`      |
-| `SMTP_PORT`                         |   ✅   | Port SMTP               | `587`                 |
-| `SMTP_SECURE`                       |   ✅   | SSL/TLS                 | `false`               |
-| `SMTP_USER`                         |   ✅   | Identifiant             | `user@example.com`    |
-| `SMTP_PASSWORD`                     |   ✅   | Mot de passe            | `xxxx xxxx xxxx xxxx` |
-| `NEXT_PUBLIC_TREASURY_EMAIL`        |   ✅   | Destinataire            | `treso@sgdf.fr`       |
-| `SMTP_FROM`                         |   ♠️   | Expéditeur personnalisé | `noreply@domain.fr`   |
-| `SMTP_FROM_NAME`                    |   ♠️   | Nom expéditeur          | `Factures SGDF`       |
-| `SMTP_FROM_EMAIL`                   |   ♠️   | Email de repli          | `send@domain.fr`      |
+1. Activez **Organizations** dans les réglages de l’application.
+2. Activez l’authentification par **e-mail** : les invitations de membres sont envoyées par e-mail.
+3. Autorisez la création d’organisations par les utilisateurs : les responsables créent leur groupe depuis l’application.
+4. Réglez la limite de membres par organisation pour qu’elle couvre les besoins de vos groupes.
+5. Conservez les rôles par défaut : le créateur du groupe est administrateur et les personnes invitées sont membres.
 
-> ✅ = Requis • ♠️ = Optionnel
+Le mode « adhésion obligatoire » est recommandé : l’application est conçue pour fonctionner dans le contexte d’un groupe. Consultez la [documentation officielle de configuration des organisations Clerk](https://clerk.com/docs/guides/organizations/configure) si les libellés du tableau de bord évoluent.
 
-### Valeurs par fournisseur
+## Configuration SMTP
 
-| Fournisseur     | SMTP_HOST               | SMTP_PORT | SMTP_SECURE |
-| --------------- | ----------------------- | --------- | ----------- |
-| Gmail           | `smtp.gmail.com`        | `587`     | `false`     |
-| Outlook/Hotmail | `smtp-mail.outlook.com` | `587`     | `false`     |
-| Office 365      | `smtp.office365.com`    | `587`     | `false`     |
-| SSL (port 465)  | `smtp.gmail.com`        | `465`     | `true`      |
+Configurez un serveur SMTP qui peut envoyer les e-mails de justificatifs et de validation de trésorerie. Consultez la [référence des variables d’environnement](/technical/environment-variables) pour les valeurs attendues.
 
-## Commandes
+Pour Gmail, activez la validation en deux étapes et créez un mot de passe d’application. Pour les autres fournisseurs, utilisez les paramètres SMTP fournis par votre hébergeur.
 
-::: code-group
+## Configuration dans l’application
 
-```bash [npm]
-npm ci
-npm run dev
-npm run lint
-npm run build
-```
-
-```bash [pnpm]
-pnpm install
-pnpm dev
-pnpm lint
-pnpm build
-```
-
-```bash [bun]
-bun install
-bun run dev
-bun run lint
-bun run build
-```
-
-:::
-
-## Sécurité
-
-- Ne jamais committer `.env.local`
-- Utiliser HTTPS en production (caméra + PWA)
-- Limiter l'accès aux clés Clerk et aux identifiants SMTP
+Après le déploiement, le responsable crée son groupe dans l’application. Il configure alors l’adresse de trésorerie, les unités et leurs couleurs. L’adresse doit être confirmée depuis l’e-mail de validation avant le premier envoi de justificatif.

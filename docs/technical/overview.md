@@ -5,6 +5,8 @@
 - Capture photo et import de justificatifs (images/PDF)
 - Saisie guidée des informations de dépense
 - Envoi automatique par email (trésorerie + utilisateur)
+- Groupes indépendants : unités, couleurs et adresse de trésorerie propres à chaque groupe
+- Validation de l’adresse de trésorerie avant le premier envoi
 - Support PWA (installation écran d’accueil)
 - Mode hors ligne partiel (préparation possible, envoi en ligne)
 
@@ -13,23 +15,20 @@
 - **Next.js 16** (App Router)
 - **TypeScript**
 - **Tailwind CSS**
-- **Clerk** pour l’authentification
+- **Clerk** pour l’authentification, les organisations et les invitations
 - **SMTP / Nodemailer** pour l’envoi des emails
 
 ## Architecture simplifiée
 
 ```text
-Frontend (Next.js + Clerk)
+Utilisateur + groupe Clerk
   -> API Route /api/send-expense
   -> SMTP
-  -> Destinataires (trésorerie + utilisateur)
+  -> Trésorerie du groupe + utilisateur en copie
 ```
 
 ## Informations personnelles
 
-L'application n'a pas de base de données persistante en dehors de celle gérée par Clerk.
-Clerk est utilisé pour connecter les utilisateurs à la plateforme.
+L'application n'a pas de base de données persistante pour les justificatifs. Les pièces jointes sont transmises par e-mail et ne sont pas stockées par l’application.
 
-Concernant https://treso.romain-rochas.fr/ Les informations des utilisateurs ne sont pas utilisée en dehors de la connexion de ces derniers à la plateforme, et l'utilisation de l'adresse email pour définir le destinataire du mail.
-
-Plus d'information, contactez moi ! (yipfram)
+Clerk gère les comptes, les groupes, les rôles de responsable/membre et la configuration propre à chaque groupe. L’adresse e-mail de la trésorerie est conservée dans les métadonnées privées du groupe afin d’envoyer les justificatifs au bon destinataire.

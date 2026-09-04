@@ -1,0 +1,73 @@
+.VPHomeHero .actions .VPButton {
+  padding: 14px 22px;
+  font-size: 16px;
+}
+
+@media (min-width: 640px) {
+  .VPHomeHero .actions .VPButton {
+    padding: 15px 24px;
+    font-size: 17px;
+  }
+}
+
+.schema-flux {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin: 32px 0;
+}
+
+.schema-etape {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg-soft);
+}
+
+.schema-etape strong {
+  color: var(--vp-c-text-1);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.schema-etape span:last-child {
+  color: var(--vp-c-text-2);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.schema-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--vp-c-brand-1);
+  color: var(--vp-c-bg);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.schema-fleche {
+  align-self: center;
+  color: var(--vp-c-brand-1);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+@media (max-width: 767px) {
+  .schema-flux {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .schema-fleche {
+    transform: rotate(90deg);
+  }
+}

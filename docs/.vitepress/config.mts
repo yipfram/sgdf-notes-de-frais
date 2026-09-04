@@ -6,18 +6,29 @@ export default defineConfig({
   description: "Documentation du projet SGDF Notes de Frais",
   base: "/",
   lastUpdated: true,
+  head: [
+    [
+      "link",
+      {
+        rel: "icon",
+        href: "https://treso.romain-rochas.fr/favicon.ico",
+      },
+    ],
+  ],
   themeConfig: {
     nav: [
-      { text: "Accueil", link: "/" },
-      { text: "Utilisation", link: "/guide/usage" },
-      { text: "Technique", link: "/technical/overview" },
+      { text: "Guide d’utilisation", link: "/guide/usage" },
+      { text: "À propos", link: "/about" },
     ],
     sidebar: [
       {
         text: "Utilisateur",
         items: [
-          { text: "Introduction", link: "/" },
+          { text: "Découvrir l’outil", link: "/" },
           { text: "Guide d'utilisation", link: "/guide/usage" },
+          { text: "Configurer un groupe", link: "/guide/groupes" },
+          { text: "Les e-mails de justificatifs", link: "/guide/e-mails" },
+          { text: "À propos", link: "/about" },
         ],
       },
       {
