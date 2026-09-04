@@ -7,6 +7,8 @@ export const COULEURS_UNITES = [
   "#1E3A8A",
 ] as const;
 
+const COULEUR_HEXADECIMALE = /^#[0-9a-f]{6}$/i;
+
 export interface UniteGroupe {
   id: string;
   label: string;
@@ -42,10 +44,7 @@ export function validerUnites(valeur: unknown): UniteGroupe[] | null {
     if (!/^[a-z0-9-]{1,50}$/.test(unite.id) || identifiants.has(unite.id))
       return null;
     if (!unite.label.trim() || unite.label.trim().length > 80) return null;
-    if (
-      !COULEURS_UNITES.includes(unite.color as (typeof COULEURS_UNITES)[number])
-    )
-      return null;
+    if (!COULEUR_HEXADECIMALE.test(unite.color)) return null;
     identifiants.add(unite.id);
   }
   return unites.map((unite) => ({ ...unite, label: unite.label.trim() }));
