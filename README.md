@@ -59,6 +59,8 @@ Les responsables retrouvent les invitations et la liste des membres dans le menu
 
 ## Développement (quickstart)
 
+Le projet utilise pnpm 11.22.0, déclaré dans `package.json` et automatiquement utilisé par les environnements compatibles avec Corepack.
+
 ```bash
 # Installer les dépendances
 pnpm install

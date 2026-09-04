@@ -1,6 +1,7 @@
 {
   "name": "sgdf-notes-de-frais",
   "version": "0.2.0",
+  "packageManager": "pnpm@11.22.0",
   "private": true,
   "description": "Application de gestion des notes de frais pour les Scouts et Guides de France",
   "license": "Apache-2.0",
