@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser, UserButton } from "@clerk/nextjs";
+import {
+  useOrganization,
+  useUser,
+  UserButton,
+  OrganizationSwitcher,
+} from "@clerk/nextjs";
 import { FormulaireDepense } from "@/components/FormulaireDepense";
 import { AvertissementNouveaute } from "@/components/FeatureNotice";
 import { CapturePhoto } from "@/components/PhotoCapture";
@@ -12,37 +17,31 @@ import {
   type PieceJointeDepense,
 } from "@/constants/piecesJointes";
 import Image from "next/image";
+import { ConfigurationGroupe } from "@/components/GroupSetup";
+import type { UniteGroupe } from "@/lib/group";
 
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser();
+  const { organization } = useOrganization();
   const [piecesJointes, setPiecesJointes] = useState<PieceJointeDepense[]>([]);
-  const [activeBranch, setActiveBranch] = useState<string>("");
-  const [branchSaveStatus, setBranchSaveStatus] = useState<{
-    type: "success" | "error" | null;
-    message: string;
-  }>({ type: null, message: "" });
+  const [group, setGroup] = useState<{
+    units: UniteGroupe[];
+    configured: boolean;
+    treasuryVerified: boolean;
+    isAdmin: boolean;
+  } | null>(null);
   const estEnLigne = useStatutEnLigne();
 
   useEffect(() => {
-    if (!branchSaveStatus.type) {
+    if (!organization) {
+      setGroup(null);
       return;
     }
-
-    const timeoutId = window.setTimeout(() => {
-      setBranchSaveStatus({ type: null, message: "" });
-    }, 3000);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [branchSaveStatus.type]);
-
-  // Update activeBranch when user metadata loads
-  useEffect(() => {
-    if (user?.publicMetadata?.branch) {
-      setActiveBranch(user.publicMetadata.branch as string);
-    } else {
-      setActiveBranch("");
-    }
-  }, [user?.publicMetadata?.branch]);
+    fetch("/api/group/config")
+      .then((response) => (response.ok ? response.json() : null))
+      .then(setGroup)
+      .catch(() => setGroup(null));
+  }, [organization?.id]);
 
   // Afficher un loader pendant le chargement de l'état d'authentification
   if (!isLoaded || !isSignedIn) {
@@ -53,8 +52,24 @@ export default function Home() {
     );
   }
 
+  if (!organization)
+    return (
+      <main className="min-h-screen bg-zinc-950 p-4 text-white flex items-center justify-center">
+        <section className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+          <h1 className="text-2xl font-semibold">Bienvenue</h1>
+          <p className="mt-2 text-zinc-300">
+            Créez votre groupe ou sélectionnez un groupe auquel vous avez été
+            invité.
+          </p>
+          <div className="mt-6">
+            <OrganizationSwitcher />
+          </div>
+        </section>
+      </main>
+    );
+
   return (
-    <main className="min-h-screen p-4 bg-zinc-50">
+    <main className="min-h-screen p-4 bg-zinc-950">
       <div className="max-w-md mx-auto bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
         <div className="bg-white p-6 border-b border-zinc-200">
           <div className="flex justify-between items-center">
@@ -72,7 +87,7 @@ export default function Home() {
                   Factures carte procurement SGDF
                 </h1>
               </div>
-              <p className="text-zinc-500 mt-2">La Guillotière</p>
+              <p className="text-zinc-500 mt-2">{organization.name}</p>
             </div>
             <div className="flex items-center space-x-3">
               <UserButton
@@ -82,6 +97,7 @@ export default function Home() {
                   },
                 }}
               />
+              <OrganizationSwitcher hidePersonal />
             </div>
           </div>
         </div>
@@ -92,77 +108,70 @@ export default function Home() {
           </div>
         )}
 
-        {branchSaveStatus.type && (
-          <div
-            className={`border-t border-b text-center text-sm py-2 ${
-              branchSaveStatus.type === "success"
-                ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                : "bg-red-50 border-red-200 text-red-800"
-            }`}
-          >
-            {branchSaveStatus.message}
-          </div>
-        )}
-
         <div className="p-6 space-y-6">
-          <AvertissementNouveaute />
-          <CapturePhoto
-            onAttachmentsAdd={(nouvellesPiecesJointes) => {
-              setPiecesJointes((precedentes) =>
-                [...precedentes, ...nouvellesPiecesJointes].slice(
-                  0,
-                  MAX_ATTACHMENT_COUNT,
-                ),
-              );
-            }}
-            currentCount={piecesJointes.length}
-          />
+          {!group?.configured && group?.isAdmin ? (
+            <ConfigurationGroupe
+              onSaved={() => {
+                fetch("/api/group/config")
+                  .then((response) => response.json())
+                  .then(setGroup);
+              }}
+            />
+          ) : !group?.configured ? (
+            <p className="text-sm text-zinc-600">
+              Votre responsable doit terminer la configuration du groupe.
+            </p>
+          ) : (
+            <>
+              {!group.treasuryVerified && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                  La trésorerie doit encore confirmer son adresse avant le
+                  premier envoi.
+                </div>
+              )}
+              <AvertissementNouveaute />
+              <CapturePhoto
+                onAttachmentsAdd={(nouvellesPiecesJointes) => {
+                  setPiecesJointes((precedentes) =>
+                    [...precedentes, ...nouvellesPiecesJointes].slice(
+                      0,
+                      MAX_ATTACHMENT_COUNT,
+                    ),
+                  );
+                }}
+                currentCount={piecesJointes.length}
+              />
 
-          <FormulaireDepense
-            piecesJointes={piecesJointes}
-            emailUtilisateur={user?.emailAddresses[0]?.emailAddress || ""}
-            brancheInitiale={activeBranch}
-            onCreerNouvelleNote={() => {
-              setPiecesJointes([]);
-            }}
-            onSupprimerPieceJointe={(index) => {
-              setPiecesJointes((precedentes) =>
-                precedentes.filter((_, i) => i !== index),
-              );
-            }}
-            onMemoriserBranche={async (branche: string) => {
-              try {
-                setBranchSaveStatus({ type: null, message: "" });
-                const res = await fetch("/api/update-branch", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ branch: branche }),
-                });
-                if (!res.ok) {
-                  const data = await res.json().catch(() => ({}));
-                  throw new Error(data.error || "Erreur API");
+              <FormulaireDepense
+                piecesJointes={piecesJointes}
+                emailUtilisateur={user?.emailAddresses[0]?.emailAddress || ""}
+                units={group.units}
+                uniteInitiale={
+                  typeof window === "undefined"
+                    ? ""
+                    : (window.localStorage.getItem(
+                        `sgdf-unit:${organization.id}`,
+                      ) ?? "")
                 }
-                await user?.reload();
-                setActiveBranch(branche);
-                setBranchSaveStatus({
-                  type: "success",
-                  message: "Branche sauvegardée.",
-                });
-              } catch (e) {
-                console.error(
-                  "Erreur de sauvegarde de la branche dans Clerk",
-                  e,
-                );
-                setBranchSaveStatus({
-                  type: "error",
-                  message:
-                    "Impossible de sauvegarder la branche. Veuillez réessayer plus tard.",
-                });
-              }
-            }}
-            onChangementBranche={(branche) => setActiveBranch(branche)}
-            estEnLigne={estEnLigne}
-          />
+                treasuryVerified={group.treasuryVerified}
+                onChangementUnite={(unitId) =>
+                  window.localStorage.setItem(
+                    `sgdf-unit:${organization.id}`,
+                    unitId,
+                  )
+                }
+                onCreerNouvelleNote={() => {
+                  setPiecesJointes([]);
+                }}
+                onSupprimerPieceJointe={(index) => {
+                  setPiecesJointes((precedentes) =>
+                    precedentes.filter((_, i) => i !== index),
+                  );
+                }}
+                estEnLigne={estEnLigne}
+              />
+            </>
+          )}
         </div>
       </div>
       <InviteInstallation />

@@ -3,6 +3,7 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { envoyerEmail } from "@/lib/email";
 import { jsonError, verifierErreurSmtp } from "@/lib/api/utils";
 import { validerCorpsRequete } from "@/lib/api/validateBody";
+import { recupererGroupeActif } from "@/lib/groupServer";
 import {
   reponseRateLimit,
   verifierOrigineRequete,
@@ -13,8 +14,7 @@ function validateEnv() {
   if (
     !process.env.SMTP_HOST ||
     !process.env.SMTP_USER ||
-    !process.env.SMTP_PASSWORD ||
-    !process.env.NEXT_PUBLIC_TREASURY_EMAIL
+    !process.env.SMTP_PASSWORD
   ) {
     console.error("Variables d'environnement manquantes pour SMTP");
     return jsonError("Configuration serveur manquante", 500);
@@ -25,8 +25,8 @@ function validateEnv() {
 export async function POST(req: NextRequest) {
   try {
     // Auth
-    const { userId } = await auth();
-    if (!userId) return jsonError("Non autorisé", 401);
+    const { userId, orgId } = await auth();
+    if (!userId || !orgId) return jsonError("Sélectionnez un groupe", 401);
 
     const erreurOrigine = verifierOrigineRequete(req);
     if (erreurOrigine) return erreurOrigine;
@@ -72,6 +72,18 @@ export async function POST(req: NextRequest) {
 
     const { donneesEmail, error } = validerCorpsRequete(body);
     if (error || !donneesEmail) return error as NextResponse;
+    const group = await recupererGroupeActif(orgId);
+    if (group.validation.status !== "verified" || !group.emailTresorerie)
+      return jsonError(
+        "La trésorerie doit confirmer son adresse avant les envois",
+        403,
+      );
+    const unit = group.unites.find((item) => item.id === donneesEmail.branche);
+    if (!unit) return jsonError("Unité invalide pour ce groupe", 400);
+    donneesEmail.branche = unit.label;
+    donneesEmail.groupe = group.organisation.name;
+    donneesEmail.couleur = unit.color;
+    donneesEmail.emailTresorerie = group.emailTresorerie;
 
     const resultat = await envoyerEmail(donneesEmail);
     return NextResponse.json({

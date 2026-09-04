@@ -31,9 +31,10 @@ src/
 
 1. **Maintenir la cohérence architecturale** – placer les nouveaux fichiers dans les sous-dossiers appropriés : `app/`, `components/` ou `lib/`.
 2. **Respecter le style de code existant** – TypeScript en mode strict, styles Tailwind utilitaires, et règles ESLint définies dans `.eslintrc.json`.
-3. **Préserver l'expérience utilisateur** – toute modification d'interface doit respecter l'esthétique dark mode / glassmorphisme déjà en place.
-4. **Garantir sécurité et confidentialité** – ne jamais stocker les images uploadées sur le serveur ; les transmettre uniquement par e-mail.
-5. **Rédiger une documentation complète** – mettre à jour `README.md` ou `SETUP.md` lors de l'ajout de fonctionnalités.
+3. **Utiliser des conventions françaises** – nommer les variables, fonctions, types, composants, commentaires et messages utilisateur en français lorsque cela reste compatible avec les conventions ou API externes. Exemple : préférer `montantTotal`, `envoyerFacture` et `FactureFormulaire` à `totalAmount`, `sendInvoice` et `InvoiceForm`, tout en conservant les termes imposés ou conventionnels comme `useState`, `onClick`, `className` et les types d'une bibliothèque externe.
+4. **Préserver l'expérience utilisateur** – toute modification d'interface doit respecter l'esthétique dark mode / glassmorphisme déjà en place.
+5. **Garantir sécurité et confidentialité** – ne jamais stocker les images uploadées sur le serveur ; les transmettre uniquement par e-mail.
+6. **Rédiger une documentation complète** – mettre à jour `README.md` ou `SETUP.md` lors de l'ajout de fonctionnalités.
 
 ## 🛠️ Workflow de développement
 

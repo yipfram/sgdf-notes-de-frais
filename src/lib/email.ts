@@ -1,5 +1,4 @@
 import nodemailer from "nodemailer";
-import { getBranchColor } from "@/constants/configScoute";
 import { estTypeMimePieceJointeAutorise } from "./attachments";
 import {
   type PieceJointeDepense,
@@ -15,6 +14,9 @@ export interface DonneesEmail {
   description?: string;
   piecesJointes: PieceJointeDepense[];
   detailsDepenses?: DetailDepense[];
+  groupe?: string;
+  couleur?: string;
+  emailTresorerie?: string;
 }
 
 // Configuration du transporteur SMTP générique
@@ -52,6 +54,9 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
     description,
     piecesJointes,
     detailsDepenses,
+    groupe = "Groupe SGDF",
+    couleur = "#1E3A8A",
+    emailTresorerie,
   } = donnees;
 
   // Helper pour extraire le buffer depuis une data URL ou une chaîne base64 brute
@@ -155,8 +160,9 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
     };
   })();
 
-  const sujet = `Facture carte procurement - ${branche} - ${date}`;
-  const couleurPrincipale = getBranchColor(branche);
+  if (!emailTresorerie) throw new Error("TREASURY_EMAIL_UNDEFINED");
+  const sujet = `Facture carte procurement - ${groupe} - ${branche} - ${date}`;
+  const couleurPrincipale = couleur;
   // Accent: If the primary color is a warm tone, keep gold, else use a light variant
   const accentColor = "#FBB042";
   const texteSurCouleurPrincipale = "#ffffff";
@@ -168,7 +174,7 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background-color: ${couleurPrincipale}; color: ${texteSurCouleurPrincipale}; padding: 20px; text-align: center;">
   <h1 style="margin: 0; font-size: 24px;">📜 Facture carte procurement SGDF</h1>
-        <p style="margin: 10px 0 0 0; opacity: 0.9;">La Guillotière</p>
+        <p style="margin: 10px 0 0 0; opacity: 0.9;">${escapeHtml(groupe)}</p>
       </div>
 
       <div style="padding: 30px; background-color: #f9f9f9;">
@@ -240,7 +246,7 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
   `;
 
   const contenuTexte = `
-Facture carte procurement SGDF - La Guillotière
+Facture carte procurement SGDF - ${groupe}
 
 Nouvelle facture
 
@@ -269,7 +275,7 @@ Email envoyé automatiquement par l'application Factures carte procurement SGDF.
 
   const optionsEmail = {
     from,
-    to: process.env.NEXT_PUBLIC_TREASURY_EMAIL!,
+    to: emailTresorerie,
     cc: emailUtilisateur,
     subject: sujet,
     text: contenuTexte,

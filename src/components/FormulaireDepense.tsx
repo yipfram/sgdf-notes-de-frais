@@ -19,51 +19,50 @@ import {
   type PieceJointeDepense,
   type DetailDepense,
 } from "@/constants/piecesJointes";
-import { TYPES_DEPENSES, BRANCHES_ASC } from "@/constants/configScoute";
+import { TYPES_DEPENSES } from "@/constants/configScoute";
+import type { UniteGroupe } from "@/lib/group";
 
 interface FormulaireDepenseProps {
   readonly piecesJointes: PieceJointeDepense[];
   readonly emailUtilisateur: string;
-  readonly brancheInitiale?: string; // Depuis les métadonnées publiques Clerk
-  readonly onMemoriserBranche?: (branche: string) => Promise<void> | void;
+  readonly units: UniteGroupe[];
+  readonly uniteInitiale?: string;
+  readonly treasuryVerified: boolean;
+  readonly onChangementUnite?: (unitId: string) => void;
   readonly onCreerNouvelleNote?: () => void;
-  readonly onChangementBranche?: (branche: string) => void;
   readonly onSupprimerPieceJointe?: (index: number) => void;
 }
 
 export function FormulaireDepense({
   piecesJointes,
   emailUtilisateur,
-  brancheInitiale = "",
-  onMemoriserBranche,
+  units,
+  uniteInitiale = "",
+  treasuryVerified,
+  onChangementUnite,
   onCreerNouvelleNote,
-  onChangementBranche,
   onSupprimerPieceJointe,
   estEnLigne = true,
 }: FormulaireDepenseProps & { estEnLigne?: boolean }) {
   const [formulaire, setFormulaire] = useState({
     date: new Date().toISOString().split("T")[0],
-    branche: brancheInitiale || "",
+    branche: uniteInitiale || "",
     typeDepense: "",
     montant: "",
     description: "",
   });
   const [detailsDepenses, setDetailsDepenses] = useState<DetailDepense[]>([]);
-  const emailTresorier = process.env.NEXT_PUBLIC_TREASURY_EMAIL ?? "";
+  const uniteSelectionnee = units.find(
+    (unit) => unit.id === formulaire.branche,
+  );
 
-  const [statutMemoBranche, setStatutMemoBranche] = useState<
-    "repos" | "sauvegarde" | "sauvegardee" | "erreur"
-  >("repos");
-
-  // Synchronise la branche initiale quand les métadonnées Clerk arrivent.
   useEffect(() => {
-    if (brancheInitiale !== formulaire.branche) {
-      // Permet de vider la valeur, sans écraser une saisie déjà modifiée.
-      if (!formulaire.branche || brancheInitiale === "") {
-        setFormulaire((prev) => ({ ...prev, branche: brancheInitiale }));
+    if (uniteInitiale !== formulaire.branche) {
+      if (!formulaire.branche || uniteInitiale === "") {
+        setFormulaire((prev) => ({ ...prev, branche: uniteInitiale }));
       }
     }
-  }, [brancheInitiale, formulaire.branche]);
+  }, [uniteInitiale, formulaire.branche]);
 
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const [statutEnvoi, setStatutEnvoi] = useState<{
@@ -76,18 +75,7 @@ export function FormulaireDepense({
     valeur: string,
   ) => {
     setFormulaire((prev) => ({ ...prev, [champ]: valeur }));
-    if (champ === "branche") {
-      if (onChangementBranche) {
-        onChangementBranche(valeur);
-      }
-      // Mémorise la branche dans les métadonnées utilisateur.
-      if (onMemoriserBranche && valeur) {
-        setStatutMemoBranche("sauvegarde");
-        Promise.resolve(onMemoriserBranche(valeur))
-          .then(() => setStatutMemoBranche("sauvegardee"))
-          .catch(() => setStatutMemoBranche("erreur"));
-      }
-    }
+    if (champ === "branche") onChangementUnite?.(valeur);
     if (statutEnvoi.type) {
       setStatutEnvoi({ type: null, message: "" });
     }
@@ -147,7 +135,7 @@ export function FormulaireDepense({
         const detail = detailsDepenses[index];
         const [nom] = construireNomsFichiersNormalises([pieceJointe], {
           date: formulaire.date,
-          branch: formulaire.branche,
+          branch: uniteSelectionnee?.label ?? "",
           expenseType: detail?.typeDepense ?? "",
           amount: String(detail?.montant ?? ""),
         });
@@ -160,7 +148,7 @@ export function FormulaireDepense({
     }
     return construireNomsFichiersNormalises(piecesJointes, {
       date: formulaire.date,
-      branch: formulaire.branche,
+      branch: uniteSelectionnee?.label ?? "",
       expenseType: formulaire.typeDepense,
       amount: normaliserMontant(formulaire.montant),
     });
@@ -217,7 +205,7 @@ export function FormulaireDepense({
         body: JSON.stringify({
           userEmail: emailUtilisateur,
           date: formulaire.date,
-          branch: formulaire.branche,
+          unitId: formulaire.branche,
           expenseType: plusieursDepenses ? undefined : formulaire.typeDepense,
           amount: plusieursDepenses
             ? undefined
@@ -494,7 +482,7 @@ export function FormulaireDepense({
           htmlFor="branche"
           className="block text-sm font-medium text-zinc-700"
         >
-          Branche *
+          Unité *
         </label>
         <select
           id="branche"
@@ -503,57 +491,18 @@ export function FormulaireDepense({
           className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
           required
         >
-          <option value="">Sélectionner une branche</option>
-          {BRANCHES_ASC.map((branche) => (
-            <option key={branche} value={branche}>
-              {branche}
+          <option value="">Sélectionner une unité</option>
+          {units.map((unit) => (
+            <option key={unit.id} value={unit.id}>
+              {unit.label}
             </option>
           ))}
         </select>
-        {formulaire.branche && (
-          <div className="mt-1 flex items-center justify-between">
-            <p className="text-xs text-zinc-500 flex items-center gap-1">
-              {statutMemoBranche === "sauvegarde" && (
-                <span className="inline-flex items-center gap-1">
-                  <svg
-                    className="animate-spin h-3.5 w-3.5 text-zinc-500"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
-                  </svg>
-                  Sauvegarde…
-                </span>
-              )}
-              {statutMemoBranche === "sauvegardee" && (
-                <span className="inline-flex items-center gap-1 text-emerald-700">
-                  <CheckCircleIcon className="w-4 h-4" aria-hidden="true" />{" "}
-                  Branche mémorisée
-                </span>
-              )}
-              {statutMemoBranche === "erreur" && (
-                <span className="inline-flex items-center gap-1 text-rose-700">
-                  <ExclamationTriangleIcon
-                    className="w-4 h-4"
-                    aria-hidden="true"
-                  />{" "}
-                  Erreur de sauvegarde
-                </span>
-              )}
-            </p>
-          </div>
+        {uniteSelectionnee && (
+          <div
+            className="mt-2 h-1.5 rounded-full"
+            style={{ backgroundColor: uniteSelectionnee.color }}
+          />
         )}
       </div>
 
@@ -652,7 +601,7 @@ export function FormulaireDepense({
                 <PaperAirplaneIcon className="w-4 h-4" aria-hidden="true" />{" "}
                 Email sera envoyé à :
               </span>
-              <br />• Trésorerie : {emailTresorier}
+              <br />• Trésorerie : votre groupe
               <br />• Vous : {emailUtilisateur}
               <br />
               <span className="inline-flex items-center gap-2 font-medium">
@@ -698,14 +647,24 @@ export function FormulaireDepense({
 
         <button
           type="submit"
-          disabled={!formulaireEstValide || envoiEnCours || !estEnLigne}
+          disabled={
+            !formulaireEstValide ||
+            envoiEnCours ||
+            !estEnLigne ||
+            !treasuryVerified
+          }
           className={`w-full p-4 rounded-lg font-semibold text-white transition-colors focus:outline-none ${
-            formulaireEstValide && !envoiEnCours && estEnLigne
+            formulaireEstValide &&
+            !envoiEnCours &&
+            estEnLigne &&
+            treasuryVerified
               ? "bg-zinc-900 hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-400"
               : "bg-zinc-300 cursor-not-allowed"
           }`}
         >
-          {envoiEnCours ? (
+          {!treasuryVerified ? (
+            "Validation de la trésorerie en attente"
+          ) : envoiEnCours ? (
             <span className="flex items-center justify-center">
               <svg
                 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"

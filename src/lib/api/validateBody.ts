@@ -23,7 +23,7 @@ export function validerCorpsRequete(body: unknown): {
     .object({
       userEmail: z.string().email(),
       date: z.string(),
-      branch: z.string(),
+      unitId: z.string().min(1),
       expenseType: z.string().optional(),
       amount: z.union([z.string(), z.number()]).optional(),
       description: z.string().optional(),
@@ -240,7 +240,7 @@ export function validerCorpsRequete(body: unknown): {
     donneesEmail: {
       emailUtilisateur: b.userEmail,
       date: b.date,
-      branche: b.branch,
+      branche: b.unitId,
       typeDepense,
       montant,
       description: b.description ?? "",

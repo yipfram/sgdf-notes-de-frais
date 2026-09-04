@@ -384,6 +384,12 @@ Le projet utilise Clerk pour l'authentification et envoie les justificatifs par 
 
 ### Configuration Clerk (résumé technique)
 
+#### Activer les groupes et Google
+
+Dans le tableau de bord Clerk, activez **Organizations**. Les responsables créent ensuite leur groupe directement dans l’application et invitent leurs membres par e-mail. Activez la connexion sociale **Google** dans `SSO connections` pour proposer Google en plus de l’inscription e-mail/mot de passe. En production, renseignez les identifiants OAuth de votre projet Google.
+
+L’adresse de trésorerie n’est plus une variable d’environnement : chaque responsable la renseigne dans son groupe. L’application envoie un lien de validation à cette adresse et bloque les notes de frais tant qu’elle n’est pas confirmée.
+
 1. Créez un compte sur https://dashboard.clerk.com/
 2. Créez une nouvelle application
 3. Activez les providers souhaités : Email (recommandé), Google (optionnel)

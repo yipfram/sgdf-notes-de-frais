@@ -5,7 +5,7 @@
 
 # Factures carte procurement SGDF
 
-Application web mobile-first pour la gestion des factures carte procurement du groupe SGDF La Guillotière.
+Application web mobile-first pour la gestion des factures carte procurement des groupes SGDF.
 
 > **Avertissement — Non officiel**  
 > Cette application n'est pas affiliée aux Scouts et Guides de France (SGDF) et n'est pas une application officielle.
@@ -21,19 +21,27 @@ Pour savoir comment l'utiliser avec [la documentation](https://yipfram.github.io
 - 📸 **Capture de justificatifs** : prise de photo + import d'images/PDF, avec plusieurs fichiers possibles (jusqu'à 6 justificatifs par envoi)
 - 📝 **Saisie des informations** : Date, branche SGDF, montant, type et description ; avec plusieurs justificatifs, un montant et une catégorie sont saisis pour chaque dépense et le total est calculé automatiquement
 - ✉️ **Envoi email automatique** : transmission à la trésorerie + copie à l'utilisateur avec une ou plusieurs pièces jointes
+- 👥 **Multi-groupes** : chaque groupe configure ses unités, invite ses membres et valide sa propre adresse de trésorerie
+- 🔐 **Validation de trésorerie** : aucun envoi n’est possible avant la confirmation reçue par e-mail du trésorier
 - 🏷️ **Nom de fichier structuré** : `YYYY-MM-DD - Branche - Type - Montant - 01.pdf` (ou `.jpg/.png/.webp`)
 - 📲 **Installation PWA** : Ajout possible à l'écran d'accueil (Android / iOS / Desktop)
 - ⚡ **Mode hors ligne partiel** : Consultation et préparation possible sans réseau (l'envoi nécessite la connexion)
 - 🔔 **Bannière d'installation** : Invitation A2HS personnalisée
 - 🌙 **Affichage plein écran** : Expérience proche d'une application native
 
-## Branches SGDF supportées
+## Créer un groupe
+
+Après votre inscription, créez ou sélectionnez votre groupe depuis le sélecteur dans l’en-tête. Le responsable configure l’adresse de trésorerie et les unités. Une confirmation est envoyée à la trésorerie : tant que le lien n’est pas validé, aucune note ne peut être transmise.
+
+La liste d’unités est proposée avec les branches SGDF courantes, mais chaque groupe peut la renommer, compléter ou simplifier. Chaque unité possède une couleur, reprise dans les e-mails de notes de frais.
+
+Dans le tableau de bord Clerk, activez **Organizations** ainsi que les invitations d’organisation. Activez également Google dans **SSO connections** si vous souhaitez afficher « Continuer avec Google » en plus de l’e-mail/mot de passe.
+
+## Unités proposées par défaut
 
 - Farfadets
-- Louveteaux
-- Jeannettes
-- Scouts
-- Guides
+- Louveteaux-Jeannettes
+- Scouts-Guides
 - Pionniers-Caravelles
 - Compagnons
 - Groupe
