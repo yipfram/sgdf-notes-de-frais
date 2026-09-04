@@ -25,6 +25,7 @@ import type { UniteGroupe } from "@/lib/group";
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser();
   const { organization } = useOrganization();
+  const identifiantOrganisation = organization?.id;
   const [piecesJointes, setPiecesJointes] = useState<PieceJointeDepense[]>([]);
   const [group, setGroup] = useState<{
     units: UniteGroupe[];
@@ -39,7 +40,7 @@ export default function Home() {
 
   useEffect(() => {
     setEtatRenvoiValidation("repos");
-    if (!organization) {
+    if (!identifiantOrganisation) {
       setGroup(null);
       return;
     }
@@ -47,7 +48,7 @@ export default function Home() {
       .then((response) => (response.ok ? response.json() : null))
       .then(setGroup)
       .catch(() => setGroup(null));
-  }, [organization?.id]);
+  }, [identifiantOrganisation]);
 
   const renvoyerValidationTresorerie = async () => {
     setEtatRenvoiValidation("envoi");
@@ -144,7 +145,7 @@ export default function Home() {
               {!group.treasuryVerified && (
                 <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
                   <p>
-                    Un mail a été envoyé à l'adresse de la trésorerie pour
+                    Un mail a été envoyé à l’adresse de la trésorerie pour
                     confirmer son rattachement. Une fois validé, vous pourrez
                     envoyer des justificatifs.
                   </p>

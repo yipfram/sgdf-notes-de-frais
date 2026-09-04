@@ -28,7 +28,6 @@ export default async function VerifyTreasuryPage({
           privateMetadata: {
             treasuryVerification: {
               status: "verified",
-              verifiedAt: Date.now(),
             },
           },
         });
