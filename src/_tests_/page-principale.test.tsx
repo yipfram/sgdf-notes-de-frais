@@ -65,7 +65,7 @@ describe("Page principale", () => {
     );
   });
 
-  it("affiche l'application et l'invitation pour un responsable", async () => {
+  it("affiche les actions d'administration pour un responsable", async () => {
     render(<Home />);
 
     expect(
@@ -77,8 +77,33 @@ describe("Page principale", () => {
     expect(
       await screen.findByLabelText("Formulaire depense"),
     ).toHaveTextContent("test@example.test");
+    expect(screen.getByText("Administration")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Inviter une personne" }),
+      screen.getByRole("link", { name: "Gérer les membres" }),
+    ).toHaveAttribute("href", "/gestion-membres");
+    expect(
+      screen.getByRole("button", { name: "Ajouter un membre" }),
     ).toBeInTheDocument();
+  });
+
+  it("masque les actions d'administration pour un membre", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            units: [{ id: "groupe", label: "Groupe", color: "#1E3A8A" }],
+            configured: true,
+            treasuryVerified: true,
+            isAdmin: false,
+          }),
+      }),
+    );
+
+    render(<Home />);
+
+    await screen.findByLabelText("Formulaire depense");
+    expect(screen.queryByText("Administration")).not.toBeInTheDocument();
   });
 });

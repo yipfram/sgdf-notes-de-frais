@@ -21,7 +21,11 @@ vi.mock("@clerk/nextjs/server", () => ({
       const pathname =
         req.nextUrl?.pathname ?? (req.url ? new URL(req.url).pathname : "");
 
-      return routes.includes(pathname);
+      return routes.some((route) =>
+        route.endsWith("(.*)")
+          ? pathname.startsWith(route.slice(0, -4))
+          : route === pathname,
+      );
     };
   }),
 }));
@@ -31,7 +35,7 @@ describe("Proxy(middleware) Clerk", () => {
     vi.clearAllMocks();
   });
 
-  it.each(["/", "/api/send-expense", "/api/update-branch"])(
+  it.each(["/", "/api/send-expense", "/api/update-branch", "/gestion-membres"])(
     "protege la route %s",
     async (pathname) => {
       const { default: middleware } = await import("../proxy");

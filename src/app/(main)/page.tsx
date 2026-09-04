@@ -18,6 +18,7 @@ import {
   type PieceJointeDepense,
 } from "@/constants/piecesJointes";
 import Image from "next/image";
+import Link from "next/link";
 import { ConfigurationGroupe } from "@/components/GroupSetup";
 import type { UniteGroupe } from "@/lib/group";
 
@@ -71,10 +72,10 @@ export default function Home() {
 
   if (!organization)
     return (
-      <main className="min-h-screen bg-zinc-950 p-4 text-white flex items-center justify-center">
-        <section className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+      <main className="min-h-screen bg-zinc-50 p-4 text-zinc-900 flex items-center justify-center">
+        <section className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-semibold">Bienvenue</h1>
-          <p className="mt-2 text-zinc-300">
+          <p className="mt-2 text-zinc-600">
             Créez votre groupe ou sélectionnez un groupe auquel vous avez été
             invité.
           </p>
@@ -86,7 +87,7 @@ export default function Home() {
     );
 
   return (
-    <main className="min-h-screen p-4 bg-zinc-950">
+    <main className="min-h-screen bg-zinc-50 p-4">
       <div className="max-w-md mx-auto bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
         <div className="bg-white p-6 border-b border-zinc-200">
           <div className="flex justify-between items-center">
@@ -173,17 +174,30 @@ export default function Home() {
                   )}
                 </div>
               )}
-              <AvertissementNouveaute />
               {group.isAdmin && (
-                <InviteMembersButton>
-                  <button
-                    type="button"
-                    className="w-full rounded-lg border border-zinc-300 bg-white p-3 text-sm font-medium text-[#1E3A8A] transition-colors hover:border-[#1E3A8A] hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:ring-offset-2"
-                  >
-                    Inviter une personne
-                  </button>
-                </InviteMembersButton>
+                <details className="rounded-lg border border-zinc-200 bg-zinc-50">
+                  <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-zinc-800">
+                    Administration
+                  </summary>
+                  <div className="space-y-2 border-t border-zinc-200 p-3">
+                    <Link
+                      href="/gestion-membres"
+                      className="block w-full rounded-lg border border-zinc-300 bg-white p-3 text-center text-sm font-medium text-[#1E3A8A] transition-colors hover:border-[#1E3A8A] hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:ring-offset-2"
+                    >
+                      Gérer les membres
+                    </Link>
+                    <InviteMembersButton>
+                      <button
+                        type="button"
+                        className="w-full rounded-lg bg-[#1E3A8A] p-3 text-sm font-medium text-white transition-colors hover:bg-[#162d69] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:ring-offset-2"
+                      >
+                        Ajouter un membre
+                      </button>
+                    </InviteMembersButton>
+                  </div>
+                </details>
               )}
+              <AvertissementNouveaute />
               <CapturePhoto
                 onAttachmentsAdd={(nouvellesPiecesJointes) => {
                   setPiecesJointes((precedentes) =>
