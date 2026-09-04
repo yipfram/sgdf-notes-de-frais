@@ -35,6 +35,7 @@ src/
 4. **Préserver l'expérience utilisateur** – toute modification d'interface doit respecter l'esthétique dark mode / glassmorphisme déjà en place.
 5. **Garantir sécurité et confidentialité** – ne jamais stocker les images uploadées sur le serveur ; les transmettre uniquement par e-mail.
 6. **Rédiger une documentation complète** – mettre à jour `README.md` ou `SETUP.md` lors de l'ajout de fonctionnalités.
+7. **Rédiger les commits en français** – utiliser les préfixes conventionnels (`feat:`, `fix:`, `chore:`…) suivis d’un message concis en français.
 
 ## 🛠️ Workflow de développement
 
