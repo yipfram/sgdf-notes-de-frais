@@ -15,6 +15,45 @@ export interface UniteGroupe {
   color: string;
 }
 
+export const CLE_UNITE_SELECTIONNEE_PAR_ORGANISATION =
+  "unitesSelectionneesParOrganisation";
+
+export function lireUnitesSelectionnees(
+  valeur: unknown,
+): Record<string, string> {
+  if (!valeur || typeof valeur !== "object" || Array.isArray(valeur)) return {};
+
+  return Object.fromEntries(
+    Object.entries(valeur).filter(
+      ([identifiantOrganisation, uniteId]) =>
+        typeof identifiantOrganisation === "string" &&
+        typeof uniteId === "string",
+    ),
+  );
+}
+
+export function lireUniteSelectionnee(
+  metadonnees: unknown,
+  identifiantOrganisation: string | undefined,
+  unites: UniteGroupe[],
+): string {
+  if (
+    !metadonnees ||
+    typeof metadonnees !== "object" ||
+    !identifiantOrganisation
+  )
+    return "";
+
+  const valeur = (metadonnees as Record<string, unknown>)[
+    CLE_UNITE_SELECTIONNEE_PAR_ORGANISATION
+  ];
+  const uniteId = lireUnitesSelectionnees(valeur)[identifiantOrganisation];
+  return typeof uniteId === "string" &&
+    unites.some((unite) => unite.id === uniteId)
+    ? uniteId
+    : "";
+}
+
 export const UNITES_PAR_DEFAUT: UniteGroupe[] = [
   ["farfadets", "Farfadets", "#6CC24A"],
   ["louveteaux-jeannettes", "Louveteaux-Jeannettes", "#F28C00"],

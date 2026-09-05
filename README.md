@@ -22,6 +22,7 @@ Pour savoir comment l'utiliser avec [la documentation](https://yipfram.github.io
 - 📝 **Saisie des informations** : Date, branche SGDF, montant, type et description ; avec plusieurs justificatifs, un montant et une catégorie sont saisis pour chaque dépense et le total est calculé automatiquement
 - ✉️ **Envoi email automatique** : transmission à la trésorerie + copie à l'utilisateur avec une ou plusieurs pièces jointes
 - 👥 **Multi-groupes** : chaque groupe configure ses unités, invite ses membres et valide sa propre adresse de trésorerie
+- 📌 **Unité mémorisée** : le dernier choix d’unité est synchronisé avec le compte Clerk, séparément pour chaque groupe
 - 🔐 **Validation de trésorerie** : aucun envoi n’est possible avant la confirmation reçue par e-mail du trésorier
 - 🏷️ **Nom de fichier structuré** : `YYYY-MM-DD - Branche - Type - Montant - 01.pdf` (ou `.jpg/.png/.webp`)
 - 📲 **Installation PWA** : Ajout possible à l'écran d'accueil (Android / iOS / Desktop)

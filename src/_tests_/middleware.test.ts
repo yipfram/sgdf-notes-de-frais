@@ -15,19 +15,10 @@ type MockedClerkMiddlewareHandler = (
 ) => Promise<void>;
 
 vi.mock("@clerk/nextjs/server", () => ({
-  clerkMiddleware: vi.fn((handler) => handler),
-  createRouteMatcher: vi.fn((routes: string[]) => {
-    return (req: { nextUrl?: { pathname: string }; url?: string }) => {
-      const pathname =
-        req.nextUrl?.pathname ?? (req.url ? new URL(req.url).pathname : "");
-
-      return routes.some((route) =>
-        route.endsWith("(.*)")
-          ? pathname.startsWith(route.slice(0, -4))
-          : route === pathname,
-      );
-    };
-  }),
+  clerkMiddleware: vi.fn(
+    (handler?: MockedClerkMiddlewareHandler) =>
+      handler ?? (async () => undefined),
+  ),
 }));
 
 describe("Proxy(middleware) Clerk", () => {
@@ -35,8 +26,8 @@ describe("Proxy(middleware) Clerk", () => {
     vi.clearAllMocks();
   });
 
-  it.each(["/", "/api/send-expense", "/api/update-branch", "/gestion-membres"])(
-    "protege la route %s",
+  it.each(["/", "/api/send-expense", "/api/user/unit-preference"])(
+    "ne protège plus la route par son chemin : %s",
     async (pathname) => {
       const { default: middleware } = await import("../proxy");
       const handleRequest =
@@ -48,20 +39,7 @@ describe("Proxy(middleware) Clerk", () => {
         url: `https://example.test${pathname}`,
       });
 
-      expect(auth.protect).toHaveBeenCalledTimes(1);
+      expect(auth.protect).not.toHaveBeenCalled();
     },
   );
-
-  it("ne protege pas les routes publiques", async () => {
-    const { default: middleware } = await import("../proxy");
-    const handleRequest = middleware as unknown as MockedClerkMiddlewareHandler;
-    const auth = { protect: vi.fn().mockResolvedValue(undefined) };
-
-    await handleRequest(auth, {
-      nextUrl: { pathname: "/sign-in" },
-      url: "https://example.test/sign-in",
-    });
-
-    expect(auth.protect).not.toHaveBeenCalled();
-  });
 });

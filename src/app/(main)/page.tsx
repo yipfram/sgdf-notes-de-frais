@@ -7,6 +7,7 @@ import {
   UserButton,
   OrganizationSwitcher,
   InviteMembersButton,
+  RedirectToSignIn,
 } from "@clerk/nextjs";
 import { FormulaireDepense } from "@/components/FormulaireDepense";
 import { AvertissementNouveaute } from "@/components/FeatureNotice";
@@ -20,7 +21,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { ConfigurationGroupe } from "@/components/GroupSetup";
-import type { UniteGroupe } from "@/lib/group";
+import { lireUniteSelectionnee, type UniteGroupe } from "@/lib/group";
 
 export default function Home() {
   const { isSignedIn, user, isLoaded } = useUser();
@@ -36,10 +37,13 @@ export default function Home() {
   const [etatRenvoiValidation, setEtatRenvoiValidation] = useState<
     "repos" | "envoi" | "envoye" | "erreur"
   >("repos");
+  const [erreurEnregistrementUnite, setErreurEnregistrementUnite] =
+    useState("");
   const estEnLigne = useStatutEnLigne();
 
   useEffect(() => {
     setEtatRenvoiValidation("repos");
+    setErreurEnregistrementUnite("");
     if (!identifiantOrganisation) {
       setGroup(null);
       return;
@@ -49,6 +53,28 @@ export default function Home() {
       .then(setGroup)
       .catch(() => setGroup(null));
   }, [identifiantOrganisation]);
+
+  const memoriserUnite = async (unitId: string) => {
+    if (!identifiantOrganisation) return;
+
+    setErreurEnregistrementUnite("");
+    try {
+      const reponse = await fetch("/api/user/unit-preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organizationId: identifiantOrganisation,
+          unitId,
+        }),
+      });
+      if (!reponse.ok) throw new Error("Enregistrement impossible");
+      void user?.reload().catch(() => undefined);
+    } catch {
+      setErreurEnregistrementUnite(
+        "Votre unité reste sélectionnée, mais ce choix n’a pas pu être mémorisé.",
+      );
+    }
+  };
 
   const renvoyerValidationTresorerie = async () => {
     setEtatRenvoiValidation("envoi");
@@ -63,13 +89,15 @@ export default function Home() {
   };
 
   // Afficher un loader pendant le chargement de l'état d'authentification
-  if (!isLoaded || !isSignedIn) {
+  if (!isLoaded) {
     return (
       <main className="min-h-screen p-4 flex items-center justify-center bg-zinc-50">
         <div className="text-zinc-600 text-sm">Chargement…</div>
       </main>
     );
   }
+
+  if (!isSignedIn) return <RedirectToSignIn />;
 
   if (!organization)
     return (
@@ -212,23 +240,18 @@ export default function Home() {
               />
 
               <FormulaireDepense
+                key={organization.id}
                 piecesJointes={piecesJointes}
                 emailUtilisateur={user?.emailAddresses[0]?.emailAddress || ""}
                 units={group.units}
-                uniteInitiale={
-                  typeof window === "undefined"
-                    ? ""
-                    : (window.localStorage.getItem(
-                        `sgdf-unit:${organization.id}`,
-                      ) ?? "")
-                }
+                uniteInitiale={lireUniteSelectionnee(
+                  user?.publicMetadata,
+                  organization.id,
+                  group.units,
+                )}
                 treasuryVerified={group.treasuryVerified}
-                onChangementUnite={(unitId) =>
-                  window.localStorage.setItem(
-                    `sgdf-unit:${organization.id}`,
-                    unitId,
-                  )
-                }
+                onChangementUnite={(unitId) => void memoriserUnite(unitId)}
+                erreurEnregistrementUnite={erreurEnregistrementUnite}
                 onCreerNouvelleNote={() => {
                   setPiecesJointes([]);
                 }}

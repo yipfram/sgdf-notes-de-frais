@@ -29,6 +29,7 @@ interface FormulaireDepenseProps {
   readonly uniteInitiale?: string;
   readonly treasuryVerified: boolean;
   readonly onChangementUnite?: (unitId: string) => void;
+  readonly erreurEnregistrementUnite?: string;
   readonly onCreerNouvelleNote?: () => void;
   readonly onSupprimerPieceJointe?: (index: number) => void;
 }
@@ -40,6 +41,7 @@ export function FormulaireDepense({
   uniteInitiale = "",
   treasuryVerified,
   onChangementUnite,
+  erreurEnregistrementUnite,
   onCreerNouvelleNote,
   onSupprimerPieceJointe,
   estEnLigne = true,
@@ -52,17 +54,10 @@ export function FormulaireDepense({
     description: "",
   });
   const [detailsDepenses, setDetailsDepenses] = useState<DetailDepense[]>([]);
+  const [erreurUnite, setErreurUnite] = useState("");
   const uniteSelectionnee = units.find(
     (unit) => unit.id === formulaire.branche,
   );
-
-  useEffect(() => {
-    if (uniteInitiale !== formulaire.branche) {
-      if (!formulaire.branche || uniteInitiale === "") {
-        setFormulaire((prev) => ({ ...prev, branche: uniteInitiale }));
-      }
-    }
-  }, [uniteInitiale, formulaire.branche]);
 
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const [statutEnvoi, setStatutEnvoi] = useState<{
@@ -74,8 +69,20 @@ export function FormulaireDepense({
     champ: "date" | "branche" | "typeDepense" | "montant" | "description",
     valeur: string,
   ) => {
+    if (
+      champ === "branche" &&
+      valeur !== "" &&
+      !units.some((unite) => unite.id === valeur)
+    ) {
+      setErreurUnite("Cette unité n’est pas autorisée pour ce groupe.");
+      return;
+    }
+
     setFormulaire((prev) => ({ ...prev, [champ]: valeur }));
-    if (champ === "branche") onChangementUnite?.(valeur);
+    if (champ === "branche") {
+      setErreurUnite("");
+      onChangementUnite?.(valeur);
+    }
     if (statutEnvoi.type) {
       setStatutEnvoi({ type: null, message: "" });
     }
@@ -503,6 +510,11 @@ export function FormulaireDepense({
             className="mt-2 h-1.5 rounded-full"
             style={{ backgroundColor: uniteSelectionnee.color }}
           />
+        )}
+        {(erreurUnite || erreurEnregistrementUnite) && (
+          <p className="text-sm text-amber-700" role="status">
+            {erreurUnite || erreurEnregistrementUnite}
+          </p>
         )}
       </div>
 
