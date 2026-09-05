@@ -10,9 +10,7 @@ export async function envoyerEmailValidationTresorerie(parametres: {
     process.env.SMTP_FROM_NAME || "Factures carte procurement SGDF";
   const expediteurConfigure = process.env.SMTP_FROM?.trim();
   const adresseExpediteur =
-    expediteurConfigure ||
-    process.env.SMTP_FROM_EMAIL ||
-    process.env.SMTP_USER;
+    expediteurConfigure || process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
   if (!adresseExpediteur) throw new Error("SMTP_FROM_UNDEFINED");
 
   const from =

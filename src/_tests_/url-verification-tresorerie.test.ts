@@ -21,8 +21,8 @@ describe("URL de vérification de la trésorerie", () => {
   it("refuse de générer un lien sans URL publique", () => {
     vi.stubEnv("APP_URL", "");
 
-    expect(() => creerUrlVerificationTresorerie("org_123", "jeton-test")).toThrow(
-      "APP_URL_UNDEFINED",
-    );
+    expect(() =>
+      creerUrlVerificationTresorerie("org_123", "jeton-test"),
+    ).toThrow("APP_URL_UNDEFINED");
   });
 });

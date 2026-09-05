@@ -258,22 +258,22 @@ Les variables d'environnement sont les "réglages secrets" de l'application.
 
 #### 4.1 Tableau récapitulatif des variables
 
-| Variable                            | Requis | Description                                     | Exemple                  |
-| ----------------------------------- | :----: | ----------------------------------------------- | ------------------------ |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` |   ✅   | Clé publique Clerk (commence par `pk_test_...`) | `pk_test_abc123...`      |
-| `CLERK_SECRET_KEY`                  |   ✅   | Clé secrète Clerk (commence par `sk_test_...`)  | `sk_test_xyz789...`      |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`     |   ✅   | URL de connexion                                | `/sign-in`               |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`     |   ✅   | URL d'inscription                               | `/sign-up`               |
-| `SMTP_HOST`                         |   ✅   | Adresse du serveur SMTP                         | `smtp.gmail.com`         |
-| `SMTP_PORT`                         |   ✅   | Port SMTP (587 TLS, 465 SSL)                    | `587`                    |
-| `SMTP_SECURE`                       |   ✅   | SSL/TLS activé (`true`/`false`)                 | `false`                  |
-| `SMTP_USER`                         |   ✅   | Identifiant SMTP (votre email)                  | `monemail@gmail.com`     |
-| `SMTP_PASSWORD`                     |   ✅   | Mot de passe SMTP                               | `motdepasse16caracteres` |
+| Variable                            | Requis | Description                                     | Exemple                    |
+| ----------------------------------- | :----: | ----------------------------------------------- | -------------------------- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` |   ✅   | Clé publique Clerk (commence par `pk_test_...`) | `pk_test_abc123...`        |
+| `CLERK_SECRET_KEY`                  |   ✅   | Clé secrète Clerk (commence par `sk_test_...`)  | `sk_test_xyz789...`        |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`     |   ✅   | URL de connexion                                | `/sign-in`                 |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`     |   ✅   | URL d'inscription                               | `/sign-up`                 |
+| `SMTP_HOST`                         |   ✅   | Adresse du serveur SMTP                         | `smtp.gmail.com`           |
+| `SMTP_PORT`                         |   ✅   | Port SMTP (587 TLS, 465 SSL)                    | `587`                      |
+| `SMTP_SECURE`                       |   ✅   | SSL/TLS activé (`true`/`false`)                 | `false`                    |
+| `SMTP_USER`                         |   ✅   | Identifiant SMTP (votre email)                  | `monemail@gmail.com`       |
+| `SMTP_PASSWORD`                     |   ✅   | Mot de passe SMTP                               | `motdepasse16caracteres`   |
 | `APP_URL`                           |   ✅   | URL publique utilisée dans les liens par e-mail | `https://treso.exemple.fr` |
-| `NEXT_PUBLIC_TREASURY_EMAIL`        |   ✅   | Email destinataire principal                    | `tresorerie@sgdf.fr`     |
-| `SMTP_FROM`                         |   ♠️   | Email expéditeur personnalisé                   | `noreply@mondomaine.fr`  |
-| `SMTP_FROM_NAME`                    |   ♠️   | Nom de l'expéditeur                             | `Factures SGDF`          |
-| `SMTP_FROM_EMAIL`                   |   ♠️   | Email expéditeur de repli                       | `expediteur@email.fr`    |
+| `NEXT_PUBLIC_TREASURY_EMAIL`        |   ✅   | Email destinataire principal                    | `tresorerie@sgdf.fr`       |
+| `SMTP_FROM`                         |   ♠️   | Email expéditeur personnalisé                   | `noreply@mondomaine.fr`    |
+| `SMTP_FROM_NAME`                    |   ♠️   | Nom de l'expéditeur                             | `Factures SGDF`            |
+| `SMTP_FROM_EMAIL`                   |   ♠️   | Email expéditeur de repli                       | `expediteur@email.fr`      |
 
 > ✅ = Requis • ♠️ = Optionnel
 
