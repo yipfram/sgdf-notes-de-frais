@@ -269,6 +269,7 @@ Les variables d'environnement sont les "réglages secrets" de l'application.
 | `SMTP_SECURE`                       |   ✅   | SSL/TLS activé (`true`/`false`)                 | `false`                  |
 | `SMTP_USER`                         |   ✅   | Identifiant SMTP (votre email)                  | `monemail@gmail.com`     |
 | `SMTP_PASSWORD`                     |   ✅   | Mot de passe SMTP                               | `motdepasse16caracteres` |
+| `APP_URL`                           |   ✅   | URL publique utilisée dans les liens par e-mail | `https://treso.exemple.fr` |
 | `NEXT_PUBLIC_TREASURY_EMAIL`        |   ✅   | Email destinataire principal                    | `tresorerie@sgdf.fr`     |
 | `SMTP_FROM`                         |   ♠️   | Email expéditeur personnalisé                   | `noreply@mondomaine.fr`  |
 | `SMTP_FROM_NAME`                    |   ♠️   | Nom de l'expéditeur                             | `Factures SGDF`          |
@@ -413,6 +414,7 @@ SMTP_PORT=587                               # ou 465 pour SSL
 SMTP_SECURE=false                           # true pour port 465, false pour 587
 SMTP_USER=votre-email@example.com
 SMTP_PASSWORD=votre-mot-de-passe            # Mot de passe d'application pour Gmail
+APP_URL=https://treso.exemple.fr             # URL publique de l'application
 NEXT_PUBLIC_TREASURY_EMAIL=tresorerie@example.com
 
 # Optionnel

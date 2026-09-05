@@ -19,6 +19,22 @@ export function creerValidationTresorerie() {
   };
 }
 
+export function creerUrlVerificationTresorerie(
+  organisationId: string,
+  jeton: string,
+) {
+  const urlApplication = process.env.APP_URL?.trim();
+  if (!urlApplication) throw new Error("APP_URL_UNDEFINED");
+
+  const url = new URL(
+    "verify-treasury",
+    `${urlApplication.replace(/\/+$/, "")}/`,
+  );
+  url.searchParams.set("org", organisationId);
+  url.searchParams.set("token", jeton);
+  return url.toString();
+}
+
 export function jetonTresorerieValide(
   validation: ValidationTresorerie,
   jeton: string,

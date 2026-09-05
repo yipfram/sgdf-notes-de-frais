@@ -6,11 +6,23 @@ export async function envoyerEmailValidationTresorerie(parametres: {
   url: string;
 }) {
   const transport = creerTransporteurEmail();
-  const from =
-    process.env.SMTP_FROM ||
+  const nomExpediteur =
+    process.env.SMTP_FROM_NAME || "Factures carte procurement SGDF";
+  const expediteurConfigure = process.env.SMTP_FROM?.trim();
+  const adresseExpediteur =
+    expediteurConfigure ||
     process.env.SMTP_FROM_EMAIL ||
     process.env.SMTP_USER;
-  if (!from) throw new Error("SMTP_FROM_UNDEFINED");
+  if (!adresseExpediteur) throw new Error("SMTP_FROM_UNDEFINED");
+
+  const from =
+    expediteurConfigure?.includes("<") || expediteurConfigure?.includes(">")
+      ? expediteurConfigure
+      : {
+          name: nomExpediteur,
+          address: adresseExpediteur,
+        };
+
   await transport.sendMail({
     from,
     to: parametres.destinataire,

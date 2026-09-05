@@ -1,4 +1,4 @@
-[![Deploy with Vercel](https://vercel.com/button)](<https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais&env=NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,CLERK_SECRET_KEY,NEXT_PUBLIC_CLERK_SIGN_IN_URL,NEXT_PUBLIC_CLERK_SIGN_UP_URL,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,NEXT_PUBLIC_TREASURY_EMAIL&envDescription=Variables%20n%C3%A9cessaires%20pour%20le%20d%C3%A9ploiement%20(Clerk%20%2B%20SMTP)&envLink=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais%2Fblob%2Fmain%2FSETUP.md&project-name=sgdf-factures&repository-name=sgdf-factures>)
+[![Deploy with Vercel](https://vercel.com/button)](<https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais&env=NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,CLERK_SECRET_KEY,NEXT_PUBLIC_CLERK_SIGN_IN_URL,NEXT_PUBLIC_CLERK_SIGN_UP_URL,APP_URL,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,SMTP_FROM_NAME,NEXT_PUBLIC_TREASURY_EMAIL&envDescription=Variables%20n%C3%A9cessaires%20pour%20le%20d%C3%A9ploiement%20(Clerk%20%2B%20SMTP)&envLink=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais%2Fblob%2Fmain%2FSETUP.md&project-name=sgdf-factures&repository-name=sgdf-factures>)
 
 <br/>
 <img width="350" height="785" alt="image" src="https://github.com/user-attachments/assets/9c01c1a9-5bb7-4c72-95da-a413e1c8be9b" />
@@ -32,6 +32,8 @@ Pour savoir comment l'utiliser avec [la documentation](https://yipfram.github.io
 ## Créer un groupe
 
 Après votre inscription, créez ou sélectionnez votre groupe depuis le sélecteur dans l’en-tête. Le responsable configure l’adresse de trésorerie et les unités. Une confirmation est envoyée à la trésorerie : tant que le lien n’est pas validé, aucune note ne peut être transmise.
+
+Définissez `APP_URL` avec l’URL publique de l’application (par exemple `https://treso.exemple.fr`) afin que les liens de confirmation envoyés par e-mail soient valides.
 
 La liste d’unités est proposée avec les branches SGDF courantes, mais chaque groupe peut la renommer, compléter ou simplifier. Chaque unité possède une couleur, reprise dans les e-mails de notes de frais.
 

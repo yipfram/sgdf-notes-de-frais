@@ -1,7 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { recupererGroupeActif } from "@/lib/groupServer";
-import { creerValidationTresorerie } from "@/lib/treasuryVerification";
+import {
+  creerUrlVerificationTresorerie,
+  creerValidationTresorerie,
+} from "@/lib/treasuryVerification";
 import { envoyerEmailValidationTresorerie } from "@/lib/treasuryEmail";
 import {
   reponseRateLimit,
@@ -47,7 +50,7 @@ export async function POST(req: Request) {
   await groupe.client.organizations.updateOrganizationMetadata(orgId, {
     privateMetadata: { treasuryVerification: verification },
   });
-  const url = `${new URL(req.url).origin}/verify-treasury?org=${encodeURIComponent(orgId)}&token=${encodeURIComponent(token)}`;
+  const url = creerUrlVerificationTresorerie(orgId, token);
   await envoyerEmailValidationTresorerie({
     destinataire: groupe.emailTresorerie,
     nomGroupe: groupe.organisation.name,

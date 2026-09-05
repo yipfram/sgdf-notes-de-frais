@@ -3,7 +3,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { validerUnites } from "@/lib/group";
 import { recupererGroupeActif } from "@/lib/groupServer";
-import { creerValidationTresorerie } from "@/lib/treasuryVerification";
+import {
+  creerUrlVerificationTresorerie,
+  creerValidationTresorerie,
+} from "@/lib/treasuryVerification";
 import { envoyerEmailValidationTresorerie } from "@/lib/treasuryEmail";
 import { verifierOrigineRequete } from "@/lib/api/securiteRequetes";
 
@@ -59,7 +62,7 @@ export async function POST(req: Request) {
       treasuryVerification: verification,
     },
   });
-  const url = `${new URL(req.url).origin}/verify-treasury?org=${encodeURIComponent(orgId)}&token=${encodeURIComponent(token)}`;
+  const url = creerUrlVerificationTresorerie(orgId, token);
   await envoyerEmailValidationTresorerie({
     destinataire: parsed.data.treasuryEmail,
     nomGroupe: group.organisation.name,
