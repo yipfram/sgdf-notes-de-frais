@@ -29,6 +29,7 @@ Pour savoir comment l'utiliser avec [la documentation](https://yipfram.github.io
 - ⚡ **Mode hors ligne partiel** : Consultation et préparation possible sans réseau (l'envoi nécessite la connexion)
 - 🔔 **Bannière d'installation** : Invitation A2HS personnalisée
 - 🌙 **Affichage plein écran** : Expérience proche d'une application native
+- 📋 **Logs techniques structurés** : erreurs serveur et réponses API rejetées, consultables dans Vercel sans contenir de données personnelles ou de justificatifs
 
 ## Créer un groupe
 
@@ -87,6 +88,12 @@ pnpm format
 # Lancer en production (si déployé localement)
 pnpm start
 ```
+
+## Logs techniques
+
+Les routes API écrivent des événements JSON dans les Runtime Logs Vercel. Ils distinguent les informations SMTP (`info`), les réponses HTTP 4xx attendues (`warn`) et les erreurs serveur (`error`).
+
+Chaque réponse API contient l'en-tête `X-Request-Id` : communiquez sa valeur avec l'heure approximative de l'incident pour retrouver rapidement le log correspondant. Les corps de requête, e-mails, identifiants, pièces jointes et secrets sont masqués et ne doivent jamais être ajoutés manuellement aux journaux.
 
 ---
 

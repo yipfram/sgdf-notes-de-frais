@@ -14,6 +14,7 @@ import type { DonneesEmail } from "@/lib/email";
 import type { NextResponse } from "next/server";
 import { z } from "zod";
 import { TYPES_DEPENSES } from "@/constants/configScoute";
+import { journal } from "@/lib/logger";
 
 export function validerCorpsRequete(body: unknown): {
   donneesEmail?: DonneesEmail;
@@ -42,10 +43,9 @@ export function validerCorpsRequete(body: unknown): {
     .safeParse(body);
 
   if (!bodyParsed.success) {
-    console.error(
-      "Erreur lors de l'envoi de l'e-mail :",
-      bodyParsed.error.issues,
-    );
+    journal.avertissement("depense.corps_invalide", {
+      nombreErreursValidation: bodyParsed.error.issues.length,
+    });
     return { error: jsonError("Données manquantes ou incorrecte", 400) };
   }
 

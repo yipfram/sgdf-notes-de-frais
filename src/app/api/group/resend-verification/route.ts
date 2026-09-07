@@ -11,50 +11,53 @@ import {
   verifierOrigineRequete,
   verifierRateLimit,
 } from "@/lib/api/securiteRequetes";
+import { executerRouteAvecLogs } from "@/lib/api/routeAvecLogs";
 
 export async function POST(req: Request) {
-  const { orgId, orgRole } = await auth();
-  if (!orgId || orgRole !== "org:admin")
-    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
-  const originError = verifierOrigineRequete(req);
-  if (originError) return originError;
-  const groupe = await recupererGroupeActif(orgId);
-  if (!groupe.emailTresorerie)
-    return NextResponse.json(
-      { error: "Adresse de trésorerie manquante" },
-      { status: 400 },
+  return executerRouteAvecLogs(req, async () => {
+    const { orgId, orgRole } = await auth();
+    if (!orgId || orgRole !== "org:admin")
+      return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+    const originError = verifierOrigineRequete(req);
+    if (originError) return originError;
+    const groupe = await recupererGroupeActif(orgId);
+    if (!groupe.emailTresorerie)
+      return NextResponse.json(
+        { error: "Adresse de trésorerie manquante" },
+        { status: 400 },
+      );
+    if (groupe.validation.status === "verified")
+      return NextResponse.json(
+        { error: "La trésorerie a déjà confirmé son adresse" },
+        { status: 409 },
+      );
+
+    const limiteCourte = verifierRateLimit(
+      `renvoi-validation-tresorerie:${orgId}:15-minutes`,
+      1,
+      15 * 60 * 1000,
     );
-  if (groupe.validation.status === "verified")
-    return NextResponse.json(
-      { error: "La trésorerie a déjà confirmé son adresse" },
-      { status: 409 },
+    if (!limiteCourte.autorise)
+      return reponseRateLimit(limiteCourte.attenteSecondes);
+
+    const limiteLongue = verifierRateLimit(
+      `renvoi-validation-tresorerie:${orgId}:24-heures`,
+      5,
+      24 * 60 * 60 * 1000,
     );
+    if (!limiteLongue.autorise)
+      return reponseRateLimit(limiteLongue.attenteSecondes);
 
-  const limiteCourte = verifierRateLimit(
-    `renvoi-validation-tresorerie:${orgId}:15-minutes`,
-    1,
-    15 * 60 * 1000,
-  );
-  if (!limiteCourte.autorise)
-    return reponseRateLimit(limiteCourte.attenteSecondes);
-
-  const limiteLongue = verifierRateLimit(
-    `renvoi-validation-tresorerie:${orgId}:24-heures`,
-    5,
-    24 * 60 * 60 * 1000,
-  );
-  if (!limiteLongue.autorise)
-    return reponseRateLimit(limiteLongue.attenteSecondes);
-
-  const { token, verification } = creerValidationTresorerie();
-  await groupe.client.organizations.updateOrganizationMetadata(orgId, {
-    privateMetadata: { treasuryVerification: verification },
+    const { token, verification } = creerValidationTresorerie();
+    await groupe.client.organizations.updateOrganizationMetadata(orgId, {
+      privateMetadata: { treasuryVerification: verification },
+    });
+    const url = creerUrlVerificationTresorerie(orgId, token);
+    await envoyerEmailValidationTresorerie({
+      destinataire: groupe.emailTresorerie,
+      nomGroupe: groupe.organisation.name,
+      url,
+    });
+    return NextResponse.json({ success: true });
   });
-  const url = creerUrlVerificationTresorerie(orgId, token);
-  await envoyerEmailValidationTresorerie({
-    destinataire: groupe.emailTresorerie,
-    nomGroupe: groupe.organisation.name,
-    url,
-  });
-  return NextResponse.json({ success: true });
 }

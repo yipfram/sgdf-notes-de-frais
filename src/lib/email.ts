@@ -4,6 +4,7 @@ import {
   type PieceJointeDepense,
   type DetailDepense,
 } from "@/constants/piecesJointes";
+import { journal } from "@/lib/logger";
 
 export interface DonneesEmail {
   emailUtilisateur: string;
@@ -39,9 +40,9 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
   // Vérifier la connexion SMTP
   try {
     await transporteur.verify();
-    console.log("Serveur SMTP prêt à envoyer des emails");
+    journal.info("smtp.connexion_verifiee");
   } catch (error) {
-    console.error("Erreur de configuration SMTP:", error);
+    journal.erreur("smtp.configuration_invalide", { error });
     throw new Error("Configuration SMTP invalide");
   }
 
@@ -100,7 +101,7 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
       }
       return { buffer, mime };
     } catch (e) {
-      console.error("Erreur conversion buffer pièce jointe:", e);
+      journal.erreur("smtp.conversion_piece_jointe_echouee", { erreur: e });
       throw new Error("ATTACHMENT_BUFFER_CONVERSION_FAILED");
     }
   };
@@ -294,10 +295,10 @@ Email envoyé automatiquement par l'application Factures carte procurement SGDF.
     // Some nodemailer typings present overloads that make the return type awkward;
     // cast to any so we can access messageId reliably at runtime.
     const info: any = await transporteur.sendMail(optionsEmail);
-    console.log("Email envoyé avec succès:", info?.messageId);
+    journal.info("smtp.email_envoye");
     return { success: true, messageId: info?.messageId };
   } catch (error) {
-    console.error("Erreur lors de l'envoi de l'email:", error);
+    journal.erreur("smtp.envoi_email_echoue", { erreur: error });
     throw error;
   }
 };
