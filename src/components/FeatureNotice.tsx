@@ -4,8 +4,8 @@ import { useSyncExternalStore } from "react";
 import { SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { MAX_ATTACHMENT_COUNT } from "@/constants/piecesJointes";
 
-const STORAGE_KEY = "sgdf-multiple-attachments-notice-dismissed";
-const DISMISS_EVENT = "sgdf-multiple-attachments-notice-dismissed-change";
+const STORAGE_KEY = "scouticket-multiple-attachments-notice-dismissed";
+const DISMISS_EVENT = "scouticket-multiple-attachments-notice-dismissed-change";
 
 function getDismissedSnapshot() {
   if (typeof window === "undefined") {

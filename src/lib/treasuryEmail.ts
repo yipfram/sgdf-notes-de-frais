@@ -6,8 +6,7 @@ export async function envoyerEmailValidationTresorerie(parametres: {
   url: string;
 }) {
   const transport = creerTransporteurEmail();
-  const nomExpediteur =
-    process.env.SMTP_FROM_NAME || "Factures carte procurement SGDF";
+  const nomExpediteur = process.env.SMTP_FROM_NAME || "Scouticket";
   const expediteurConfigure = process.env.SMTP_FROM?.trim();
   const adresseExpediteur =
     expediteurConfigure || process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;

@@ -55,7 +55,7 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
     description,
     piecesJointes,
     detailsDepenses,
-    groupe = "Groupe SGDF",
+    groupe = "Groupe scout",
     couleur = "#1E3A8A",
     emailTresorerie,
   } = donnees;
@@ -135,8 +135,7 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
 
-  const nomExpediteurDefaut =
-    process.env.SMTP_FROM_NAME || "Factures carte procurement SGDF";
+  const nomExpediteurDefaut = process.env.SMTP_FROM_NAME || "Scouticket";
   const fromRaw = process.env.SMTP_FROM?.trim();
   const adresseRepli = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
 
@@ -162,7 +161,7 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
   })();
 
   if (!emailTresorerie) throw new Error("TREASURY_EMAIL_UNDEFINED");
-  const sujet = `Facture carte procurement - ${groupe} - ${branche} - ${date}`;
+  const sujet = `Scouticket - ${groupe} - ${branche} - ${date}`;
   const couleurPrincipale = couleur;
   // Accent: If the primary color is a warm tone, keep gold, else use a light variant
   const accentColor = "#FBB042";
@@ -174,7 +173,7 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
   const contenuHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background-color: ${couleurPrincipale}; color: ${texteSurCouleurPrincipale}; padding: 20px; text-align: center;">
-  <h1 style="margin: 0; font-size: 24px;">📜 Facture carte procurement SGDF</h1>
+  <h1 style="margin: 0; font-size: 24px;">📜 Scouticket</h1>
         <p style="margin: 10px 0 0 0; opacity: 0.9;">${escapeHtml(groupe)}</p>
       </div>
 
@@ -240,14 +239,14 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
         </div>
 
         <p style="color: #6B7280; font-size: 14px; margin-top: 30px;">
-          Email envoyé automatiquement par l'application Factures carte procurement SGDF.
+          Email envoyé automatiquement par Scouticket.
         </p>
       </div>
     </div>
   `;
 
   const contenuTexte = `
-Facture carte procurement SGDF - ${groupe}
+Scouticket - ${groupe}
 
 Nouvelle facture
 
@@ -271,7 +270,7 @@ ${description ? `Description : ${description}` : ""}
 Pièce(s) jointe(s) (${piecesJointesAnalysees.length}) :
 ${piecesJointesAnalysees.map((pieceJointe) => `- ${pieceJointe.filename}`).join("\n")}
 
-Email envoyé automatiquement par l'application Factures carte procurement SGDF.
+Email envoyé automatiquement par Scouticket.
   `;
 
   const optionsEmail = {

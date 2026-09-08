@@ -3,9 +3,9 @@
   "version": "0.2.0",
   "packageManager": "pnpm@11.22.0",
   "private": true,
-  "description": "Application de gestion des notes de frais pour les Scouts et Guides de France",
+  "description": "Application de gestion de justificatifs et de notes de frais pour les scouts",
   "license": "Apache-2.0",
-  "homepage": "https://treso.romain-rochas.fr",
+  "homepage": "https://scouticket.fr",
   "author": {
     "name": "Yipfram",
     "email": "romain@romain-rochas.fr"

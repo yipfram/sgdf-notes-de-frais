@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Hors ligne - Factures carte procurement SGDF",
+  title: "Hors ligne - Scouticket",
 };
 
 export default function OfflinePage() {

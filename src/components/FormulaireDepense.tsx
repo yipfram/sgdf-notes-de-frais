@@ -19,7 +19,7 @@ import {
   type PieceJointeDepense,
   type DetailDepense,
 } from "@/constants/piecesJointes";
-import { TYPES_DEPENSES } from "@/constants/configScoute";
+import { TYPES_DEPENSES } from "@/constants/configDepenses";
 import type { UniteGroupe } from "@/lib/group";
 
 interface FormulaireDepenseProps {

@@ -70,7 +70,7 @@ describe("Page principale", () => {
 
     expect(
       await screen.findByRole("heading", {
-        name: "Factures carte procurement SGDF",
+        name: "Scouticket",
       }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Compte utilisateur" }));

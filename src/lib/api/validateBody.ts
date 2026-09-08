@@ -13,7 +13,7 @@ import {
 import type { DonneesEmail } from "@/lib/email";
 import type { NextResponse } from "next/server";
 import { z } from "zod";
-import { TYPES_DEPENSES } from "@/constants/configScoute";
+import { TYPES_DEPENSES } from "@/constants/configDepenses";
 import { journal } from "@/lib/logger";
 
 export function validerCorpsRequete(body: unknown): {

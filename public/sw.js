@@ -1,18 +1,6 @@
-/* Service Worker for Factures carte procurement SGDF PWA */
-const CACHE_VERSION = "v4";
-const APP_SHELL = [
-  "/",
-  "/manifest.json",
-  "/offline.html",
-  "/SGDF_symbole_RVB.png",
-  "/SGDF_symbole_blanc.png",
-  "/favicon.ico",
-  "/icon-192.png",
-  "/icon-512.png",
-  "/icon-maskable-192.png",
-  "/icon-maskable-512.png",
-  "/shortcut-96.png",
-];
+/* Service Worker for Scouticket PWA */
+const CACHE_VERSION = "v5";
+const APP_SHELL = ["/", "/manifest.json", "/offline.html"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

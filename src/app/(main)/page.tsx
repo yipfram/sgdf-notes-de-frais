@@ -18,7 +18,6 @@ import {
   MAX_ATTACHMENT_COUNT,
   type PieceJointeDepense,
 } from "@/constants/piecesJointes";
-import Image from "next/image";
 import Link from "next/link";
 import { ConfigurationGroupe } from "@/components/GroupSetup";
 import { lireUniteSelectionnee, type UniteGroupe } from "@/lib/group";
@@ -121,19 +120,9 @@ export default function Home() {
         <div className="bg-white p-6 border-b border-zinc-200">
           <div className="flex justify-between items-center">
             <div>
-              <div className="flex items-center gap-2">
-                <Image
-                  src="/SGDF_symbole_RVB.png"
-                  alt="SGDF"
-                  width={28}
-                  height={20}
-                  className="rounded-sm"
-                  style={{ height: "auto" }}
-                />
-                <h1 className="text-2xl font-semibold text-zinc-900">
-                  Factures carte procurement SGDF
-                </h1>
-              </div>
+              <h1 className="text-2xl font-semibold text-zinc-900">
+                Scouticket
+              </h1>
               <p className="text-zinc-500 mt-2">{organization.name}</p>
             </div>
             <div className="flex items-center space-x-3">

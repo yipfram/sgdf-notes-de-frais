@@ -4,9 +4,8 @@ import { frFR } from "@clerk/localizations";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Factures carte procurement SGDF",
-  description:
-    "Application de gestion des factures carte procurement pour SGDF La Guillotière",
+  title: "Scouticket",
+  description: "Application de gestion de justificatifs et de notes de frais",
   manifest: "/manifest.json",
 };
 
@@ -45,10 +44,8 @@ export default function RootLayout({
             name="apple-mobile-web-app-status-bar-style"
             content="default"
           />
-          <meta name="apple-mobile-web-app-title" content="Notes SGDF" />
+          <meta name="apple-mobile-web-app-title" content="Scouticket" />
           <meta name="mobile-web-app-capable" content="yes" />
-          <link rel="icon" href="/favicon.ico" />
-          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
           <link rel="manifest" href="/manifest.json" />
         </head>
         <body className="font-sans">
