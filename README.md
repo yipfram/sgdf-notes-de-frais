@@ -83,11 +83,29 @@ pnpm format
 pnpm start
 ```
 
+## Tester avec Docker
+
+Docker Desktop doit être démarré. Renseignez les variables Clerk et SMTP requises dans le fichier local `.env` (voir `.env.example`) ; ce fichier est ignoré par Git et n'est pas copié dans l'image.
+
+```bash
+# Construire, démarrer et attendre que le contrôle de santé réussisse
+docker compose up --build --wait
+
+# Vérifier la configuration de l'application
+curl http://localhost:3000/api/health
+
+# Consulter les journaux, puis arrêter le conteneur
+docker compose logs -f app
+docker compose down
+```
+
+Le point de santé valide `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD` et `APP_URL`, sans envoyer d'e-mail. Pour un test strictement local, définissez `APP_URL=http://localhost:3000` ; une URL publique reste nécessaire pour les liens envoyés par e-mail en conditions réelles.
+
 ## Logs techniques
 
 Les routes API écrivent des événements JSON dans les Runtime Logs Vercel. Ils distinguent les informations SMTP (`info`), les réponses HTTP 4xx attendues (`warn`) et les erreurs serveur (`error`).
 
-Chaque réponse API contient l'en-tête `X-Request-Id` : communiquez sa valeur avec l'heure approximative de l'incident pour retrouver rapidement le log correspondant. Les corps de requête, e-mails, identifiants, pièces jointes et secrets sont masqués et ne doivent jamais être ajoutés manuellement aux journaux.
+Chaque réponse API contient l'en-tête `X-Request-Id` : communiquez sa valeur avec l'heure approximative de l'incident pour retrouver rapidement le log correspondant. Les rejets et erreurs de routes API contiennent également `identifiantUtilisateur`, l'identifiant technique Clerk (`user_…`) ou `null` pour une requête anonyme. Les corps de requête, e-mails, autres identifiants, pièces jointes et secrets sont masqués et ne doivent jamais être ajoutés manuellement aux journaux.
 
 ---
 

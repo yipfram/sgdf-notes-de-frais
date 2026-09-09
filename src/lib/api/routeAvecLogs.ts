@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { journal } from "@/lib/logger";
 
@@ -16,13 +17,21 @@ export async function executerRouteAvecLogs(
   gestionnaire: GestionnaireRoute,
 ): Promise<Response> {
   const identifiantRequete = crypto.randomUUID();
-  const contexte = {
+  const contexte: {
+    identifiantRequete: string;
+    identifiantUtilisateur: string | null;
+    methode: string;
+    route: string;
+  } = {
     identifiantRequete,
+    identifiantUtilisateur: null,
     methode: requete.method,
     route: cheminSansParametres(requete),
   };
 
   try {
+    const { userId } = await auth();
+    contexte.identifiantUtilisateur = userId ?? null;
     const reponse = await gestionnaire();
     const entetes = new Headers(reponse.headers);
     entetes.set("X-Request-Id", identifiantRequete);
