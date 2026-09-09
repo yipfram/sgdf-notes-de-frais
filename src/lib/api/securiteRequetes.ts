@@ -8,6 +8,11 @@ interface EntreeRateLimit {
 const compteursRateLimit = new Map<string, EntreeRateLimit>();
 
 function origineApplication(req: Request) {
+  const urlApplication = process.env.APP_URL?.trim();
+  if (urlApplication) {
+    return new URL(urlApplication).origin;
+  }
+
   const protocole = req.headers.get("x-forwarded-proto");
   const hote = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
 
