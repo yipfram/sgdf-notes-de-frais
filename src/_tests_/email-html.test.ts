@@ -56,7 +56,7 @@ describe("templates HTML des e-mails", () => {
     expect(html).toContain("background-color: #1E3A8A");
   });
 
-  it("échappe le nom du groupe et l’URL de vérification", async () => {
+  it("met en forme, échappe et lie l’e-mail de vérification", async () => {
     await envoyerEmailValidationTresorerie({
       destinataire: "tresorerie@example.test",
       nomGroupe: texteDangereux,
@@ -69,5 +69,11 @@ describe("templates HTML des e-mails", () => {
     );
     expect(html).toContain('href="https://example.test/verifier?nom=&lt;img');
     expect(html).not.toContain('<img src=x onerror="alerte()">');
+    expect(html).toContain("📜 Scouticket");
+    expect(html).toContain("Confirmation de la trésorerie");
+    expect(html).toContain("Confirmer le rattachement");
+    expect(html).toContain("background-color: #1E3A8A");
+    expect(html).toContain("background-color: #FBB042");
+    expect(html).toContain("Ce lien expire dans 48 heures.");
   });
 });

@@ -17,9 +17,10 @@ Pour savoir comment l'utiliser avec [la documentation](https://scouticket.fr)
 - ✉️ **Envoi e-mail automatique** : transmission à la trésorerie + copie à l’utilisateur avec une ou plusieurs pièces jointes
 - 👥 **Multi-groupes** : chaque groupe configure ses unités, invite ses membres et valide sa propre adresse de trésorerie
 - 📌 **Unité mémorisée** : le dernier choix d’unité est synchronisé avec le compte Clerk, séparément pour chaque groupe
-- 🔐 **Validation de trésorerie** : aucun envoi n’est possible avant la confirmation reçue par e-mail du trésorier
+- 🔐 **Validation de trésorerie** : aucun envoi n’est possible avant la confirmation reçue par e-mail du trésorier, via un e-mail HTML reprenant la charte Scouticket
 - 🏷️ **Nom de fichier structuré** : `YYYY-MM-DD - Branche - Type - Montant - 01.pdf` (ou `.jpg/.png/.webp`)
 - 📲 **Installation PWA** : Ajout possible à l'écran d'accueil (Android / iOS / Desktop)
+- 🔄 **Mise à jour PWA sûre** : chaque déploiement active un nouveau cache et recharge automatiquement l’application à jour
 - ⚡ **Mode hors ligne partiel** : Consultation et préparation possible sans réseau (l'envoi nécessite la connexion)
 - 🔔 **Bannière d'installation** : Invitation A2HS personnalisée
 - 🌙 **Affichage plein écran** : Expérience proche d'une application native
