@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { UNITES_PAR_DEFAUT, type UniteGroupe } from "@/lib/group";
 
 const COULEURS_CHOIX = [
@@ -22,7 +22,7 @@ export function ConfigurationGroupe({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const save = async (event: React.FormEvent) => {
+  const save = async (event: FormEvent) => {
     event.preventDefault();
     setSaving(true);
     setError("");

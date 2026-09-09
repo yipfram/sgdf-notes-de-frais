@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import Image from "next/image";
 import {
   ClipboardDocumentListIcon,
@@ -161,7 +161,7 @@ export function FormulaireDepense({
     });
   };
 
-  const envoyerDepense = async (evenement: React.FormEvent) => {
+  const envoyerDepense = async (evenement: FormEvent) => {
     evenement.preventDefault();
 
     if (plusieursDepenses && detailsDepenses.length !== piecesJointes.length) {
