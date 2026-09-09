@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { z } from "zod";
 import { estTypeMimePieceJointeAutorise } from "./attachments";
 import {
   type PieceJointeDepense,
@@ -19,6 +20,21 @@ export interface DonneesEmail {
   couleur?: string;
   emailTresorerie?: string;
 }
+
+const schemaTexteHtml = z
+  .string()
+  .transform((valeur) =>
+    valeur
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;"),
+  );
+
+const schemaCouleurHtml = z.string().regex(/^#[0-9a-f]{6}$/i);
+
+export const echapperHtml = (valeur: string) => schemaTexteHtml.parse(valeur);
 
 // Configuration du transporteur SMTP générique
 export const creerTransporteurEmail = () => {
@@ -127,14 +143,6 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
       throw e;
     }
   });
-  const escapeHtml = (value: string) =>
-    value
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-
   const nomExpediteurDefaut = process.env.SMTP_FROM_NAME || "Scouticket";
   const fromRaw = process.env.SMTP_FROM?.trim();
   const adresseRepli = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
@@ -162,7 +170,10 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
 
   if (!emailTresorerie) throw new Error("TREASURY_EMAIL_UNDEFINED");
   const sujet = `Scouticket - ${groupe} - ${branche} - ${date}`;
-  const couleurPrincipale = couleur;
+  const resultatCouleur = schemaCouleurHtml.safeParse(couleur);
+  const couleurPrincipale = resultatCouleur.success
+    ? resultatCouleur.data
+    : "#1E3A8A";
   // Accent: If the primary color is a warm tone, keep gold, else use a light variant
   const accentColor = "#FBB042";
   const texteSurCouleurPrincipale = "#ffffff";
@@ -174,7 +185,7 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <div style="background-color: ${couleurPrincipale}; color: ${texteSurCouleurPrincipale}; padding: 20px; text-align: center;">
   <h1 style="margin: 0; font-size: 24px;">📜 Scouticket</h1>
-        <p style="margin: 10px 0 0 0; opacity: 0.9;">${escapeHtml(groupe)}</p>
+        <p style="margin: 10px 0 0 0; opacity: 0.9;">${echapperHtml(groupe)}</p>
       </div>
 
       <div style="padding: 30px; background-color: #f9f9f9;">
@@ -184,7 +195,7 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
           <table style="width: 100%; border-collapse: collapse;">
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Date :</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${date}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${echapperHtml(date)}</td>
             </tr>
             ${
               plusieursDepenses
@@ -196,8 +207,8 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
               .map(
                 (detail, index) => `
             <tr>
-              <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151;">${escapeHtml(piecesJointesAnalysees[index].filename)} — ${escapeHtml(detail.typeDepense)}</td>
-              <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151; text-align: right;">${detail.montant} €</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151;">${echapperHtml(piecesJointesAnalysees[index].filename)} — ${echapperHtml(detail.typeDepense)}</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151; text-align: right;">${echapperHtml(String(detail.montant))} €</td>
             </tr>`,
               )
               .join("")}`
@@ -205,26 +216,26 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
             }
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Branche :</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${branche}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${echapperHtml(branche)}</td>
             </tr>
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Type :</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${typeDepense}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${echapperHtml(typeDepense)}</td>
             </tr>
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: ${couleurPrincipale};">Montant :</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: ${couleurPrincipale}; font-weight: bold; font-size: 18px;">${montant} €</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: ${couleurPrincipale}; font-weight: bold; font-size: 18px;">${echapperHtml(String(montant))} €</td>
             </tr>
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Demandeur :</td>
-              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${emailUtilisateur}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${echapperHtml(emailUtilisateur)}</td>
             </tr>
             ${
               description
                 ? `
             <tr>
               <td style="padding: 10px 0; font-weight: bold; color: #374151; vertical-align: top;">Description :</td>
-              <td style="padding: 10px 0; color: #374151;">${escapeHtml(description)}</td>
+              <td style="padding: 10px 0; color: #374151;">${echapperHtml(description)}</td>
             </tr>`
                 : ""
             }
@@ -232,9 +243,9 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
         </div>
 
         <div style="background-color: ${accentColor}; color: ${couleurPrincipale}; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <strong>📎 ${piecesJointesAnalysees.length} pièce(s) jointe(s) :</strong>
+          <strong>📎 ${echapperHtml(String(piecesJointesAnalysees.length))} pièce(s) jointe(s) :</strong>
           <ul style="margin: 8px 0 0 18px; padding: 0;">
-            ${piecesJointesAnalysees.map((pieceJointe) => `<li>${escapeHtml(pieceJointe.filename)}</li>`).join("")}
+            ${piecesJointesAnalysees.map((pieceJointe) => `<li>${echapperHtml(pieceJointe.filename)}</li>`).join("")}
           </ul>
         </div>
 

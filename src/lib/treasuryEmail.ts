@@ -1,4 +1,4 @@
-import { creerTransporteurEmail } from "./email";
+import { creerTransporteurEmail, echapperHtml } from "./email";
 
 export async function envoyerEmailValidationTresorerie(parametres: {
   destinataire: string;
@@ -25,6 +25,6 @@ export async function envoyerEmailValidationTresorerie(parametres: {
     to: parametres.destinataire,
     subject: `Confirmez la trésorerie du groupe ${parametres.nomGroupe}`,
     text: `Bonjour,\n\nUn responsable a rattaché cette adresse à la trésorerie du groupe ${parametres.nomGroupe}. Confirmez ce rattachement :\n${parametres.url}\n\nCe lien expire dans 48 heures. Si cette demande ne vous concerne pas, ignorez cet e-mail.`,
-    html: `<p>Bonjour,</p><p>Un responsable a rattaché cette adresse à la trésorerie du groupe <strong>${parametres.nomGroupe}</strong>.</p><p><a href="${parametres.url}">Confirmer le rattachement</a></p><p>Ce lien expire dans 48 heures. Si cette demande ne vous concerne pas, ignorez cet e-mail.</p>`,
+    html: `<p>Bonjour,</p><p>Un responsable a rattaché cette adresse à la trésorerie du groupe <strong>${echapperHtml(parametres.nomGroupe)}</strong>.</p><p><a href="${echapperHtml(parametres.url)}">Confirmer le rattachement</a></p><p>Ce lien expire dans 48 heures. Si cette demande ne vous concerne pas, ignorez cet e-mail.</p>`,
   });
 }
