@@ -16,9 +16,9 @@
   "prefer_related_applications": false,
   "shortcuts": [
     {
-      "name": "Nouvelle note de frais",
+      "name": "Nouvelle Justificatif",
       "short_name": "Nouvelle",
-      "description": "Créer une nouvelle note de frais",
+      "description": "Envoyer un nouveau justificatif",
       "url": "/?action=new"
     }
   ]
