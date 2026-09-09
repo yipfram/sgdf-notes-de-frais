@@ -84,6 +84,14 @@ export default defineConfig({
     ["meta", { property: "og:locale", content: "fr_FR" }],
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
     [
+      "script",
+      {
+        defer: "",
+        src: "https://analytics.scouticket.fr/script.js",
+        "data-website-id": "65c3c4c1-8db5-4f98-b57e-79dc22cc6910",
+      },
+    ],
+    [
       "link",
       {
         rel: "icon",
