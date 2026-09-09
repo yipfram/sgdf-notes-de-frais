@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { journal } from "@/lib/logger";
 
 interface EntreeRateLimit {
   nombreRequetes: number;
@@ -23,17 +24,36 @@ function origineApplication(req: Request) {
   return new URL(req.url).origin;
 }
 
+function creerReponseRejetOrigine(
+  req: Request,
+  motif: "origine-differente" | "requete-cross-site",
+  contexte: Record<string, string>,
+) {
+  journal.avertissement("api.origine_rejetee", {
+    methode: req.method,
+    route: new URL(req.url).pathname,
+    motif,
+    ...contexte,
+  });
+  return NextResponse.json({ error: "Requête refusée" }, { status: 403 });
+}
+
 export function verifierOrigineRequete(req: Request): NextResponse | null {
   const origine = req.headers.get("origin");
   const origineAutorisee = origineApplication(req);
 
   if (origine && origine !== origineAutorisee) {
-    return NextResponse.json({ error: "Requête refusée" }, { status: 403 });
+    return creerReponseRejetOrigine(req, "origine-differente", {
+      origineRecue: origine,
+      origineAutorisee,
+    });
   }
 
   const siteFetch = req.headers.get("sec-fetch-site");
   if (siteFetch === "cross-site") {
-    return NextResponse.json({ error: "Requête refusée" }, { status: 403 });
+    return creerReponseRejetOrigine(req, "requete-cross-site", {
+      siteFetch,
+    });
   }
 
   return null;

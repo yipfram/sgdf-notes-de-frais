@@ -9,6 +9,7 @@ vi.mock("@clerk/nextjs/server", () => ({
 }));
 
 import { executerRouteAvecLogs } from "@/lib/api/routeAvecLogs";
+import { ENTETES_REJET_ORIGINE } from "@/lib/api/securiteRequetes";
 import { journal } from "@/lib/logger";
 
 describe("journal technique", () => {
@@ -59,6 +60,35 @@ describe("journal technique", () => {
 
     const entree = JSON.parse(espion.mock.calls[0][0] as string);
     expect(entree.contexte.identifiantUtilisateur).toBeNull();
+  });
+
+  it("journalise le détail d’un rejet d’origine sans l’exposer au client", async () => {
+    const espion = vi.spyOn(console, "warn").mockImplementation(() => {});
+    mocks.auth.mockResolvedValue({ userId: "user_123" });
+
+    const reponse = await executerRouteAvecLogs(
+      new Request("https://app.scouticket.fr/api/test"),
+      () =>
+        Response.json(
+          { error: "Requête refusée" },
+          {
+            status: 403,
+            headers: {
+              [ENTETES_REJET_ORIGINE.motif]: "origine-differente",
+              [ENTETES_REJET_ORIGINE.origineRecue]: "https://app.scouticket.fr",
+              [ENTETES_REJET_ORIGINE.origineAutorisee]: "https://scouticket.fr",
+            },
+          },
+        ),
+    );
+
+    const entree = JSON.parse(espion.mock.calls[0][0] as string);
+    expect(entree.contexte).toMatchObject({
+      motifRejet: "origine-differente",
+      origineRecue: "https://app.scouticket.fr",
+      origineAutorisee: "https://scouticket.fr",
+    });
+    expect(reponse.headers.get(ENTETES_REJET_ORIGINE.motif)).toBeNull();
   });
 
   it("convertit une exception non interceptée en réponse 500", async () => {
