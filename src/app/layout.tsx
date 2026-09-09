@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { frFR } from "@clerk/localizations";
+import { RegisterServiceWorker } from "@/components/register-sw";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -75,6 +76,7 @@ export default function RootLayout({
           />
         </head>
         <body className="font-sans">
+          <RegisterServiceWorker />
           <div className="min-h-screen">{children}</div>
         </body>
       </html>

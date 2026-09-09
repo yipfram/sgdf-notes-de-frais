@@ -436,8 +436,8 @@ Copiez `.env.example` → `.env.local` et remplissez les valeurs ci-dessus.
 Déjà configurée :
 
 - `public/manifest.json` : nom, couleurs, icônes
-- `public/sw.js` : cache shell + stratégies runtime
-- Enregistrement du SW dans `app/layout.tsx`
+- `public/sw.js` : cache versionné par déploiement et stratégies runtime
+- Enregistrement du SW par le composant client `src/components/register-sw.tsx`, monté dans `src/app/layout.tsx`
 - Invite d'installation personnalisée (`InstallPrompt.tsx`)
 
 Limitations hors ligne :

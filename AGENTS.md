@@ -67,6 +67,12 @@ src/
 - Démarrer le serveur de production : `pnpm start`
 - Déploiement sur Vercel – s'assurer que toutes les variables d'environnement listées dans `SETUP.md` sont bien renseignées.
 
+### Mises à jour PWA
+
+- Enregistrer le service worker uniquement depuis un composant client, dans un `useEffect`, et seulement dans un contexte sécurisé (HTTPS ou `localhost`).
+- À chaque déploiement de production, fournir une version distincte au service worker, invalider les caches précédents, puis recharger les clients après `controllerchange`.
+- Ne jamais mettre en cache les pages ni les routes API : elles peuvent contenir des données privées ou des références Next.js propres à un déploiement.
+
 ## 📝 Mises à jour de la documentation
 
 À chaque modification de fonctionnalité :

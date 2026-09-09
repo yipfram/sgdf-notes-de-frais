@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
+const versionDeploiement =
+  process.env.VERCEL_GIT_COMMIT_SHA ||
+  process.env.GITHUB_SHA ||
+  Date.now().toString();
+
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_VERSION_DEPLOIEMENT: versionDeploiement,
+  },
   // Turbopack is now default in Next.js 16
   // The webpack config below is for fallback to webpack if needed
   turbopack: {
