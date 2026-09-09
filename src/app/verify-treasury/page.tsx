@@ -1,8 +1,31 @@
 import { clerkClient } from "@clerk/nextjs/server";
+import type { Metadata } from "next";
 import {
   jetonTresorerieValide,
   type ValidationTresorerie,
 } from "@/lib/treasuryVerification";
+
+export const metadata: Metadata = {
+  title: "Confirmation de la trésorerie",
+  description:
+    "Confirmez l’adresse e-mail de trésorerie de votre groupe Scouticket.",
+  openGraph: {
+    title: "Confirmation de la trésorerie | Scouticket",
+    description:
+      "Confirmez l’adresse e-mail de trésorerie de votre groupe Scouticket.",
+    images: ["/og-scouticket.png"],
+  },
+  twitter: {
+    title: "Confirmation de la trésorerie | Scouticket",
+    description:
+      "Confirmez l’adresse e-mail de trésorerie de votre groupe Scouticket.",
+    images: ["/og-scouticket.png"],
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function VerifyTreasuryPage({
   searchParams,

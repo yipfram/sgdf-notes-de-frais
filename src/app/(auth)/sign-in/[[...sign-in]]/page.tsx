@@ -1,4 +1,27 @@
 import ClerkSignInClient from "@/components/ClerkSignInClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Connexion",
+  description:
+    "Connectez-vous à Scouticket pour envoyer vos justificatifs à la trésorerie de votre groupe.",
+  openGraph: {
+    title: "Connexion | Scouticket",
+    description:
+      "Connectez-vous à Scouticket pour envoyer vos justificatifs à la trésorerie de votre groupe.",
+    images: ["/og-scouticket.png"],
+  },
+  twitter: {
+    title: "Connexion | Scouticket",
+    description:
+      "Connectez-vous à Scouticket pour envoyer vos justificatifs à la trésorerie de votre groupe.",
+    images: ["/og-scouticket.png"],
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function Page() {
   return (

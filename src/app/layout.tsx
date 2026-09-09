@@ -4,9 +4,30 @@ import { frFR } from "@clerk/localizations";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Scouticket",
-  description: "Application de gestion de justificatifs et de notes de frais",
+  metadataBase: new URL("https://app.scouticket.fr"),
+  title: {
+    default: "Scouticket",
+    template: "%s | Scouticket",
+  },
+  description:
+    "Envoyez vos justificatifs et notes de frais à la trésorerie de votre groupe scout.",
   manifest: "/manifest.json",
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "Scouticket",
+    title: "Scouticket",
+    description:
+      "Envoyez vos justificatifs et notes de frais à la trésorerie de votre groupe scout.",
+    images: [{ url: "/og-scouticket.png", width: 1730, height: 909 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Scouticket",
+    description:
+      "Envoyez vos justificatifs et notes de frais à la trésorerie de votre groupe scout.",
+    images: ["/og-scouticket.png"],
+  },
 };
 
 export function generateViewport() {

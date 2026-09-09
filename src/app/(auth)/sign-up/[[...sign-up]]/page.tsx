@@ -1,4 +1,27 @@
 import ClerkSignUpClient from "@/components/ClerkSignUpClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Créer un compte",
+  description:
+    "Créez votre compte Scouticket pour simplifier l’envoi des justificatifs de votre groupe scout.",
+  openGraph: {
+    title: "Créer un compte | Scouticket",
+    description:
+      "Créez votre compte Scouticket pour simplifier l’envoi des justificatifs de votre groupe scout.",
+    images: ["/og-scouticket.png"],
+  },
+  twitter: {
+    title: "Créer un compte | Scouticket",
+    description:
+      "Créez votre compte Scouticket pour simplifier l’envoi des justificatifs de votre groupe scout.",
+    images: ["/og-scouticket.png"],
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function Page() {
   return (
