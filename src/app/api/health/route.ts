@@ -14,6 +14,7 @@ export async function GET(requete: Request) {
     if (!process.env.SMTP_HOST) missingEnv.push("SMTP_HOST");
     if (!process.env.SMTP_USER) missingEnv.push("SMTP_USER");
     if (!process.env.SMTP_PASSWORD) missingEnv.push("SMTP_PASSWORD");
+    if (!process.env.APP_URL) missingEnv.push("APP_URL");
 
     const envOk = missingEnv.length === 0;
 
