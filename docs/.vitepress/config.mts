@@ -2,8 +2,9 @@ import { defineConfig } from "vitepress";
 
 export default defineConfig({
   lang: "fr-FR",
-  title: "SGDF Notes de Frais",
-  description: "Documentation du projet SGDF Notes de Frais",
+  title: "Scouticket",
+  description:
+    "Documentation du projet Scouticket, application de gestion de justificatifs et de notes de frais pour les scouts",
   base: "/",
   lastUpdated: true,
   head: [
@@ -63,7 +64,7 @@ export default defineConfig({
     ],
   },
   sitemap: {
-    hostname: "https://sgdf.rrchs.fr",
+    hostname: "https://scouticket.fr",
     lastmodDateOnly: false,
   },
 });

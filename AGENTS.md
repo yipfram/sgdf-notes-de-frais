@@ -2,7 +2,7 @@
 
 ## 📚 Vue d'ensemble du dépôt
 
-Ce dépôt héberge une application **Next.js 16** (App Router) pour la gestion des factures de cartes d'achat SGDF. La stack comprend :
+Ce dépôt héberge une application **Next.js 16** (App Router) pour la gestion des justificatifs pour les groupes scouts. La stack comprend :
 
 - **TypeScript**
 - **Tailwind CSS** pour le style
