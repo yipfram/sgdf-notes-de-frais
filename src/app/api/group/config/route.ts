@@ -1,8 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { validerUnites } from "@/lib/group";
-import { recupererGroupeActif } from "@/lib/groupServer";
+import { recupererGroupeActif, recupererRoleMembre } from "@/lib/groupServer";
+import { recupererContexteGroupe } from "@/lib/sessionServeur";
+import { pool } from "@/lib/baseDeDonnees";
 import {
   creerUrlVerificationTresorerie,
   creerValidationTresorerie,
@@ -16,33 +17,52 @@ const bodySchema = z.object({
   units: z.unknown(),
 });
 
-function isAdmin(role: string | null | undefined) {
-  return role === "org:admin";
+function isAdmin(role: string | null) {
+  return role === "admin" || role === "owner";
 }
 
 export async function GET(requete: Request) {
   return executerRouteAvecLogs(requete, async () => {
-    const { orgId, orgRole } = await auth();
-    if (!orgId)
+    const { identifiantOrganisation, identifiantUtilisateur } =
+      await recupererContexteGroupe();
+    if (!identifiantOrganisation || !identifiantUtilisateur)
       return NextResponse.json(
         { error: "Sélectionnez un groupe" },
         { status: 400 },
       );
-    const group = await recupererGroupeActif(orgId);
+    const group = await recupererGroupeActif(identifiantOrganisation);
+    const role = await recupererRoleMembre(
+      identifiantUtilisateur,
+      identifiantOrganisation,
+    );
+    const preference = await pool.query<{ unit_id: string }>(
+      `SELECT unit_id FROM scouticket_user_unit_preference
+        WHERE user_id = $1 AND organization_id = $2`,
+      [identifiantUtilisateur, identifiantOrganisation],
+    );
     return NextResponse.json({
       groupName: group.organisation.name,
       units: group.unites,
       configured: Boolean(group.emailTresorerie && group.unites.length),
       treasuryVerified: group.validation.status === "verified",
-      isAdmin: isAdmin(orgRole),
+      isAdmin: isAdmin(role),
+      unitPreference: preference.rows[0]?.unit_id ?? "",
     });
   });
 }
 
 export async function POST(req: Request) {
   return executerRouteAvecLogs(req, async () => {
-    const { orgId, orgRole } = await auth();
-    if (!orgId || !isAdmin(orgRole))
+    const { identifiantOrganisation, identifiantUtilisateur } =
+      await recupererContexteGroupe();
+    const role =
+      identifiantOrganisation && identifiantUtilisateur
+        ? await recupererRoleMembre(
+            identifiantUtilisateur,
+            identifiantOrganisation,
+          )
+        : null;
+    if (!identifiantOrganisation || !isAdmin(role))
       return NextResponse.json(
         { error: "Accès réservé aux responsables du groupe" },
         { status: 403 },
@@ -57,16 +77,23 @@ export async function POST(req: Request) {
         { status: 400 },
       );
 
-    const group = await recupererGroupeActif(orgId);
+    const group = await recupererGroupeActif(identifiantOrganisation);
     const { token, verification } = creerValidationTresorerie();
-    await group.client.organizations.updateOrganizationMetadata(orgId, {
-      publicMetadata: { units },
-      privateMetadata: {
-        treasuryEmail: parsed.data.treasuryEmail,
-        treasuryVerification: verification,
-      },
-    });
-    const url = creerUrlVerificationTresorerie(orgId, token);
+    await pool.query(
+      `INSERT INTO scouticket_group_data
+        (organization_id, units, treasury_email, treasury_verification)
+       VALUES ($1, $2::jsonb, $3, $4::jsonb)
+       ON CONFLICT (organization_id) DO UPDATE
+       SET units = EXCLUDED.units, treasury_email = EXCLUDED.treasury_email,
+           treasury_verification = EXCLUDED.treasury_verification`,
+      [
+        identifiantOrganisation,
+        JSON.stringify(units),
+        parsed.data.treasuryEmail,
+        JSON.stringify(verification),
+      ],
+    );
+    const url = creerUrlVerificationTresorerie(identifiantOrganisation, token);
     await envoyerEmailValidationTresorerie({
       destinataire: parsed.data.treasuryEmail,
       nomGroupe: group.organisation.name,

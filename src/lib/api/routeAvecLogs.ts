@@ -1,6 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { journal } from "@/lib/logger";
+import { recupererSession } from "@/lib/sessionServeur";
 
 type GestionnaireRoute = () => Response | Promise<Response>;
 
@@ -30,8 +30,8 @@ export async function executerRouteAvecLogs(
   };
 
   try {
-    const { userId } = await auth();
-    contexte.identifiantUtilisateur = userId ?? null;
+    const session = await recupererSession();
+    contexte.identifiantUtilisateur = session?.user.id ?? null;
     const reponse = await gestionnaire();
     const entetes = new Headers(reponse.headers);
     entetes.set("X-Request-Id", identifiantRequete);

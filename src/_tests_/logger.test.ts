@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  auth: vi.fn(),
+  recupererSession: vi.fn(),
 }));
 
-vi.mock("@clerk/nextjs/server", () => ({
-  auth: mocks.auth,
+vi.mock("@/lib/sessionServeur", () => ({
+  recupererSession: mocks.recupererSession,
 }));
 
 import { executerRouteAvecLogs } from "@/lib/api/routeAvecLogs";
@@ -14,7 +14,7 @@ import { journal } from "@/lib/logger";
 describe("journal technique", () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    mocks.auth.mockReset();
+    mocks.recupererSession.mockReset();
   });
 
   it("masque les données sensibles dans une erreur", () => {
@@ -34,7 +34,7 @@ describe("journal technique", () => {
 
   it("ajoute un identifiant de requête et journalise les rejets", async () => {
     const espion = vi.spyOn(console, "warn").mockImplementation(() => {});
-    mocks.auth.mockResolvedValue({ userId: "user_123" });
+    mocks.recupererSession.mockResolvedValue({ user: { id: "user_123" } });
     const reponse = await executerRouteAvecLogs(
       new Request("https://example.test/api/test?email=membre@example.test"),
       () => Response.json({ error: "Requête invalide" }, { status: 400 }),
@@ -50,7 +50,7 @@ describe("journal technique", () => {
 
   it("indique une identité utilisateur absente pour une requête anonyme", async () => {
     const espion = vi.spyOn(console, "warn").mockImplementation(() => {});
-    mocks.auth.mockResolvedValue({ userId: null });
+    mocks.recupererSession.mockResolvedValue(null);
 
     await executerRouteAvecLogs(
       new Request("https://example.test/api/test"),
@@ -63,7 +63,7 @@ describe("journal technique", () => {
 
   it("convertit une exception non interceptée en réponse 500", async () => {
     const espion = vi.spyOn(console, "error").mockImplementation(() => {});
-    mocks.auth.mockResolvedValue({ userId: "user_123" });
+    mocks.recupererSession.mockResolvedValue({ user: { id: "user_123" } });
     const reponse = await executerRouteAvecLogs(
       new Request("https://example.test/api/test"),
       () => {

@@ -1,9 +1,10 @@
-import { clerkClient } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import {
   jetonTresorerieValide,
   type ValidationTresorerie,
 } from "@/lib/treasuryVerification";
+import { recupererGroupeActif } from "@/lib/groupServer";
+import { pool } from "@/lib/baseDeDonnees";
 
 export const metadata: Metadata = {
   title: "Confirmation de la trésorerie",
@@ -36,24 +37,18 @@ export default async function VerifyTreasuryPage({
   let valid = false;
   if (org && token) {
     try {
-      const client = await clerkClient();
-      const organization = await client.organizations.getOrganization({
-        organizationId: org,
-      });
-      const privateMetadata = (organization.privateMetadata ?? {}) as Record<
-        string,
-        unknown
-      >;
-      const verification =
-        privateMetadata.treasuryVerification as ValidationTresorerie;
+      const groupe = await recupererGroupeActif(org);
+      const verification = groupe.validation as ValidationTresorerie;
       if (verification && jetonTresorerieValide(verification, token)) {
-        await client.organizations.updateOrganizationMetadata(org, {
-          privateMetadata: {
-            treasuryVerification: {
-              status: "verified",
-            },
-          },
-        });
+        await pool.query(
+          `UPDATE scouticket_group_data
+             SET treasury_verification = jsonb_build_object(
+               'status', 'verified',
+               'verifiedAt', EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) * 1000
+             )
+           WHERE organization_id = $1`,
+          [org],
+        );
         valid = true;
       }
     } catch {

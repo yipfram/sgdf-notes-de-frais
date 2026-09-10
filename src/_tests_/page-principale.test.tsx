@@ -1,22 +1,19 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Home from "../app/(main)/page";
 
-vi.mock("@clerk/nextjs", () => ({
-  useUser: () => ({
-    isLoaded: true,
-    isSignedIn: true,
-    user: {
-      emailAddresses: [{ emailAddress: "test@example.test" }],
-      publicMetadata: { branch: "Louveteaux-Jeannettes" },
-      reload: vi.fn(),
-    },
-  }),
-  useOrganization: () => ({ organization: { id: "org_test", name: "Test" } }),
-  UserButton: () => <button type="button" aria-label="Compte utilisateur" />,
-  OrganizationSwitcher: () => <div>Changer de groupe</div>,
-  InviteMembersButton: ({ children }: { children: React.ReactNode }) =>
-    children,
+vi.mock("@/lib/auth-client", () => ({
+  clientAuth: {
+    useSession: () => ({
+      data: { user: { email: "test@example.test" } },
+      isPending: false,
+    }),
+    useActiveOrganization: () => ({ data: { id: "org_test", name: "Test" } }),
+    useListOrganizations: () => ({ data: [] }),
+    organization: { setActive: vi.fn(), create: vi.fn() },
+    signOut: vi.fn(),
+  },
 }));
 
 vi.mock("next/image", () => ({
@@ -73,17 +70,15 @@ describe("Page principale", () => {
         name: "Scouticket",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Compte utilisateur" }));
     expect(
       await screen.findByLabelText("Formulaire depense"),
     ).toHaveTextContent("test@example.test");
-    expect(screen.getByText("Administration")).toBeInTheDocument();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Administration" }),
+    );
     expect(
       screen.getByRole("link", { name: "Gérer les membres" }),
     ).toHaveAttribute("href", "/gestion-membres");
-    expect(
-      screen.getByRole("button", { name: "Ajouter un membre" }),
-    ).toBeInTheDocument();
   });
 
   it("masque les actions d'administration pour un membre", async () => {

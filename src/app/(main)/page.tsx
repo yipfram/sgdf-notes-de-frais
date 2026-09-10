@@ -1,254 +1,288 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  useOrganization,
-  useUser,
-  UserButton,
-  OrganizationSwitcher,
-  InviteMembersButton,
-  RedirectToSignIn,
-} from "@clerk/nextjs";
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { clientAuth } from "@/lib/auth-client";
 import { FormulaireDepense } from "@/components/FormulaireDepense";
-import { AvertissementNouveaute } from "@/components/FeatureNotice";
 import { CapturePhoto } from "@/components/PhotoCapture";
-import { useStatutEnLigne } from "@/lib/useOnlineStatus";
 import { InviteInstallation } from "@/components/InstallPrompt";
+import { ConfigurationGroupe } from "@/components/GroupSetup";
+import { useStatutEnLigne } from "@/lib/useOnlineStatus";
 import {
   MAX_ATTACHMENT_COUNT,
   type PieceJointeDepense,
 } from "@/constants/piecesJointes";
-import Link from "next/link";
-import { ConfigurationGroupe } from "@/components/GroupSetup";
-import { lireUniteSelectionnee, type UniteGroupe } from "@/lib/group";
+import type { UniteGroupe } from "@/lib/group";
+
+type Groupe = {
+  units: UniteGroupe[];
+  configured: boolean;
+  treasuryVerified: boolean;
+  isAdmin: boolean;
+  unitPreference: string;
+};
 
 export default function Home() {
-  const { isSignedIn, user, isLoaded } = useUser();
-  const { organization } = useOrganization();
-  const identifiantOrganisation = organization?.id;
+  const { data: session, isPending } = clientAuth.useSession();
+  const { data: organisation } = clientAuth.useActiveOrganization();
+  const { data: organisations } = clientAuth.useListOrganizations();
   const [piecesJointes, setPiecesJointes] = useState<PieceJointeDepense[]>([]);
-  const [group, setGroup] = useState<{
-    units: UniteGroupe[];
-    configured: boolean;
-    treasuryVerified: boolean;
-    isAdmin: boolean;
-  } | null>(null);
-  const [etatRenvoiValidation, setEtatRenvoiValidation] = useState<
-    "repos" | "envoi" | "envoye" | "erreur"
-  >("repos");
-  const [erreurEnregistrementUnite, setErreurEnregistrementUnite] =
-    useState("");
+  const [groupe, setGroupe] = useState<Groupe | null>(null);
+  const [nomGroupe, setNomGroupe] = useState("");
+  const [initialisationGroupeTerminee, setInitialisationGroupeTerminee] =
+    useState(false);
+  const [choixManuelGroupe, setChoixManuelGroupe] = useState(false);
+  const [administrationOuverte, setAdministrationOuverte] = useState(false);
   const estEnLigne = useStatutEnLigne();
 
+  const definirGroupePrincipal = async (identifiantOrganisation: string) => {
+    await fetch("/api/user/default-group", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ organizationId: identifiantOrganisation }),
+    });
+  };
+
   useEffect(() => {
-    setEtatRenvoiValidation("repos");
-    setErreurEnregistrementUnite("");
-    if (!identifiantOrganisation) {
-      setGroup(null);
-      return;
-    }
+    if (!session || organisation || !organisations || choixManuelGroupe) return;
+    let annule = false;
+    const activerGroupePrincipal = async () => {
+      try {
+        const reponse = await fetch("/api/user/default-group");
+        const { organizationId } = reponse.ok
+          ? ((await reponse.json()) as { organizationId: string | null })
+          : { organizationId: null };
+        if (
+          organizationId &&
+          organisations.some((item) => item.id === organizationId)
+        ) {
+          await clientAuth.organization.setActive({ organizationId });
+        }
+      } finally {
+        if (!annule) setInitialisationGroupeTerminee(true);
+      }
+    };
+    void activerGroupePrincipal();
+    return () => {
+      annule = true;
+    };
+  }, [choixManuelGroupe, organisation, organisations, session]);
+
+  const chargerGroupe = useCallback(() => {
+    if (!organisation) return setGroupe(null);
     fetch("/api/group/config")
-      .then((response) => (response.ok ? response.json() : null))
-      .then(setGroup)
-      .catch(() => setGroup(null));
-  }, [identifiantOrganisation]);
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setGroupe)
+      .catch(() => setGroupe(null));
+  }, [organisation]);
+  useEffect(() => {
+    chargerGroupe();
+  }, [chargerGroupe]);
 
-  const memoriserUnite = async (unitId: string) => {
-    if (!identifiantOrganisation) return;
-
-    setErreurEnregistrementUnite("");
-    try {
-      const reponse = await fetch("/api/user/unit-preference", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          organizationId: identifiantOrganisation,
-          unitId,
-        }),
-      });
-      if (!reponse.ok) throw new Error("Enregistrement impossible");
-      void user?.reload().catch(() => undefined);
-    } catch {
-      setErreurEnregistrementUnite(
-        "Votre unité reste sélectionnée, mais ce choix n’a pas pu être mémorisé.",
-      );
-    }
-  };
-
-  const renvoyerValidationTresorerie = async () => {
-    setEtatRenvoiValidation("envoi");
-    try {
-      const reponse = await fetch("/api/group/resend-verification", {
-        method: "POST",
-      });
-      setEtatRenvoiValidation(reponse.ok ? "envoye" : "erreur");
-    } catch {
-      setEtatRenvoiValidation("erreur");
-    }
-  };
-
-  // Afficher un loader pendant le chargement de l'état d'authentification
-  if (!isLoaded) {
+  if (isPending)
     return (
-      <main className="min-h-screen p-4 flex items-center justify-center bg-zinc-50">
-        <div className="text-zinc-600 text-sm">Chargement…</div>
+      <main className="min-h-screen bg-zinc-50 p-6 text-center text-zinc-600">
+        Chargement…
       </main>
     );
+  if (!session) {
+    if (typeof window !== "undefined") window.location.assign("/sign-in");
+    return null;
   }
-
-  if (!isSignedIn) return <RedirectToSignIn />;
-
-  if (!organization)
+  const creerGroupe = async () => {
+    const nom = nomGroupe.trim();
+    if (!nom) return;
+    const normalise = nom
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    const resultat = await clientAuth.organization.create({
+      name: nom,
+      slug: `${normalise}-${Date.now().toString(36)}`,
+    });
+    if (resultat.data?.id) {
+      await definirGroupePrincipal(resultat.data.id);
+      await clientAuth.organization.setActive({
+        organizationId: resultat.data.id,
+      });
+    }
+    setNomGroupe("");
+  };
+  if (!organisation && !initialisationGroupeTerminee && !choixManuelGroupe)
     return (
-      <main className="min-h-screen bg-zinc-50 p-4 text-zinc-900 flex items-center justify-center">
-        <section className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold">Bienvenue</h1>
+      <main className="min-h-screen bg-zinc-50 p-6 text-center text-zinc-600">
+        Chargement…
+      </main>
+    );
+  if (!organisation)
+    return (
+      <main className="min-h-screen bg-zinc-50 p-6 flex items-center justify-center">
+        <section className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6">
+          <h1 className="text-2xl font-semibold text-zinc-900">Bienvenue</h1>
           <p className="mt-2 text-zinc-600">
-            Créez votre groupe ou sélectionnez un groupe auquel vous avez été
-            invité.
+            Choisissez ou créez votre groupe scout.
           </p>
-          <div className="mt-6">
-            <OrganizationSwitcher />
+          <div className="mt-5 space-y-2">
+            {organisations?.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() =>
+                  void (async () => {
+                    await definirGroupePrincipal(item.id);
+                    await clientAuth.organization.setActive({
+                      organizationId: item.id,
+                    });
+                  })()
+                }
+                className="block w-full rounded-lg border border-zinc-300 p-3 text-left text-zinc-900 hover:bg-zinc-50"
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+          <div className="mt-5 flex gap-2">
+            <input
+              value={nomGroupe}
+              onChange={(e) => setNomGroupe(e.target.value)}
+              placeholder="Nom du groupe"
+              className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white p-3 text-zinc-900 placeholder:text-zinc-500"
+            />
+            <button
+              type="button"
+              onClick={() => void creerGroupe()}
+              className="rounded-lg bg-[#1E3A8A] px-4 text-white"
+            >
+              Créer
+            </button>
           </div>
         </section>
       </main>
     );
-
   return (
     <main className="min-h-screen bg-zinc-50 p-4">
-      <div className="max-w-md mx-auto bg-white rounded-lg border border-zinc-200 shadow-sm overflow-hidden">
-        <div className="bg-white p-6 border-b border-zinc-200">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-semibold text-zinc-900">
-                Scouticket
-              </h1>
-              <p className="text-zinc-500 mt-2">{organization.name}</p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "w-10 h-10",
+      <div className="mx-auto max-w-md overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+        <header className="flex items-start justify-between border-b border-zinc-200 p-6">
+          <div>
+            <h1 className="text-2xl font-semibold text-zinc-900">Scouticket</h1>
+            <p className="mt-2 text-zinc-500">{organisation.name}</p>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                void (async () => {
+                  setChoixManuelGroupe(true);
+                  await clientAuth.organization.setActive({
+                    organizationId: null,
+                  });
+                })()
+              }
+              className="text-sm text-zinc-600 underline"
+            >
+              Changer de groupe
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                void clientAuth.signOut({
+                  fetchOptions: {
+                    onSuccess: () => window.location.assign("/sign-in"),
                   },
-                }}
-              />
-              <OrganizationSwitcher hidePersonal />
-            </div>
+                })
+              }
+              className="text-sm text-zinc-600 underline"
+            >
+              Déconnexion
+            </button>
           </div>
-        </div>
-
+        </header>
         {!estEnLigne && (
-          <div className="bg-amber-50 border-t border-b border-amber-200 text-amber-800 text-center text-sm py-2">
+          <p className="bg-amber-50 p-2 text-center text-sm text-amber-800">
             Hors ligne - certaines fonctionnalités sont limitées
-          </div>
+          </p>
         )}
-
-        <div className="p-6 space-y-6">
-          {!group?.configured && group?.isAdmin ? (
-            <ConfigurationGroupe
-              onSaved={() => {
-                fetch("/api/group/config")
-                  .then((response) => response.json())
-                  .then(setGroup);
-              }}
-            />
-          ) : !group?.configured ? (
+        <div className="space-y-6 p-6">
+          {!groupe?.configured && groupe?.isAdmin ? (
+            <ConfigurationGroupe onSaved={chargerGroupe} />
+          ) : !groupe?.configured ? (
             <p className="text-sm text-zinc-600">
               Votre responsable doit terminer la configuration du groupe.
             </p>
           ) : (
             <>
-              {!group.treasuryVerified && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-                  <p>
-                    Un mail a été envoyé à l’adresse de la trésorerie pour
-                    confirmer son rattachement. Une fois validé, vous pourrez
-                    envoyer des justificatifs.
-                  </p>
-                  {group.isAdmin && (
-                    <div className="mt-3">
-                      <button
-                        type="button"
-                        onClick={renvoyerValidationTresorerie}
-                        disabled={etatRenvoiValidation === "envoi"}
-                        className="rounded-lg border border-amber-300 bg-white px-3 py-2 font-medium text-amber-900 transition-colors hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {etatRenvoiValidation === "envoi"
-                          ? "Envoi…"
-                          : "Renvoyer l’e-mail"}
-                      </button>
-                      {etatRenvoiValidation === "envoye" && (
-                        <p className="mt-2 text-emerald-800">
-                          E-mail de validation renvoyé.
-                        </p>
-                      )}
-                      {etatRenvoiValidation === "erreur" && (
-                        <p className="mt-2 text-rose-800">
-                          Impossible de renvoyer l’e-mail pour le moment.
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-              {group.isAdmin && (
-                <details className="rounded-lg border border-zinc-200 bg-zinc-50">
-                  <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-zinc-800">
-                    Administration
-                  </summary>
-                  <div className="space-y-2 border-t border-zinc-200 p-3">
-                    <Link
-                      href="/gestion-membres"
-                      className="block w-full rounded-lg border border-zinc-300 bg-white p-3 text-center text-sm font-medium text-[#1E3A8A] transition-colors hover:border-[#1E3A8A] hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:ring-offset-2"
+              <div className="space-y-2">
+                {groupe.isAdmin && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAdministrationOuverte((ouverte) => !ouverte)
+                      }
+                      aria-expanded={administrationOuverte}
+                      className="flex w-full items-center justify-between rounded-xl border border-zinc-300 px-4 py-3 font-medium text-[#1E3A8A] transition-colors hover:bg-zinc-50"
                     >
-                      Gérer les membres
-                    </Link>
-                    <InviteMembersButton>
-                      <button
-                        type="button"
-                        className="w-full rounded-lg bg-[#1E3A8A] p-3 text-sm font-medium text-white transition-colors hover:bg-[#162d69] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:ring-offset-2"
-                      >
-                        Ajouter un membre
-                      </button>
-                    </InviteMembersButton>
-                  </div>
-                </details>
-              )}
-              <AvertissementNouveaute />
+                      Administration
+                      <span aria-hidden="true">
+                        {administrationOuverte ? "−" : "+"}
+                      </span>
+                    </button>
+                    {administrationOuverte && (
+                      <div className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                        <Link
+                          href="/gestion-membres"
+                          className="block w-full rounded-lg bg-white px-4 py-3 text-center font-medium text-[#1E3A8A] shadow-sm ring-1 ring-zinc-200 transition-colors hover:bg-zinc-100"
+                        >
+                          Gérer les membres
+                        </Link>
+                        <Link
+                          href="/gestion-unites"
+                          className="block w-full rounded-lg bg-white px-4 py-3 text-center font-medium text-[#1E3A8A] shadow-sm ring-1 ring-zinc-200 transition-colors hover:bg-zinc-100"
+                        >
+                          Gérer les unités
+                        </Link>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
               <CapturePhoto
-                onAttachmentsAdd={(nouvellesPiecesJointes) => {
+                onAttachmentsAdd={(nouvelles) =>
                   setPiecesJointes((precedentes) =>
-                    [...precedentes, ...nouvellesPiecesJointes].slice(
+                    [...precedentes, ...nouvelles].slice(
                       0,
                       MAX_ATTACHMENT_COUNT,
                     ),
-                  );
-                }}
+                  )
+                }
                 currentCount={piecesJointes.length}
               />
-
               <FormulaireDepense
-                key={organization.id}
+                key={organisation.id}
                 piecesJointes={piecesJointes}
-                emailUtilisateur={user?.emailAddresses[0]?.emailAddress || ""}
-                units={group.units}
-                uniteInitiale={lireUniteSelectionnee(
-                  user?.publicMetadata,
-                  organization.id,
-                  group.units,
-                )}
-                treasuryVerified={group.treasuryVerified}
-                onChangementUnite={(unitId) => void memoriserUnite(unitId)}
-                erreurEnregistrementUnite={erreurEnregistrementUnite}
-                onCreerNouvelleNote={() => {
-                  setPiecesJointes([]);
-                }}
-                onSupprimerPieceJointe={(index) => {
+                emailUtilisateur={session.user.email}
+                units={groupe.units}
+                uniteInitiale={groupe.unitPreference}
+                treasuryVerified={groupe.treasuryVerified}
+                onChangementUnite={(unitId) =>
+                  void fetch("/api/user/unit-preference", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      organizationId: organisation.id,
+                      unitId,
+                    }),
+                  })
+                }
+                erreurEnregistrementUnite=""
+                onCreerNouvelleNote={() => setPiecesJointes([])}
+                onSupprimerPieceJointe={(index) =>
                   setPiecesJointes((precedentes) =>
                     precedentes.filter((_, i) => i !== index),
-                  );
-                }}
+                  )
+                }
                 estEnLigne={estEnLigne}
               />
             </>

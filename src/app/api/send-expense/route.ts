@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth, clerkClient } from "@clerk/nextjs/server";
 import { envoyerEmail } from "@/lib/email";
 import { jsonError, verifierErreurSmtp } from "@/lib/api/utils";
 import { validerCorpsRequete } from "@/lib/api/validateBody";
@@ -11,6 +10,7 @@ import {
 } from "@/lib/api/securiteRequetes";
 import { executerRouteAvecLogs } from "@/lib/api/routeAvecLogs";
 import { journal } from "@/lib/logger";
+import { recupererContexteGroupe } from "@/lib/sessionServeur";
 
 function validateEnv() {
   if (
@@ -28,15 +28,17 @@ export async function POST(req: NextRequest) {
   return executerRouteAvecLogs(req, async () => {
     try {
       // Auth
-      const { userId, orgId } = await auth();
-      if (!userId || !orgId) return jsonError("Sélectionnez un groupe", 401);
+      const { session, identifiantUtilisateur, identifiantOrganisation } =
+        await recupererContexteGroupe();
+      if (!session || !identifiantUtilisateur || !identifiantOrganisation)
+        return jsonError("Sélectionnez un groupe", 401);
 
       const erreurOrigine = verifierOrigineRequete(req);
       if (erreurOrigine) return erreurOrigine;
 
       // Max 2 envois par 30 secondes
       const limiteCourte = verifierRateLimit(
-        `envoi-email:court:${userId}`,
+        `envoi-email:court:${identifiantUtilisateur}`,
         2,
         30 * 1000,
       );
@@ -46,7 +48,7 @@ export async function POST(req: NextRequest) {
 
       // Max 5 envois par 10 minutes
       const limiteLongue = verifierRateLimit(
-        `envoi-email:long:${userId}`,
+        `envoi-email:long:${identifiantUtilisateur}`,
         5,
         10 * 60 * 1000,
       );
@@ -54,10 +56,7 @@ export async function POST(req: NextRequest) {
         return reponseRateLimit(limiteLongue.attenteSecondes);
       }
 
-      const client = await clerkClient();
-      const user = await client.users.getUser(userId);
-
-      const userEmail = user.primaryEmailAddress?.emailAddress;
+      const userEmail = session.user.email;
       // Env vars
       const envError = validateEnv();
       if (envError) return envError;
@@ -69,7 +68,7 @@ export async function POST(req: NextRequest) {
 
       const { donneesEmail, error } = validerCorpsRequete(body);
       if (error || !donneesEmail) return error as NextResponse;
-      const group = await recupererGroupeActif(orgId);
+      const group = await recupererGroupeActif(identifiantOrganisation);
       if (group.validation.status !== "verified" || !group.emailTresorerie)
         return jsonError(
           "La trésorerie doit confirmer son adresse avant les envois",

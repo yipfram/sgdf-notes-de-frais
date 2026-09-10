@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
-import { frFR } from "@clerk/localizations";
 import { RegisterServiceWorker } from "@/components/register-sw";
+import { AlerteChangeLog } from "@/components/AlerteChangelog";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -47,39 +46,25 @@ export default function RootLayout({
   readonly children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider
-      localization={frFR}
-      afterSignOutUrl="/sign-in"
-      appearance={{
-        variables: {
-          colorPrimary: "#18181B",
-          colorBackground: "#FFFFFF",
-          colorForeground: "#18181B",
-        },
-      }}
-    >
-      <html lang="fr">
-        <head>
-          <meta name="theme-color" content="#18181B" />
-          <meta name="apple-mobile-web-app-capable" content="yes" />
-          <meta
-            name="apple-mobile-web-app-status-bar-style"
-            content="default"
-          />
-          <meta name="apple-mobile-web-app-title" content="Scouticket" />
-          <meta name="mobile-web-app-capable" content="yes" />
-          <link rel="manifest" href="/manifest.json" />
-          <script
-            defer
-            src="https://analytics.scouticket.fr/script.js"
-            data-website-id="4260f7db-3623-438a-95a4-9ba2631bcc79"
-          />
-        </head>
-        <body className="font-sans">
-          <RegisterServiceWorker />
-          <div className="min-h-screen">{children}</div>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="fr">
+      <head>
+        <meta name="theme-color" content="#18181B" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Scouticket" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="manifest" href="/manifest.json" />
+        <script
+          defer
+          src="https://analytics.scouticket.fr/script.js"
+          data-website-id="4260f7db-3623-438a-95a4-9ba2631bcc79"
+        />
+      </head>
+      <body className="font-sans">
+        <RegisterServiceWorker />
+        <AlerteChangeLog />
+        <div className="min-h-screen">{children}</div>
+      </body>
+    </html>
   );
 }
