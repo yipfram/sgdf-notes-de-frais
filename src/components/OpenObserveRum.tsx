@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
+import { clientAuth } from "@/lib/auth-client";
 
 const site = process.env.NEXT_PUBLIC_OPENOBSERVE_SITE;
 const jetonClient = process.env.NEXT_PUBLIC_OPENOBSERVE_CLIENT_TOKEN;
 
 export function OpenObserveRum() {
+  const { data: session } = clientAuth.useSession();
+
   useEffect(() => {
     if (!site || !jetonClient) return;
 
@@ -52,6 +55,28 @@ export function OpenObserveRum() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (!site || !jetonClient) return;
+
+    void Promise.all([
+      fetch("/api/observabilite/rum-utilisateur").then((reponse) =>
+        reponse.ok ? reponse.json() : null,
+      ),
+      import("@openobserve/browser-rum"),
+      import("@openobserve/browser-logs"),
+    ])
+      .then(([utilisateur, { openobserveRum }, { openobserveLogs }]) => {
+        if (utilisateur?.id) {
+          openobserveRum.setUser({ id: utilisateur.id });
+          openobserveLogs.setUser({ id: utilisateur.id });
+        } else {
+          openobserveRum.clearUser();
+          openobserveLogs.clearUser();
+        }
+      })
+      .catch(() => {});
+  }, [session?.user.id]);
 
   return null;
 }
