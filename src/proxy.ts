@@ -1,6 +1,29 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-export default clerkMiddleware();
+export default clerkMiddleware((_auth, requete) => {
+  if (process.env.MAINTENANCE_MODE !== "true") return;
+
+  const { pathname } = requete.nextUrl;
+
+  if (pathname === "/maintenance") return;
+
+  if (pathname === "/api/health") {
+    return NextResponse.json(
+      { ok: false, status: "maintenance" },
+      { status: 503 },
+    );
+  }
+
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.json(
+      { erreur: "Service en maintenance", status: "maintenance" },
+      { status: 503 },
+    );
+  }
+
+  return NextResponse.redirect(new URL("/maintenance", requete.url));
+});
 
 export const config = {
   matcher: [

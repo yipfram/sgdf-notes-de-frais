@@ -3,6 +3,13 @@ import { executerRouteAvecLogs } from "@/lib/api/routeAvecLogs";
 
 export async function GET(requete: Request) {
   return executerRouteAvecLogs(requete, async () => {
+    if (process.env.MAINTENANCE_MODE === "true") {
+      return NextResponse.json(
+        { ok: false, status: "maintenance" },
+        { status: 503 },
+      );
+    }
+
     const timestamp = new Date().toISOString();
     const uptimeSeconds =
       typeof process.uptime === "function"

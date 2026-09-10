@@ -1,4 +1,4 @@
-[![Deploy with Vercel](https://vercel.com/button)](<https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais&env=NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,CLERK_SECRET_KEY,NEXT_PUBLIC_CLERK_SIGN_IN_URL,NEXT_PUBLIC_CLERK_SIGN_UP_URL,APP_URL,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,SMTP_FROM_NAME&envDescription=Variables%20n%C3%A9cessaires%20pour%20le%20d%C3%A9ploiement%20(Clerk%20%2B%20SMTP)&envLink=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais%2Fblob%2Fmain%2FSETUP.md&project-name=scouticket&repository-name=scouticket>)
+[![Deploy with Vercel](https://vercel.com/button)](<https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais&env=NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,CLERK_SECRET_KEY,NEXT_PUBLIC_CLERK_SIGN_IN_URL,NEXT_PUBLIC_CLERK_SIGN_UP_URL,APP_URL,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,SMTP_FROM_NAME,MAINTENANCE_MODE&envDescription=Variables%20n%C3%A9cessaires%20pour%20le%20d%C3%A9ploiement%20(Clerk%20%2B%20SMTP)&envLink=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais%2Fblob%2Fmain%2FSETUP.md&project-name=scouticket&repository-name=scouticket>)
 
 # Scouticket
 
@@ -23,6 +23,7 @@ Pour savoir comment l'utiliser avec [la documentation](https://scouticket.fr)
 - 🔄 **Mise à jour PWA sûre** : chaque déploiement active un nouveau cache et recharge automatiquement l’application à jour
 - ⚡ **Mode hors ligne partiel** : Consultation et préparation possible sans réseau (l'envoi nécessite la connexion)
 - 🔔 **Bannière d'installation** : Invitation A2HS personnalisée
+- 🛠️ **Mode maintenance** : une variable d’environnement permet d’afficher une page dédiée et de désactiver temporairement les API
 - 🌙 **Affichage plein écran** : Expérience proche d'une application native
 - 📋 **Logs techniques structurés** : erreurs serveur et réponses API rejetées, consultables dans Vercel sans contenir de données personnelles ou de justificatifs
 
@@ -101,6 +102,10 @@ docker compose down
 ```
 
 Le point de santé valide `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD` et `APP_URL`, sans envoyer d'e-mail. Pour un test strictement local, définissez `APP_URL=http://localhost:3000` ; une URL publique reste nécessaire pour les liens envoyés par e-mail en conditions réelles.
+
+## Mode maintenance
+
+Définissez `MAINTENANCE_MODE=true` puis redémarrez ou redéployez l’application pour afficher la page de maintenance. Les pages sont redirigées vers celle-ci, les API répondent avec le statut `503`, et `/api/health` répond `{ "ok": false, "status": "maintenance" }`. Remettez `MAINTENANCE_MODE=false` pour rétablir le service.
 
 ## Logs techniques
 

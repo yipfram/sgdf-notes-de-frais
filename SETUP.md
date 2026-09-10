@@ -270,11 +270,14 @@ Les variables d'environnement sont les "réglages secrets" de l'application.
 | `SMTP_USER`                         |   ✅   | Identifiant SMTP (votre email)                  | `monemail@gmail.com`        |
 | `SMTP_PASSWORD`                     |   ✅   | Mot de passe SMTP                               | `motdepasse16caracteres`    |
 | `APP_URL`                           |   ✅   | URL publique utilisée dans les liens par e-mail | `https://app.scouticket.fr` |
+| `MAINTENANCE_MODE`                  |   ♠️   | Active la page de maintenance et bloque les API | `false`                     |
 | `SMTP_FROM`                         |   ♠️   | Email expéditeur personnalisé                   | `noreply@mondomaine.fr`     |
 | `SMTP_FROM_NAME`                    |   ♠️   | Nom de l'expéditeur                             | `Scouticket`                |
 | `SMTP_FROM_EMAIL`                   |   ♠️   | Email expéditeur de repli                       | `expediteur@email.fr`       |
 
 > ✅ = Requis • ♠️ = Optionnel
+
+Pour interrompre temporairement le service, définissez `MAINTENANCE_MODE=true`, puis redéployez l’application. Les pages afficheront la maintenance, les API répondront avec le statut `503` et `/api/health` signalera l’état `maintenance`. Remettez la valeur à `false` puis redéployez pour rétablir le service.
 
 #### Valeurs par fournisseur
 

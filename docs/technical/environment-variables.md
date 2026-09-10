@@ -11,6 +11,14 @@ Copiez `.env.example` vers `.env.local`, puis renseignez les variables suivantes
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL`     |   ✅   | Route de connexion, généralement `/sign-in`  |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL`     |   ✅   | Route d’inscription, généralement `/sign-up` |
 
+## Maintenance
+
+| Variable           |  Requis   | Description                                                                                                                                                                                                     |
+| ------------------ | :-------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MAINTENANCE_MODE` | Optionnel | `true` affiche la page de maintenance, bloque les API avec un statut `503` et fait répondre `/api/health` avec `{ "ok": false, "status": "maintenance" }`. Toute autre valeur, dont `false`, désactive ce mode. |
+
+Après avoir modifié cette variable dans Vercel ou dans l’environnement de production, redéployez ou redémarrez l’application.
+
 ## E-mail SMTP
 
 | Variable          |  Requis   | Description                                | Exemple                          |
