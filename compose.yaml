@@ -21,7 +21,7 @@ services:
       context: .
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-scouticket}:${POSTGRES_PASSWORD:-scouticket}@postgres:5432/${POSTGRES_DB:-scouticket}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-scouticket}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       AUDIT_LOG_SECRET: ${AUDIT_LOG_SECRET}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
