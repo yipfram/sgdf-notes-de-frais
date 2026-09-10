@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import Home from "../app/(main)/page";
 
 vi.mock("@clerk/nextjs", () => ({
@@ -12,7 +12,11 @@ vi.mock("@clerk/nextjs", () => ({
       reload: vi.fn(),
     },
   }),
+  useOrganization: () => ({ organization: { id: "org_test", name: "Test" } }),
   UserButton: () => <button type="button" aria-label="Compte utilisateur" />,
+  OrganizationSwitcher: () => <div>Changer de groupe</div>,
+  InviteMembersButton: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 vi.mock("next/image", () => ({
@@ -45,17 +49,61 @@ vi.mock("@/lib/useOnlineStatus", () => ({
 }));
 
 describe("Page principale", () => {
-  it("affiche l'application pour un utilisateur connecte", () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            units: [{ id: "groupe", label: "Groupe", color: "#1E3A8A" }],
+            configured: true,
+            treasuryVerified: true,
+            isAdmin: true,
+          }),
+      }),
+    );
+  });
+
+  it("affiche les actions d'administration pour un responsable", async () => {
     render(<Home />);
 
     expect(
-      screen.getByRole("heading", {
-        name: "Factures carte procurement SGDF",
+      await screen.findByRole("heading", {
+        name: "Scouticket",
       }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Compte utilisateur" }));
-    expect(screen.getByLabelText("Formulaire depense")).toHaveTextContent(
-      "test@example.test",
+    expect(
+      await screen.findByLabelText("Formulaire depense"),
+    ).toHaveTextContent("test@example.test");
+    expect(screen.getByText("Administration")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Gérer les membres" }),
+    ).toHaveAttribute("href", "/gestion-membres");
+    expect(
+      screen.getByRole("button", { name: "Ajouter un membre" }),
+    ).toBeInTheDocument();
+  });
+
+  it("masque les actions d'administration pour un membre", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            units: [{ id: "groupe", label: "Groupe", color: "#1E3A8A" }],
+            configured: true,
+            treasuryVerified: true,
+            isAdmin: false,
+          }),
+      }),
     );
+
+    render(<Home />);
+
+    await screen.findByLabelText("Formulaire depense");
+    expect(screen.queryByText("Administration")).not.toBeInTheDocument();
   });
 });

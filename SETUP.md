@@ -1,4 +1,4 @@
-# 📖 Guide d'installation - Factures carte procurement SGDF
+# 📖 Guide d'installation - Scouticket
 
 Ce guide explique **pas à pas** comment installer et déployer l'application, que vous soyez développeur ou non.
 
@@ -19,11 +19,11 @@ Ce guide explique **pas à pas** comment installer et déployer l'application, q
 
 ## Vue d'ensemble
 
-L'application permet aux membres de votre groupe SGDF de :
+L'application permet aux membres de votre groupe scout de :
 
 - Prendre en photo ou importer leurs justificatifs de dépenses (images ou PDF)
 - Remplir un formulaire simple (date, montant, branche, description)
-- Envoyer automatiquement un email à la trésorerie avec un ou plusieurs justificatifs en pièce jointe
+- Envoyer automatiquement un e-mail à la trésorerie avec un ou plusieurs justificatifs en pièce jointe
 
 **Aucune donnée n'est stockée sur un serveur**, tout passe par des emails sécurisés.
 
@@ -102,7 +102,7 @@ Si vous avez déjà un compte Gmail dédié à votre trésorerie, passez à l'é
 Sinon :
 
 1. Allez sur [gmail.com](https://mail.google.com)
-2. Créez un nouveau compte (ex: `sgdf.tresorerie@gmail.com`)
+2. Créez un nouveau compte (ex: `tresorerie-de-votre-groupe@example.com`)
 3. Notez bien l'adresse email
 
 > 💡 **Conseil** : Utilisez un compte dédié au groupe plutôt qu'un compte personnel.
@@ -125,7 +125,7 @@ Sinon :
 3. Cliquez dessus
 4. Dans **"Sélectionner une application"** :
    - Choisissez **"Autre (nom personnalisé)"**
-   - Tapez : `SGDF Notes de frais`
+   - Tapez : `Scouticket`
 5. Cliquez sur **"Générer"**
 6. Google affiche un mot de passe de **16 caractères** (ex: `abcd efgh ijkl mnop`)
 7. **⚠️ IMPORTANT** : Copiez ce mot de passe immédiatement dans un endroit sûr
@@ -204,7 +204,7 @@ Clerk gère l'authentification des utilisateurs (connexion/inscription).
 #### 2.2 Créer une application
 
 1. Sur le tableau de bord Clerk, cliquez sur **"Create application"**
-2. Nom : `SGDF Notes de Frais`
+2. Nom : `Scouticket`
 3. Dans **"Authentication methods"**, cochez :
    - ✅ **Email** (recommandé - obligatoire)
    - ✅ **Google** (optionnel)
@@ -258,21 +258,21 @@ Les variables d'environnement sont les "réglages secrets" de l'application.
 
 #### 4.1 Tableau récapitulatif des variables
 
-| Variable                            | Requis | Description                                     | Exemple                  |
-| ----------------------------------- | :----: | ----------------------------------------------- | ------------------------ |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` |   ✅   | Clé publique Clerk (commence par `pk_test_...`) | `pk_test_abc123...`      |
-| `CLERK_SECRET_KEY`                  |   ✅   | Clé secrète Clerk (commence par `sk_test_...`)  | `sk_test_xyz789...`      |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`     |   ✅   | URL de connexion                                | `/sign-in`               |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`     |   ✅   | URL d'inscription                               | `/sign-up`               |
-| `SMTP_HOST`                         |   ✅   | Adresse du serveur SMTP                         | `smtp.gmail.com`         |
-| `SMTP_PORT`                         |   ✅   | Port SMTP (587 TLS, 465 SSL)                    | `587`                    |
-| `SMTP_SECURE`                       |   ✅   | SSL/TLS activé (`true`/`false`)                 | `false`                  |
-| `SMTP_USER`                         |   ✅   | Identifiant SMTP (votre email)                  | `monemail@gmail.com`     |
-| `SMTP_PASSWORD`                     |   ✅   | Mot de passe SMTP                               | `motdepasse16caracteres` |
-| `NEXT_PUBLIC_TREASURY_EMAIL`        |   ✅   | Email destinataire principal                    | `tresorerie@sgdf.fr`     |
-| `SMTP_FROM`                         |   ♠️   | Email expéditeur personnalisé                   | `noreply@mondomaine.fr`  |
-| `SMTP_FROM_NAME`                    |   ♠️   | Nom de l'expéditeur                             | `Factures SGDF`          |
-| `SMTP_FROM_EMAIL`                   |   ♠️   | Email expéditeur de repli                       | `expediteur@email.fr`    |
+| Variable                            | Requis | Description                                     | Exemple                     |
+| ----------------------------------- | :----: | ----------------------------------------------- | --------------------------- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` |   ✅   | Clé publique Clerk (commence par `pk_test_...`) | `pk_test_abc123...`         |
+| `CLERK_SECRET_KEY`                  |   ✅   | Clé secrète Clerk (commence par `sk_test_...`)  | `sk_test_xyz789...`         |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`     |   ✅   | URL de connexion                                | `/sign-in`                  |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`     |   ✅   | URL d'inscription                               | `/sign-up`                  |
+| `SMTP_HOST`                         |   ✅   | Adresse du serveur SMTP                         | `smtp.gmail.com`            |
+| `SMTP_PORT`                         |   ✅   | Port SMTP (587 TLS, 465 SSL)                    | `587`                       |
+| `SMTP_SECURE`                       |   ✅   | SSL/TLS activé (`true`/`false`)                 | `false`                     |
+| `SMTP_USER`                         |   ✅   | Identifiant SMTP (votre email)                  | `monemail@gmail.com`        |
+| `SMTP_PASSWORD`                     |   ✅   | Mot de passe SMTP                               | `motdepasse16caracteres`    |
+| `APP_URL`                           |   ✅   | URL publique utilisée dans les liens par e-mail | `https://app.scouticket.fr` |
+| `SMTP_FROM`                         |   ♠️   | Email expéditeur personnalisé                   | `noreply@mondomaine.fr`     |
+| `SMTP_FROM_NAME`                    |   ♠️   | Nom de l'expéditeur                             | `Scouticket`                |
+| `SMTP_FROM_EMAIL`                   |   ♠️   | Email expéditeur de repli                       | `expediteur@email.fr`       |
 
 > ✅ = Requis • ♠️ = Optionnel
 
@@ -384,6 +384,12 @@ Le projet utilise Clerk pour l'authentification et envoie les justificatifs par 
 
 ### Configuration Clerk (résumé technique)
 
+#### Activer les groupes et Google
+
+Dans le tableau de bord Clerk, activez **Organizations**. Les responsables créent ensuite leur groupe directement dans l’application et invitent leurs membres par e-mail. Activez la connexion sociale **Google** dans `SSO connections` pour proposer Google en plus de l’inscription e-mail/mot de passe. En production, renseignez les identifiants OAuth de votre projet Google.
+
+L’adresse de trésorerie n’est plus une variable d’environnement : chaque responsable la renseigne dans son groupe. L’application envoie un lien de validation à cette adresse et bloque les notes de frais tant qu’elle n’est pas confirmée.
+
 1. Créez un compte sur https://dashboard.clerk.com/
 2. Créez une nouvelle application
 3. Activez les providers souhaités : Email (recommandé), Google (optionnel)
@@ -407,11 +413,11 @@ SMTP_PORT=587                               # ou 465 pour SSL
 SMTP_SECURE=false                           # true pour port 465, false pour 587
 SMTP_USER=votre-email@example.com
 SMTP_PASSWORD=votre-mot-de-passe            # Mot de passe d'application pour Gmail
-NEXT_PUBLIC_TREASURY_EMAIL=tresorerie@example.com
+APP_URL=https://app.scouticket.fr              # URL publique de l'application
 
 # Optionnel
 SMTP_FROM=noreply@example.com              # Requis pour Resend ou si SMTP_USER n'est pas une adresse
-SMTP_FROM_NAME=Factures SGDF
+SMTP_FROM_NAME=Scouticket
 SMTP_FROM_EMAIL=noreply@example.com        # Reste utile comme repli si SMTP_FROM absent
 ```
 
@@ -430,9 +436,8 @@ Copiez `.env.example` → `.env.local` et remplissez les valeurs ci-dessus.
 Déjà configurée :
 
 - `public/manifest.json` : nom, couleurs, icônes
-- `public/sw.js` : cache shell + stratégies runtime
-- Icônes : `SGDF_symbole_RVB.png` & `SGDF_symbole_blanc.png`
-- Enregistrement du SW dans `app/layout.tsx`
+- `public/sw.js` : cache versionné par déploiement et stratégies runtime
+- Enregistrement du SW par le composant client `src/components/register-sw.tsx`, monté dans `src/app/layout.tsx`
 - Invite d'installation personnalisée (`InstallPrompt.tsx`)
 
 Limitations hors ligne :
@@ -463,7 +468,7 @@ pnpm start
 3. L'utilisateur complète manuellement la date, le type, le montant, la branche et la description
 4. Le frontend envoie les données et les pièces jointes (base64) à l'API route `/api/send-expense`
 5. Le serveur valide les données, construit l'email et envoie via Gmail SMTP à :
-   - Trésorerie (`NEXT_PUBLIC_TREASURY_EMAIL`)
+   - Trésorerie
    - Utilisateur (email Clerk)
 
 L'email contient un HTML lisible, un fallback texte et les pièces jointes avec des noms formatés `YYYY-MM-DD - Branche - Type - Montant - 01.ext`.
@@ -554,16 +559,14 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
 **Causes possibles** :
 
 1. Email dans les spams
-2. Adresse `NEXT_PUBLIC_TREASURY_EMAIL` incorrecte
-3. Compte email bloqué ou limité
-4. Serveur SMTP bloque l'envoi
+2. Compte email bloqué ou limité
+3. Serveur SMTP bloque l'envoi
 
 **Solutions** :
 
 1. Vérifiez les spams et les dossiers courrier indésirable
-2. Vérifiez `NEXT_PUBLIC_TREASURY_EMAIL` dans Vercel
-3. Connectez-vous à votre compte email et vérifiez les alertes de sécurité
-4. Vérifiez les logs Vercel pour des erreurs d'envoi
+2. Connectez-vous à votre compte email et vérifiez les alertes de sécurité
+3. Vérifiez les logs Vercel pour des erreurs d'envoi
 
 ### Problème : "Invalid login" ou erreur d'authentification SMTP
 
@@ -609,7 +612,6 @@ Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Em
    - `SMTP_SECURE`
    - `SMTP_USER`
    - `SMTP_PASSWORD`
-   - `NEXT_PUBLIC_TREASURY_EMAIL`
 3. Vercel → Deployments → cliquez sur le dernier → vérifiez les logs
 4. Redéployez si nécessaire
 

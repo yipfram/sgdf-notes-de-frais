@@ -1,13 +1,34 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { frFR } from "@clerk/localizations";
+import { RegisterServiceWorker } from "@/components/register-sw";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Factures carte procurement SGDF",
+  metadataBase: new URL("https://app.scouticket.fr"),
+  title: {
+    default: "Scouticket",
+    template: "%s | Scouticket",
+  },
   description:
-    "Application de gestion des factures carte procurement pour SGDF La Guillotière",
+    "Envoyez vos justificatifs et notes de frais à la trésorerie de votre groupe scout.",
   manifest: "/manifest.json",
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "Scouticket",
+    title: "Scouticket",
+    description:
+      "Envoyez vos justificatifs et notes de frais à la trésorerie de votre groupe scout.",
+    images: [{ url: "/og-scouticket.png", width: 1730, height: 909 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Scouticket",
+    description:
+      "Envoyez vos justificatifs et notes de frais à la trésorerie de votre groupe scout.",
+    images: ["/og-scouticket.png"],
+  },
 };
 
 export function generateViewport() {
@@ -45,13 +66,17 @@ export default function RootLayout({
             name="apple-mobile-web-app-status-bar-style"
             content="default"
           />
-          <meta name="apple-mobile-web-app-title" content="Notes SGDF" />
+          <meta name="apple-mobile-web-app-title" content="Scouticket" />
           <meta name="mobile-web-app-capable" content="yes" />
-          <link rel="icon" href="/favicon.ico" />
-          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
           <link rel="manifest" href="/manifest.json" />
+          <script
+            defer
+            src="https://analytics.scouticket.fr/script.js"
+            data-website-id="4260f7db-3623-438a-95a4-9ba2631bcc79"
+          />
         </head>
         <body className="font-sans">
+          <RegisterServiceWorker />
           <div className="min-h-screen">{children}</div>
         </body>
       </html>

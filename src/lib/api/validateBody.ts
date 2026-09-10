@@ -13,7 +13,8 @@ import {
 import type { DonneesEmail } from "@/lib/email";
 import type { NextResponse } from "next/server";
 import { z } from "zod";
-import { TYPES_DEPENSES } from "@/constants/configScoute";
+import { TYPES_DEPENSES } from "@/constants/configDepenses";
+import { journal } from "@/lib/logger";
 
 export function validerCorpsRequete(body: unknown): {
   donneesEmail?: DonneesEmail;
@@ -23,7 +24,7 @@ export function validerCorpsRequete(body: unknown): {
     .object({
       userEmail: z.string().email(),
       date: z.string(),
-      branch: z.string(),
+      unitId: z.string().min(1),
       expenseType: z.string().optional(),
       amount: z.union([z.string(), z.number()]).optional(),
       description: z.string().optional(),
@@ -42,10 +43,9 @@ export function validerCorpsRequete(body: unknown): {
     .safeParse(body);
 
   if (!bodyParsed.success) {
-    console.error(
-      "Erreur lors de l'envoi de l'e-mail :",
-      bodyParsed.error.issues,
-    );
+    journal.avertissement("depense.corps_invalide", {
+      nombreErreursValidation: bodyParsed.error.issues.length,
+    });
     return { error: jsonError("Données manquantes ou incorrecte", 400) };
   }
 
@@ -240,7 +240,7 @@ export function validerCorpsRequete(body: unknown): {
     donneesEmail: {
       emailUtilisateur: b.userEmail,
       date: b.date,
-      branche: b.branch,
+      branche: b.unitId,
       typeDepense,
       montant,
       description: b.description ?? "",

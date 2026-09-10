@@ -1,5 +1,25 @@
-export const metadata = {
-  title: "Hors ligne - Factures carte procurement SGDF",
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Mode hors ligne",
+  description:
+    "Scouticket reste accessible hors ligne pour préparer une note de frais.",
+  openGraph: {
+    title: "Mode hors ligne | Scouticket",
+    description:
+      "Scouticket reste accessible hors ligne pour préparer une note de frais.",
+    images: ["/og-scouticket.png"],
+  },
+  twitter: {
+    title: "Mode hors ligne | Scouticket",
+    description:
+      "Scouticket reste accessible hors ligne pour préparer une note de frais.",
+    images: ["/og-scouticket.png"],
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function OfflinePage() {

@@ -1,10 +1,11 @@
 {
-  "name": "sgdf-notes-de-frais",
-  "version": "0.2.0",
+  "name": "scouticket",
+  "version": "1.0.0",
+  "packageManager": "pnpm@11.22.0",
   "private": true,
-  "description": "Application de gestion des notes de frais pour les Scouts et Guides de France",
-  "license": "Apache-2.0",
-  "homepage": "https://treso.romain-rochas.fr",
+  "description": "Application de gestion de justificatifs et de notes de frais pour les scouts",
+  "license": "MIT",
+  "homepage": "https://scouticket.fr",
   "author": {
     "name": "Yipfram",
     "email": "romain@romain-rochas.fr"

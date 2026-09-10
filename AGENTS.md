@@ -2,7 +2,7 @@
 
 ## 📚 Vue d'ensemble du dépôt
 
-Ce dépôt héberge une application **Next.js 16** (App Router) pour la gestion des factures de cartes d'achat SGDF. La stack comprend :
+Ce dépôt héberge une application **Next.js 16** (App Router) pour la gestion des justificatifs pour les groupes scouts. La stack comprend :
 
 - **TypeScript**
 - **Tailwind CSS** pour le style
@@ -31,9 +31,11 @@ src/
 
 1. **Maintenir la cohérence architecturale** – placer les nouveaux fichiers dans les sous-dossiers appropriés : `app/`, `components/` ou `lib/`.
 2. **Respecter le style de code existant** – TypeScript en mode strict, styles Tailwind utilitaires, et règles ESLint définies dans `.eslintrc.json`.
-3. **Préserver l'expérience utilisateur** – toute modification d'interface doit respecter l'esthétique dark mode / glassmorphisme déjà en place.
-4. **Garantir sécurité et confidentialité** – ne jamais stocker les images uploadées sur le serveur ; les transmettre uniquement par e-mail.
-5. **Rédiger une documentation complète** – mettre à jour `README.md` ou `SETUP.md` lors de l'ajout de fonctionnalités.
+3. **Utiliser des conventions françaises** – nommer les variables, fonctions, types, composants, commentaires et messages utilisateur en français lorsque cela reste compatible avec les conventions ou API externes. Exemple : préférer `montantTotal`, `envoyerFacture` et `FactureFormulaire` à `totalAmount`, `sendInvoice` et `InvoiceForm`, tout en conservant les termes imposés ou conventionnels comme `useState`, `onClick`, `className` et les types d'une bibliothèque externe.
+4. **Préserver l'expérience utilisateur** – toute modification d'interface doit respecter l'esthétique dark mode / glassmorphisme déjà en place.
+5. **Garantir sécurité et confidentialité** – ne jamais stocker les images uploadées sur le serveur ; les transmettre uniquement par e-mail.
+6. **Rédiger une documentation complète** – mettre à jour `README.md` ou `SETUP.md` lors de l'ajout de fonctionnalités.
+7. **Rédiger les commits en français** – utiliser les préfixes conventionnels (`feat:`, `fix:`, `chore:`…) suivis d’un message concis en français.
 
 ## 🛠️ Workflow de développement
 
@@ -64,6 +66,12 @@ src/
 - Build de production : `pnpm build`
 - Démarrer le serveur de production : `pnpm start`
 - Déploiement sur Vercel – s'assurer que toutes les variables d'environnement listées dans `SETUP.md` sont bien renseignées.
+
+### Mises à jour PWA
+
+- Enregistrer le service worker uniquement depuis un composant client, dans un `useEffect`, et seulement dans un contexte sécurisé (HTTPS ou `localhost`).
+- À chaque déploiement de production, fournir une version distincte au service worker, invalider les caches précédents, puis recharger les clients après `controllerchange`.
+- Ne jamais mettre en cache les pages ni les routes API : elles peuvent contenir des données privées ou des références Next.js propres à un déploiement.
 
 ## 📝 Mises à jour de la documentation
 
