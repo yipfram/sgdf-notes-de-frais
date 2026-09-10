@@ -36,7 +36,10 @@ export function ConfigurationGroupe({
   return (
     <form onSubmit={enregistrer} className="space-y-5">
       <div>
-        <label htmlFor="treasury-email" className="block text-sm font-medium text-zinc-700">
+        <label
+          htmlFor="treasury-email"
+          className="block text-sm font-medium text-zinc-700"
+        >
           E-mail de la trésorerie (qui recevra les justificatifs)
         </label>
         <input

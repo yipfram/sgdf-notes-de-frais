@@ -218,12 +218,16 @@ export default function Home() {
                   <>
                     <button
                       type="button"
-                      onClick={() => setAdministrationOuverte((ouverte) => !ouverte)}
+                      onClick={() =>
+                        setAdministrationOuverte((ouverte) => !ouverte)
+                      }
                       aria-expanded={administrationOuverte}
                       className="flex w-full items-center justify-between rounded-xl border border-zinc-300 px-4 py-3 font-medium text-[#1E3A8A] transition-colors hover:bg-zinc-50"
                     >
                       Administration
-                      <span aria-hidden="true">{administrationOuverte ? "−" : "+"}</span>
+                      <span aria-hidden="true">
+                        {administrationOuverte ? "−" : "+"}
+                      </span>
                     </button>
                     {administrationOuverte && (
                       <div className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
