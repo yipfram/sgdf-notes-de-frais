@@ -128,7 +128,7 @@ export function FormulaireConnexionEmail() {
       <div className="grid grid-cols-2 gap-2">
         <button
           disabled={enCours}
-          className="rounded-lg bg-[#1E3A8A] px-5 py-3 font-medium text-white transition-colors hover:bg-[#162d69] disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer rounded-lg bg-[#1E3A8A] px-5 py-3 font-medium text-white transition-colors hover:bg-[#162d69] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {enCours ? "Connexion…" : "Se connecter"}
         </button>
@@ -136,7 +136,7 @@ export function FormulaireConnexionEmail() {
           type="button"
           disabled={enCours}
           onClick={() => void inscrire()}
-          className="rounded-lg border border-[#1E3A8A] px-5 py-3 font-medium text-[#1E3A8A] transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer rounded-lg border border-[#1E3A8A] px-5 py-3 font-medium text-[#1E3A8A] transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
         >
           S’inscrire
         </button>

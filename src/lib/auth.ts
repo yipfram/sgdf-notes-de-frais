@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { createAuthMiddleware } from "better-auth/api";
 import { organization } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { pool } from "@/lib/baseDeDonnees";
@@ -8,6 +9,7 @@ import {
   envoyerEmailVerificationCompte,
 } from "@/lib/emailAuthentification";
 import { journal } from "@/lib/logger";
+import { journaliserAuditAuthentification } from "@/lib/auditAuthentification";
 
 export const auth = betterAuth({
   database: pool,
@@ -54,6 +56,22 @@ export const auth = betterAuth({
   },
   account: {
     accountLinking: { trustedProviders: ["google"] },
+  },
+  hooks: {
+    after: createAuthMiddleware(async (contexte) => {
+      const retour = contexte.context.returned;
+      const codeErreur =
+        typeof retour === "object" && retour !== null && "code" in retour
+          ? retour.code
+          : undefined;
+      journaliserAuditAuthentification({
+        chemin: contexte.path,
+        resultat: typeof codeErreur === "string" ? "echec" : "succes",
+        contexte: contexte.context,
+        corps: contexte.body,
+        codeErreur,
+      });
+    }),
   },
   plugins: [
     organization({

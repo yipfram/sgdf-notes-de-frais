@@ -9,7 +9,7 @@ export function ConnexionGoogle() {
       onClick={() =>
         void clientAuth.signIn.social({ provider: "google", callbackURL: "/" })
       }
-      className="flex w-full items-center justify-center gap-3 rounded-lg border border-zinc-300 bg-white px-5 py-3 font-medium text-zinc-800 transition-colors hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:ring-offset-2"
+      className="cursor-pointer flex w-full items-center justify-center gap-3 rounded-lg border border-zinc-300 bg-white px-5 py-3 font-medium text-zinc-800 transition-colors hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] focus:ring-offset-2"
     >
       <svg
         aria-hidden="true"

@@ -33,6 +33,7 @@ Pour savoir comment l'utiliser avec [la documentation](https://scouticket.fr)
 - 🛠️ **Mode maintenance** : une variable d’environnement permet d’afficher une page dédiée et de désactiver temporairement les API
 - 🌙 **Affichage plein écran** : Expérience proche d'une application native
 - 📋 **Logs techniques structurés** : erreurs serveur et réponses API rejetées, consultables dans Vercel sans contenir de données personnelles ou de justificatifs
+- 🔎 **Audit Better Auth** : les actions d’authentification et de groupes sont journalisées en JSON sur stdout ; OpenObserve peut les ingérer depuis les logs Docker, avec des identifiants pseudonymisés
 
 ## Créer un groupe
 
@@ -115,6 +116,10 @@ docker compose down
 ```
 
 Le point de santé valide `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD` et `APP_URL`, sans envoyer d'e-mail. Pour un test strictement local, définissez `APP_URL=http://localhost:3000` ; une URL publique reste nécessaire pour les liens envoyés par e-mail en conditions réelles.
+
+## Audit Better Auth et OpenObserve
+
+Définissez `AUDIT_LOG_SECRET` avec une valeur aléatoire distincte de `BETTER_AUTH_SECRET`. Scouticket écrit alors les opérations Better Auth importantes (connexion, inscription, mots de passe, vérification e-mail, organisations et invitations) au format JSON sur stdout. Configurez votre collecteur OpenObserve pour ingérer les logs du conteneur `app`; les champs `utilisateur` et `organisation` sont des empreintes HMAC stables, sans e-mail ni identifiant brut.
 
 ## Mode maintenance
 
