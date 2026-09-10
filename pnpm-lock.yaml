@@ -15,6 +15,12 @@ importers:
       '@heroicons/react':
         specifier: ^2.1.5
         version: 2.2.0(react@19.2.5)
+      '@openobserve/browser-logs':
+        specifier: 0.4.2
+        version: 0.4.2(@openobserve/browser-rum@0.4.2)
+      '@openobserve/browser-rum':
+        specifier: ^0.4.2
+        version: 0.4.2(@openobserve/browser-logs@0.4.2)
       '@vercel/speed-insights':
         specifier: ^1.2.0
         version: 1.3.1(next@16.3.1(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.2.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)(vue@3.5.41(typescript@5.9.3))
@@ -919,6 +925,31 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
+
+  '@openobserve/browser-core@0.4.2':
+    resolution: {integrity: sha512-zRqa7Ve5Xgulq8gLkMRzcX0f1piYgJkX8eDonCAf76I2AiV652LxyJIVfHGovM+2XEB0OFChdNmqSdzeCgZkig==}
+
+  '@openobserve/browser-logs@0.4.2':
+    resolution: {integrity: sha512-9H7WXjHmyHnHi3joAO4OkAP5QLGfRMVPqo8JW7beJv891wyOCwqEINlQBXUV6jYFzU/v1TE3UlPcA27YB1QtDg==}
+    peerDependencies:
+      '@openobserve/browser-rum': 0.4.2
+    peerDependenciesMeta:
+      '@openobserve/browser-rum':
+        optional: true
+
+  '@openobserve/browser-rum-core@0.4.2':
+    resolution: {integrity: sha512-7UmzJ+Y1hmpcYyN38Cr6pcM6eh9AXhWAbgLx5wVy6fIVg5NmdzJ5bkegeEdFbqiN5OZ7Fie7aZzYn9LII0AOFA==}
+
+  '@openobserve/browser-rum@0.4.2':
+    resolution: {integrity: sha512-ot/6iA3205KmmPSr/7fnXc+NKjLPna7kEqJL6EcDa6yXuSqGX4iLuBMffXrsp7irJF4NBejDFSzVW2fJWXXKXQ==}
+    peerDependencies:
+      '@openobserve/browser-logs': 0.4.2
+    peerDependenciesMeta:
+      '@openobserve/browser-logs':
+        optional: true
+
+  '@openobserve/js-core@0.4.2':
+    resolution: {integrity: sha512-J0kOdpHdYssngc1fYD7lfm9QuHgyHiXZ1rAiqTNwKcosHbx8x3gFhKImRNZzE95KajqTlu13kfZzR03GE4Yiew==}
 
   '@opentelemetry/semantic-conventions@1.43.0':
     resolution: {integrity: sha512-eSYWTm620tTk45EKSedaUL8MFYI8hW164hIXsgIHyxu3VobUB3fFCu5t0hQby6OoWRPsG1KkKUG2M5UadiLiVg==}
@@ -4347,6 +4378,32 @@ snapshots:
       fastq: 1.20.1
 
   '@nolyfill/is-core-module@1.0.39': {}
+
+  '@openobserve/browser-core@0.4.2':
+    dependencies:
+      '@openobserve/js-core': 0.4.2
+
+  '@openobserve/browser-logs@0.4.2(@openobserve/browser-rum@0.4.2)':
+    dependencies:
+      '@openobserve/browser-core': 0.4.2
+      '@openobserve/js-core': 0.4.2
+    optionalDependencies:
+      '@openobserve/browser-rum': 0.4.2(@openobserve/browser-logs@0.4.2)
+
+  '@openobserve/browser-rum-core@0.4.2':
+    dependencies:
+      '@openobserve/browser-core': 0.4.2
+      '@openobserve/js-core': 0.4.2
+
+  '@openobserve/browser-rum@0.4.2(@openobserve/browser-logs@0.4.2)':
+    dependencies:
+      '@openobserve/browser-core': 0.4.2
+      '@openobserve/browser-rum-core': 0.4.2
+      '@openobserve/js-core': 0.4.2
+    optionalDependencies:
+      '@openobserve/browser-logs': 0.4.2(@openobserve/browser-rum@0.4.2)
+
+  '@openobserve/js-core@0.4.2': {}
 
   '@opentelemetry/semantic-conventions@1.43.0': {}
 
