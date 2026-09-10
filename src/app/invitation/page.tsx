@@ -21,7 +21,7 @@ function messageErreurInvitation(code: string | undefined) {
 export default function PageInvitation({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string; groupe?: string }>;
+  searchParams: Promise<{ id?: string }>;
 }) {
   const routeur = useRouter();
   const { data: session, isPending } = clientAuth.useSession();
@@ -31,18 +31,17 @@ export default function PageInvitation({
   const [message, setMessage] = useState("");
   const [enCours, setEnCours] = useState(false);
   useEffect(() => {
-    void searchParams.then(async ({ id, groupe }) => {
+    void searchParams.then(async ({ id }) => {
       let identifiant = id;
-      let nom = groupe;
       if (!identifiant) {
         const retour = window.sessionStorage.getItem("invitation-retour");
         if (retour) {
           const urlRetour = new URL(retour, window.location.origin);
           identifiant = urlRetour.searchParams.get("id") || undefined;
-          nom = urlRetour.searchParams.get("groupe") || undefined;
         }
       }
-      if (identifiant && !nom) {
+      let nom: string | undefined;
+      if (identifiant) {
         const reponse = await fetch(
           `/api/invitation?id=${encodeURIComponent(identifiant)}`,
         );
@@ -57,12 +56,11 @@ export default function PageInvitation({
   useEffect(() => {
     if (isPending || session || !invitationId || !invitationPrete) return;
     const retour = new URLSearchParams({
-      callbackURL: `/invitation?id=${invitationId}${nomGroupe ? `&groupe=${nomGroupe}` : ""}`,
+      callbackURL: `/invitation?id=${invitationId}`,
       invitation: "1",
     });
-    if (nomGroupe) retour.set("groupe", nomGroupe);
     window.location.replace(`/sign-in?${retour.toString()}`);
-  }, [invitationId, invitationPrete, isPending, nomGroupe, session]);
+  }, [invitationId, invitationPrete, isPending, session]);
   const accepter = async () => {
     if (!invitationId || enCours) return;
     setEnCours(true);
@@ -78,6 +76,21 @@ export default function PageInvitation({
       }
       setMessage("Invitation acceptée. Redirection…");
       window.sessionStorage.removeItem("invitation-retour");
+      const identifiantOrganisation = resultat.data?.invitation.organizationId;
+      if (identifiantOrganisation) {
+        try {
+          await clientAuth.organization.setActive({
+            organizationId: identifiantOrganisation,
+          });
+          await fetch("/api/user/default-group", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ organizationId: identifiantOrganisation }),
+          });
+        } catch {
+          // Better Auth rattache déjà le membre et active le groupe côté serveur.
+        }
+      }
       routeur.replace("/");
     } catch {
       setMessage("Impossible d’accepter cette invitation. Réessayez.");
@@ -112,6 +125,9 @@ export default function PageInvitation({
     <main className="min-h-screen bg-zinc-50 p-6 flex items-center justify-center">
       <section className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 text-center">
         <h1 className="text-xl font-semibold">Invitation Scouticket</h1>
+        <p className="mt-2 text-zinc-600">
+          Vous allez rejoindre {nomGroupe || "ce groupe"}.
+        </p>
         <button
           type="button"
           onClick={() => void accepter()}

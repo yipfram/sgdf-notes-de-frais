@@ -10,7 +10,6 @@ export async function envoyerEmailInvitation(parametres: {
   if (!urlApplication) throw new Error("APP_URL_UNDEFINED");
   const url = new URL("/invitation", urlApplication);
   url.searchParams.set("id", parametres.invitationId);
-  url.searchParams.set("groupe", parametres.nomGroupe);
   const transport = creerTransporteurEmail();
   const nomExpediteur = process.env.SMTP_FROM_NAME || "Scouticket";
   const expediteurConfigure = process.env.SMTP_FROM?.trim();

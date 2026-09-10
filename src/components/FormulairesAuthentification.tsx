@@ -20,9 +20,8 @@ export function FormulaireConnexionEmail() {
   const recherche = useSearchParams();
   const retour = recherche?.get("callbackURL");
   const callbackURL = retour?.startsWith("/") ? retour : "/";
-  const nomGroupeInvite = recherche?.get("invitation")
-    ? recherche.get("groupe")
-    : null;
+  const estInvitation = recherche?.get("invitation") === "1";
+  const [nomGroupeInvite, setNomGroupeInvite] = useState<string>();
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [erreur, setErreur] = useState("");
@@ -31,9 +30,27 @@ export function FormulaireConnexionEmail() {
   const referenceFormulaire = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (callbackURL.startsWith("/invitation?id=")) {
-      window.sessionStorage.setItem("invitation-retour", callbackURL);
-    }
+    if (!callbackURL.startsWith("/invitation?id=")) return;
+    window.sessionStorage.setItem("invitation-retour", callbackURL);
+    const identifiantInvitation = new URL(
+      callbackURL,
+      window.location.origin,
+    ).searchParams.get("id");
+    if (!identifiantInvitation) return;
+    let annule = false;
+    void fetch(
+      `/api/invitation?id=${encodeURIComponent(identifiantInvitation)}`,
+    )
+      .then((reponse) => (reponse.ok ? reponse.json() : null))
+      .then((invitation: { nomGroupe: string } | null) => {
+        if (!annule) setNomGroupeInvite(invitation?.nomGroupe);
+      })
+      .catch(() => {
+        if (!annule) setNomGroupeInvite(undefined);
+      });
+    return () => {
+      annule = true;
+    };
   }, [callbackURL]);
 
   const connecter = async (event: FormEvent) => {
@@ -87,12 +104,12 @@ export function FormulaireConnexionEmail() {
 
   return (
     <form ref={referenceFormulaire} onSubmit={connecter} className="space-y-4">
-      {nomGroupeInvite && (
+      {estInvitation && (
         <p
           className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-950"
           role="status"
         >
-          Vous avez été invité à rejoindre le groupe {nomGroupeInvite}.
+          Vous avez été invité à rejoindre {nomGroupeInvite || "ce groupe"}.
         </p>
       )}
       <div>
