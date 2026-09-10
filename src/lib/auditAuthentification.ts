@@ -42,13 +42,11 @@ function secretAudit() {
 
 export function pseudonymiserIdentifiant(identifiant: string | null) {
   if (!identifiant) return null;
-  return createHmac("sha256", secretAudit())
-    .update(identifiant)
-    .digest("hex");
+  return createHmac("sha256", secretAudit()).update(identifiant).digest("hex");
 }
 
 export function actionAuditAuthentification(chemin: string | undefined) {
-  return chemin ? actionsParChemin[chemin] ?? null : null;
+  return chemin ? (actionsParChemin[chemin] ?? null) : null;
 }
 
 function identifiantsContexte(contexte: unknown) {
