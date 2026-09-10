@@ -75,4 +75,13 @@ describe("Proxy Better Auth", () => {
     const { default: proxy } = await import("../proxy");
     expect(proxy(requete("/maintenance")).status).toBe(200);
   });
+
+  it.each(["/forgot-password", "/reset-password"])(
+    "laisse accessible le parcours de réinitialisation : %s",
+    async (pathname) => {
+      mocks.cookieSession.mockReturnValue(null);
+      const { default: proxy } = await import("../proxy");
+      expect(proxy(requete(pathname)).status).toBe(200);
+    },
+  );
 });

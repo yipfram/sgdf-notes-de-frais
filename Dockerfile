@@ -39,6 +39,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 COPY --from=construction /app/.next ./.next
 COPY --from=construction /app/public ./public
+COPY --from=construction /app/scripts/migrate-base-de-donnees.mjs ./scripts/migrate-base-de-donnees.mjs
+COPY --from=construction /app/sql ./sql
 
 EXPOSE 3000
 

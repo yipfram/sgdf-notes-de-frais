@@ -4,7 +4,7 @@
 
 ## Authentification et migration
 
-L’application utilise Better Auth, PostgreSQL et la connexion Google. Configurez `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET`, puis appliquez `pnpm auth:migrate` et `psql "$DATABASE_URL" -f sql/001_scouticket.sql`. Le script lance la CLI autonome officielle `auth` dans la même version que Better Auth.
+L’application utilise Better Auth, PostgreSQL, la connexion e-mail/mot de passe et Google. Le formulaire de connexion permet aussi de créer un compte e-mail, en utilisant l’adresse e-mail comme nom de profil. Configurez `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_URL`, les variables SMTP et, si souhaité, `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`. Appliquez ensuite `pnpm auth:migrate`, puis `pnpm db:migrate`. Cette commande charge le fichier `.env` lorsqu’il existe. La première commande migre les tables Better Auth ; la seconde applique et historise les migrations Scouticket (`sql/*.sql`). Le script lance la CLI autonome officielle `auth` dans la même version que Better Auth.
 
 Pour importer une dernière fois l’environnement Clerk de développement, appliquez d’abord ces migrations puis renseignez `CLERK_SECRET_KEY` et `DATABASE_URL` dans `.env` avant d’exécuter `pnpm migrate:clerk`. Les sessions Clerk et invitations en attente restent volontairement invalidées.
 
@@ -22,7 +22,8 @@ Pour savoir comment l'utiliser avec [la documentation](https://scouticket.fr)
 - 📝 **Saisie des informations** : date, branche, montant, type et description ; avec plusieurs justificatifs, un montant et une catégorie sont saisis pour chaque dépense et le total est calculé automatiquement
 - ✉️ **Envoi e-mail automatique** : transmission à la trésorerie + copie à l’utilisateur avec une ou plusieurs pièces jointes
 - 👥 **Multi-groupes** : chaque groupe configure ses unités, invite ses membres et valide sa propre adresse de trésorerie
-- 📌 **Unité mémorisée** : le dernier choix d’unité est synchronisé avec le compte Clerk, séparément pour chaque groupe
+- 📌 **Préférences mémorisées** : le dernier choix d’unité et le groupe principal sont enregistrés par compte
+- 🔐 **Connexion complète** : inscription, vérification d’e-mail, connexion e-mail/mot de passe, réinitialisation sécurisée et Google en option
 - 🔐 **Validation de trésorerie** : aucun envoi n’est possible avant la confirmation reçue par e-mail du trésorier, via un e-mail HTML reprenant la charte Scouticket
 - 🏷️ **Nom de fichier structuré** : `YYYY-MM-DD - Branche - Type - Montant - 01.pdf` (ou `.jpg/.png/.webp`)
 - 📲 **Installation PWA** : Ajout possible à l'écran d'accueil (Android / iOS / Desktop)
@@ -41,7 +42,9 @@ Définissez `APP_URL` avec l’URL publique de l’application (par exemple `htt
 
 La liste d’unités par défaut peut être renommée, complétée ou simplifiée par chaque groupe. Chaque unité possède une couleur, reprise dans les e-mails de notes de frais.
 
-Dans le tableau de bord Clerk, activez **Organizations** ainsi que les invitations d’organisation. Activez également Google dans **SSO connections** si vous souhaitez afficher « Continuer avec Google » en plus de l’e-mail/mot de passe.
+Better Auth gère les organisations et les invitations dans la base PostgreSQL. Google reste optionnel : renseignez ses identifiants OAuth si vous souhaitez afficher « Continuer avec Google » en plus de l’e-mail/mot de passe.
+
+Dans Google Cloud Console, ajoutez `http://localhost:3000/api/auth/callback/google` en développement et `https://votre-domaine/api/auth/callback/google` en production aux URI de redirection autorisés. `BETTER_AUTH_URL` doit correspondre exactement à l’URL publique de l’application.
 
 Les responsables retrouvent les invitations et la liste des membres dans le menu **Administration** du formulaire.
 
@@ -59,7 +62,7 @@ Les responsables retrouvent les invitations et la liste des membres dans le menu
 - **Next.js 16** (App Router)
 - **TypeScript**
 - **Tailwind CSS**
-- **Clerk** (authentification)
+- **Better Auth** (authentification)
 - **Nodemailer / SMTP générique** (envoi d'emails côté serveur - compatible Gmail, Outlook, Office 365, serveurs personnalisés)
 - **PWA** (manifest + service worker)
 
@@ -99,9 +102,9 @@ Docker Desktop doit être démarré. Compose démarre aussi PostgreSQL avec un v
 # Construire, démarrer et attendre que le contrôle de santé réussisse
 docker compose up --build --wait
 
-# Initialiser Better Auth et les tables Scouticket (une seule fois)
+# Initialiser Better Auth et les tables Scouticket (à chaque nouvelle migration)
 docker compose exec app pnpm auth:migrate
-docker compose exec postgres psql -U scouticket -d scouticket -f /migrations/001_scouticket.sql
+docker compose exec app pnpm db:migrate
 
 # Vérifier la configuration de l'application
 curl http://localhost:3000/api/health
@@ -116,12 +119,6 @@ Le point de santé valide `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD` et `APP_URL`
 ## Mode maintenance
 
 Définissez `MAINTENANCE_MODE=true` puis redémarrez ou redéployez l’application pour afficher la page de maintenance. Les pages sont redirigées vers celle-ci, les API répondent avec le statut `503`, et `/api/health` répond `{ "ok": false, "status": "maintenance" }`. Remettez `MAINTENANCE_MODE=false` pour rétablir le service.
-
-## Logs techniques
-
-Les routes API écrivent des événements JSON dans les Runtime Logs Vercel. Ils distinguent les informations SMTP (`info`), les réponses HTTP 4xx attendues (`warn`) et les erreurs serveur (`error`).
-
-Chaque réponse API contient l'en-tête `X-Request-Id` : communiquez sa valeur avec l'heure approximative de l'incident pour retrouver rapidement le log correspondant. Les rejets et erreurs de routes API contiennent également `identifiantUtilisateur`, l'identifiant technique Clerk (`user_…`) ou `null` pour une requête anonyme. Les corps de requête, e-mails, autres identifiants, pièces jointes et secrets sont masqués et ne doivent jamais être ajoutés manuellement aux journaux.
 
 ---
 

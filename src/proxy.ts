@@ -26,7 +26,8 @@ export default function proxy(requete: NextRequest) {
     chemin.startsWith("/api/auth") ||
     chemin === "/api/health" ||
     chemin === "/sign-in" ||
-    chemin === "/sign-up" ||
+    chemin === "/forgot-password" ||
+    chemin === "/reset-password" ||
     chemin === "/verify-treasury" ||
     chemin === "/offline" ||
     chemin === "/invitation";

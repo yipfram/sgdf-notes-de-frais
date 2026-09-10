@@ -29,7 +29,43 @@ export default function Home() {
   const [piecesJointes, setPiecesJointes] = useState<PieceJointeDepense[]>([]);
   const [groupe, setGroupe] = useState<Groupe | null>(null);
   const [nomGroupe, setNomGroupe] = useState("");
+  const [initialisationGroupeTerminee, setInitialisationGroupeTerminee] =
+    useState(false);
+  const [choixManuelGroupe, setChoixManuelGroupe] = useState(false);
   const estEnLigne = useStatutEnLigne();
+
+  const definirGroupePrincipal = async (identifiantOrganisation: string) => {
+    await fetch("/api/user/default-group", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ organizationId: identifiantOrganisation }),
+    });
+  };
+
+  useEffect(() => {
+    if (!session || organisation || !organisations || choixManuelGroupe) return;
+    let annule = false;
+    const activerGroupePrincipal = async () => {
+      try {
+        const reponse = await fetch("/api/user/default-group");
+        const { organizationId } = reponse.ok
+          ? ((await reponse.json()) as { organizationId: string | null })
+          : { organizationId: null };
+        if (
+          organizationId &&
+          organisations.some((item) => item.id === organizationId)
+        ) {
+          await clientAuth.organization.setActive({ organizationId });
+        }
+      } finally {
+        if (!annule) setInitialisationGroupeTerminee(true);
+      }
+    };
+    void activerGroupePrincipal();
+    return () => {
+      annule = true;
+    };
+  }, [choixManuelGroupe, organisation, organisations, session]);
 
   const chargerGroupe = useCallback(() => {
     if (!organisation) return setGroupe(null);
@@ -61,17 +97,29 @@ export default function Home() {
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
-    await clientAuth.organization.create({
+    const resultat = await clientAuth.organization.create({
       name: nom,
       slug: `${normalise}-${Date.now().toString(36)}`,
     });
+    if (resultat.data?.id) {
+      await definirGroupePrincipal(resultat.data.id);
+      await clientAuth.organization.setActive({
+        organizationId: resultat.data.id,
+      });
+    }
     setNomGroupe("");
   };
+  if (!organisation && !initialisationGroupeTerminee && !choixManuelGroupe)
+    return (
+      <main className="min-h-screen bg-zinc-50 p-6 text-center text-zinc-600">
+        Chargement…
+      </main>
+    );
   if (!organisation)
     return (
       <main className="min-h-screen bg-zinc-50 p-6 flex items-center justify-center">
         <section className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6">
-          <h1 className="text-2xl font-semibold">Bienvenue</h1>
+          <h1 className="text-2xl font-semibold text-zinc-900">Bienvenue</h1>
           <p className="mt-2 text-zinc-600">
             Choisissez ou créez votre groupe scout.
           </p>
@@ -81,11 +129,14 @@ export default function Home() {
                 key={item.id}
                 type="button"
                 onClick={() =>
-                  void clientAuth.organization.setActive({
-                    organizationId: item.id,
-                  })
+                  void (async () => {
+                    await definirGroupePrincipal(item.id);
+                    await clientAuth.organization.setActive({
+                      organizationId: item.id,
+                    });
+                  })()
                 }
-                className="block w-full rounded-lg border border-zinc-300 p-3 text-left hover:bg-zinc-50"
+                className="block w-full rounded-lg border border-zinc-300 p-3 text-left text-zinc-900 hover:bg-zinc-50"
               >
                 {item.name}
               </button>
@@ -96,7 +147,7 @@ export default function Home() {
               value={nomGroupe}
               onChange={(e) => setNomGroupe(e.target.value)}
               placeholder="Nom du groupe"
-              className="min-w-0 flex-1 rounded-lg border border-zinc-300 p-3"
+              className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white p-3 text-zinc-900 placeholder:text-zinc-500"
             />
             <button
               type="button"
@@ -114,7 +165,7 @@ export default function Home() {
       <div className="mx-auto max-w-md overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
         <header className="flex items-center justify-between border-b border-zinc-200 p-6">
           <div>
-            <h1 className="text-2xl font-semibold">Scouticket</h1>
+            <h1 className="text-2xl font-semibold text-zinc-900">Scouticket</h1>
             <p className="mt-2 text-zinc-500">{organisation.name}</p>
           </div>
           <button
@@ -157,9 +208,12 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() =>
-                    void clientAuth.organization.setActive({
-                      organizationId: null,
-                    })
+                    void (async () => {
+                      setChoixManuelGroupe(true);
+                      await clientAuth.organization.setActive({
+                        organizationId: null,
+                      });
+                    })()
                   }
                   className="text-zinc-600 underline"
                 >

@@ -9,7 +9,7 @@ Ce guide explique **pas à pas** comment installer et déployer l'application, q
 3. [Guide rapide pour développeurs](#guide-rapide-pour-développeurs)
 4. [Guide détaillé pas à pas](#guide-détaillé-pas-à-pas)
    - [Étape 1 : Configuration SMTP (Email)](#étape-1--configuration-smtp-email)
-   - [Étape 2 : Configuration Clerk](#étape-2--configuration-clerk)
+   - [Étape 2 : Configuration Better Auth](#étape-2--configuration-better-auth)
    - [Étape 3 : Déploiement sur Vercel](#étape-3--déploiement-sur-vercel)
    - [Étape 4 : Configuration des variables d'environnement](#étape-4--configuration-des-variables-denvironnement)
    - [Étape 5 : Finalisation et tests](#étape-5--finalisation-et-tests)
@@ -37,7 +37,7 @@ Avant de commencer :
 
 - ✅ Un compte **Email** avec accès SMTP pour envoyer les emails (Gmail, Outlook, Office 365, ou serveur personnalisé - gratuit)
 - ✅ Un compte **GitHub** pour accéder au code source (gratuit)
-- ✅ Un compte **Clerk** pour l'authentification (gratuit jusqu'à 10 000 utilisateurs/mois)
+- ✅ Une base PostgreSQL et les variables **Better Auth** pour l'authentification
 - ✅ Un compte **Vercel** pour héberger l'application (gratuit pour projets associatifs)
 
 **Tout est gratuit !** Aucun frais n'est requis pour une utilisation associative normale.
@@ -49,11 +49,11 @@ Avant de commencer :
 Si vous êtes développeur et que vous connaissez déjà ces outils :
 
 1. Forkez le repo sur GitHub
-2. Configurez Clerk sur [dashboard.clerk.com](https://dashboard.clerk.com/)
+2. Configurez PostgreSQL et Better Auth dans `.env.local`
 3. Configurez vos identifiants SMTP (voir `.env.example` pour exemples Gmail/Outlook/Office365)
-4. Copiez `.env.example` → `.env.local` et remplissez les variables SMTP + Clerk
+4. Copiez `.env.example` → `.env.local` et remplissez les variables SMTP + Better Auth
 5. Déployez sur Vercel et ajoutez les variables d'environnement
-6. Ajoutez votre domaine Vercel dans Clerk
+6. Ajoutez les URL de production dans `BETTER_AUTH_URL` et `APP_URL`
 
 Pour plus de détails, voir le [Guide détaillé pas à pas](#guide-détaillé-pas-à-pas) ci-dessous.
 
@@ -189,37 +189,15 @@ Si vous avez un serveur SMTP personnalisé :
 
 ---
 
-### Étape 2 : Configuration Clerk
+### Étape 2 : Configuration Better Auth
 
-Clerk gère l'authentification des utilisateurs (connexion/inscription).
+Better Auth gère l’authentification depuis l’application. Configurez une base PostgreSQL, puis définissez `DATABASE_URL`, `BETTER_AUTH_SECRET` (une valeur longue et aléatoire), `BETTER_AUTH_URL` et `APP_URL`. L’inscription e-mail/mot de passe requiert aussi la configuration SMTP afin d’envoyer les liens de vérification et de réinitialisation.
 
-#### 2.1 Créer un compte Clerk
+Après le déploiement, exécutez `pnpm auth:migrate`, puis `pnpm db:migrate`. Cette dernière commande charge le fichier `.env` lorsqu’il existe. La première commande crée les tables Better Auth ; la seconde applique une seule fois chaque migration de `sql/` et l’historise dans PostgreSQL. Relancez ces deux commandes avant un déploiement qui introduit une migration. Google est optionnel : ajoutez `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET` pour l’activer.
 
-1. Allez sur [https://dashboard.clerk.com/sign-up](https://dashboard.clerk.com/sign-up)
-2. Créez un compte (vous pouvez utiliser Google, GitHub ou email)
-3. Confirmez votre compte si nécessaire
+Si une connexion sociale échoue avec `column "id" of relation "rateLimit" does not exist`, la base n’a pas encore reçu la migration Scouticket : exécutez `pnpm db:migrate` avec la `DATABASE_URL` de cet environnement.
 
-> 💡 Gratuit jusqu'à 10 000 utilisateurs actifs/mois.
-
-#### 2.2 Créer une application
-
-1. Sur le tableau de bord Clerk, cliquez sur **"Create application"**
-2. Nom : `Scouticket`
-3. Dans **"Authentication methods"**, cochez :
-   - ✅ **Email** (recommandé - obligatoire)
-   - ✅ **Google** (optionnel)
-4. Cliquez sur **"Create application"**
-
-#### 2.3 Récupérer vos clés API
-
-1. Après création, vous voyez vos **clés API**
-2. Copiez dans un bloc-notes sécurisé :
-   - **Publishable key** (commence par `pk_test_...`)
-   - **Secret key** (commence par `sk_test_...`)
-
-> 💡 Vous pouvez les retrouver dans **API Keys** dans le menu de gauche.
-
-> ⚠️ **Note** : Nous configurerons le domaine plus tard (après déploiement sur Vercel).
+Si Google est activé, configurez dans Google Cloud Console l’URI `http://localhost:3000/api/auth/callback/google` en local et `https://votre-domaine/api/auth/callback/google` en production. Cette URL est construite à partir de `BETTER_AUTH_URL`.
 
 ---
 
@@ -258,22 +236,21 @@ Les variables d'environnement sont les "réglages secrets" de l'application.
 
 #### 4.1 Tableau récapitulatif des variables
 
-| Variable                            | Requis | Description                                     | Exemple                     |
-| ----------------------------------- | :----: | ----------------------------------------------- | --------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` |   ✅   | Clé publique Clerk (commence par `pk_test_...`) | `pk_test_abc123...`         |
-| `CLERK_SECRET_KEY`                  |   ✅   | Clé secrète Clerk (commence par `sk_test_...`)  | `sk_test_xyz789...`         |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`     |   ✅   | URL de connexion                                | `/sign-in`                  |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`     |   ✅   | URL d'inscription                               | `/sign-up`                  |
-| `SMTP_HOST`                         |   ✅   | Adresse du serveur SMTP                         | `smtp.gmail.com`            |
-| `SMTP_PORT`                         |   ✅   | Port SMTP (587 TLS, 465 SSL)                    | `587`                       |
-| `SMTP_SECURE`                       |   ✅   | SSL/TLS activé (`true`/`false`)                 | `false`                     |
-| `SMTP_USER`                         |   ✅   | Identifiant SMTP (votre email)                  | `monemail@gmail.com`        |
-| `SMTP_PASSWORD`                     |   ✅   | Mot de passe SMTP                               | `motdepasse16caracteres`    |
-| `APP_URL`                           |   ✅   | URL publique utilisée dans les liens par e-mail | `https://app.scouticket.fr` |
-| `MAINTENANCE_MODE`                  |   ♠️   | Active la page de maintenance et bloque les API | `false`                     |
-| `SMTP_FROM`                         |   ♠️   | Email expéditeur personnalisé                   | `noreply@mondomaine.fr`     |
-| `SMTP_FROM_NAME`                    |   ♠️   | Nom de l'expéditeur                             | `Scouticket`                |
-| `SMTP_FROM_EMAIL`                   |   ♠️   | Email expéditeur de repli                       | `expediteur@email.fr`       |
+| Variable             | Requis | Description                                     | Exemple                     |
+| -------------------- | :----: | ----------------------------------------------- | --------------------------- |
+| `DATABASE_URL`       |   ✅   | Connexion PostgreSQL                            | `postgresql://…/scouticket` |
+| `BETTER_AUTH_SECRET` |   ✅   | Secret Better Auth long et aléatoire            | `…`                         |
+| `BETTER_AUTH_URL`    |   ✅   | URL publique de l’application                   | `https://app.exemple.fr`    |
+| `SMTP_HOST`          |   ✅   | Adresse du serveur SMTP                         | `smtp.gmail.com`            |
+| `SMTP_PORT`          |   ✅   | Port SMTP (587 TLS, 465 SSL)                    | `587`                       |
+| `SMTP_SECURE`        |   ✅   | SSL/TLS activé (`true`/`false`)                 | `false`                     |
+| `SMTP_USER`          |   ✅   | Identifiant SMTP (votre email)                  | `monemail@gmail.com`        |
+| `SMTP_PASSWORD`      |   ✅   | Mot de passe SMTP                               | `motdepasse16caracteres`    |
+| `APP_URL`            |   ✅   | URL publique utilisée dans les liens par e-mail | `https://app.scouticket.fr` |
+| `MAINTENANCE_MODE`   |   ♠️   | Active la page de maintenance et bloque les API | `false`                     |
+| `SMTP_FROM`          |   ♠️   | Email expéditeur personnalisé                   | `noreply@mondomaine.fr`     |
+| `SMTP_FROM_NAME`     |   ♠️   | Nom de l'expéditeur                             | `Scouticket`                |
+| `SMTP_FROM_EMAIL`    |   ♠️   | Email expéditeur de repli                       | `expediteur@email.fr`       |
 
 > ✅ = Requis • ♠️ = Optionnel
 
@@ -306,7 +283,7 @@ Pour chaque variable du tableau ci-dessus :
 
 Vérifiez que :
 
-- ✅ Vous avez au minimum **10 variables** (4 Clerk + 6 SMTP)
+- ✅ Vous avez `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_URL` et les variables SMTP
 - ✅ Les noms sont **exactement** comme indiqué
 - ✅ Aucune valeur n'a d'espace au début/fin
 
@@ -383,26 +360,23 @@ Vous devriez avoir reçu un email avec :
 
 ## Configuration requise (référence technique)
 
-Le projet utilise Clerk pour l'authentification et envoie les justificatifs par email via Gmail SMTP. Il n'y a pas de stockage centralisé des factures.
+Le projet utilise Better Auth pour l'authentification et envoie les justificatifs par email via Gmail SMTP. Il n'y a pas de stockage centralisé des factures.
 
-### Configuration Clerk (résumé technique)
+### Configuration Better Auth (résumé technique)
 
 #### Activer les groupes et Google
 
-Dans le tableau de bord Clerk, activez **Organizations**. Les responsables créent ensuite leur groupe directement dans l’application et invitent leurs membres par e-mail. Activez la connexion sociale **Google** dans `SSO connections` pour proposer Google en plus de l’inscription e-mail/mot de passe. En production, renseignez les identifiants OAuth de votre projet Google.
+Les responsables créent directement leurs groupes dans l’application et invitent leurs membres par e-mail. Better Auth stocke les organisations dans PostgreSQL. Google est optionnel ; renseignez les identifiants OAuth de votre projet Google pour proposer ce moyen de connexion en plus de l’inscription e-mail/mot de passe.
 
 L’adresse de trésorerie n’est plus une variable d’environnement : chaque responsable la renseigne dans son groupe. L’application envoie un lien de validation à cette adresse et bloque les notes de frais tant qu’elle n’est pas confirmée.
 
-1. Créez un compte sur https://dashboard.clerk.com/
-2. Créez une nouvelle application
-3. Activez les providers souhaités : Email (recommandé), Google (optionnel)
-4. Copiez les clés dans `.env.local` :
+Renseignez les variables suivantes dans `.env.local`, puis lancez `pnpm auth:migrate` suivi de `pnpm db:migrate` :
 
 ```bash
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+DATABASE_URL=postgresql://user:password@localhost:5432/scouticket
+BETTER_AUTH_SECRET=une_valeur_longue_et_aleatoire
+BETTER_AUTH_URL=https://app.exemple.fr
+APP_URL=https://app.exemple.fr
 ```
 
 ### Configuration SMTP (résumé technique)
@@ -466,13 +440,13 @@ pnpm start
 
 ## 📧 Fonctionnement de l'envoi d'email
 
-1. L'utilisateur se connecte via Clerk
+1. L'utilisateur se connecte via Better Auth
 2. L'utilisateur capture ou importe un/des justificatif(s) (images/PDF)
 3. L'utilisateur complète manuellement la date, le type, le montant, la branche et la description
 4. Le frontend envoie les données et les pièces jointes (base64) à l'API route `/api/send-expense`
 5. Le serveur valide les données, construit l'email et envoie via Gmail SMTP à :
    - Trésorerie
-   - Utilisateur (email Clerk)
+   - Utilisateur (e-mail du compte)
 
 L'email contient un HTML lisible, un fallback texte et les pièces jointes avec des noms formatés `YYYY-MM-DD - Branche - Type - Montant - 01.ext`.
 
@@ -485,7 +459,7 @@ L'email contient un HTML lisible, un fallback texte et les pièces jointes avec 
 
 ## 🔒 Sécurité
 
-- Authentification obligatoire (Clerk)
+- Authentification obligatoire (Better Auth)
 - Variables sensibles dans `.env.local` (ignoré par Git)
 - Validation côté serveur avant envoi
 - HTTPS requis en production pour l'accès caméra
@@ -493,7 +467,7 @@ L'email contient un HTML lisible, un fallback texte et les pièces jointes avec 
 ## Architecture
 
 ```
-Frontend (React + Clerk) → API Route (/api/send-expense) → Gmail SMTP → Email delivery
+Frontend (React + Better Auth) → API Route (/api/send-expense) → Gmail SMTP → Email delivery
                       ↓
                Authentification
 ```
