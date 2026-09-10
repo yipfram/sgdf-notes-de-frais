@@ -16,7 +16,7 @@
 ## Problèmes mobile / PWA
 
 - Caméra indisponible : vérifier HTTPS
-- PWA non installable : vérifier manifest/service worker
+- PWA non installable : ouvrir `https://app.scouticket.fr/manifest.json` dans le navigateur. Il doit afficher du JSON (et non la page de connexion) ; puis vérifier le service worker. Sur Android, utiliser Chrome, ouvrir le menu ⋮ puis choisir « Installer l'application » ou « Ajouter à l'écran d'accueil ».
 - Hors ligne limité : comportement normal (envoi nécessite réseau)
 
 ## Checklist rapide
