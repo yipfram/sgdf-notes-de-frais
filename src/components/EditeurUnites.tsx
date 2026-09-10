@@ -50,10 +50,12 @@ export function EditeurUnites({
               ×
             </button>
           </div>
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <span className="text-sm text-zinc-600">Couleur</span>
+          <div className="mt-3 flex items-start gap-3">
+            <span className="shrink-0 pt-1.5 text-sm text-zinc-600">
+              Couleur
+            </span>
             <div
-              className="flex gap-2"
+              className="flex min-w-0 flex-1 flex-wrap justify-end gap-2"
               role="group"
               aria-label={`Couleur de ${unite.label}`}
             >
