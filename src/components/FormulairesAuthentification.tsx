@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { clientAuth } from "@/lib/auth-client";
 
 function MessageErreur({ message }: { readonly message: string }) {
@@ -29,6 +29,12 @@ export function FormulaireConnexionEmail() {
   const [message, setMessage] = useState("");
   const [enCours, setEnCours] = useState(false);
   const referenceFormulaire = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (callbackURL.startsWith("/invitation?id=")) {
+      window.sessionStorage.setItem("invitation-retour", callbackURL);
+    }
+  }, [callbackURL]);
 
   const connecter = async (event: FormEvent) => {
     event.preventDefault();

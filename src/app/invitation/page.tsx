@@ -32,15 +32,24 @@ export default function PageInvitation({
   const [enCours, setEnCours] = useState(false);
   useEffect(() => {
     void searchParams.then(async ({ id, groupe }) => {
+      let identifiant = id;
       let nom = groupe;
-      if (id && !nom) {
+      if (!identifiant) {
+        const retour = window.sessionStorage.getItem("invitation-retour");
+        if (retour) {
+          const urlRetour = new URL(retour, window.location.origin);
+          identifiant = urlRetour.searchParams.get("id") || undefined;
+          nom = urlRetour.searchParams.get("groupe") || undefined;
+        }
+      }
+      if (identifiant && !nom) {
         const reponse = await fetch(
-          `/api/invitation?id=${encodeURIComponent(id)}`,
+          `/api/invitation?id=${encodeURIComponent(identifiant)}`,
         );
         if (reponse.ok)
           nom = ((await reponse.json()) as { nomGroupe: string }).nomGroupe;
       }
-      setInvitationId(id);
+      setInvitationId(identifiant);
       setNomGroupe(nom);
       setInvitationPrete(true);
     });
@@ -68,6 +77,7 @@ export default function PageInvitation({
         return;
       }
       setMessage("Invitation acceptée. Redirection…");
+      window.sessionStorage.removeItem("invitation-retour");
       routeur.replace("/");
     } catch {
       setMessage("Impossible d’accepter cette invitation. Réessayez.");
@@ -84,6 +94,7 @@ export default function PageInvitation({
         ? "Impossible de refuser cette invitation."
         : "Invitation refusée.",
     );
+    if (!resultat.error) window.sessionStorage.removeItem("invitation-retour");
   };
   if (!session)
     return (

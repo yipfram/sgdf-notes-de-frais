@@ -79,6 +79,26 @@ describe("Page d’invitation", () => {
     ).toBeInTheDocument();
   });
 
+  it("retrouve l’invitation mémorisée après le retour de vérification", async () => {
+    window.sessionStorage.setItem(
+      "invitation-retour",
+      "/invitation?id=invitation-memorisee&groupe=Groupe%20test",
+    );
+    mocks.accepterInvitation.mockResolvedValue({ data: {} });
+    const utilisateur = userEvent.setup();
+    render(<PageInvitation searchParams={Promise.resolve({})} />);
+
+    await utilisateur.click(
+      await screen.findByRole("button", { name: "Accepter l’invitation" }),
+    );
+
+    await waitFor(() => {
+      expect(mocks.accepterInvitation).toHaveBeenCalledWith({
+        invitationId: "invitation-memorisee",
+      });
+    });
+  });
+
   it("désactive les actions pendant l’acceptation", async () => {
     let resoudre: (resultat: { data: object }) => void;
     mocks.accepterInvitation.mockImplementation(
