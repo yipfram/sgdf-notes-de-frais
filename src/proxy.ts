@@ -22,6 +22,17 @@ export default function proxy(requete: NextRequest) {
   }
 
   const estConnecte = Boolean(getSessionCookie(requete));
+  if (chemin === "/invitation" && !estConnecte) {
+    const urlConnexion = new URL("/sign-in", requete.url);
+    urlConnexion.searchParams.set(
+      "callbackURL",
+      `${chemin}${requete.nextUrl.search}`,
+    );
+    urlConnexion.searchParams.set("invitation", "1");
+    const nomGroupe = requete.nextUrl.searchParams.get("groupe");
+    if (nomGroupe) urlConnexion.searchParams.set("groupe", nomGroupe);
+    return NextResponse.redirect(urlConnexion);
+  }
   const estRoutePublique =
     chemin.startsWith("/api/auth") ||
     chemin === "/api/health" ||

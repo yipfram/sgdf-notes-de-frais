@@ -35,6 +35,23 @@ describe("Proxy Better Auth", () => {
     },
   );
 
+  it("redirige une invitation sans session vers la connexion", async () => {
+    mocks.cookieSession.mockReturnValue(null);
+    const { default: proxy } = await import("../proxy");
+    const url = new URL(
+      "https://example.test/invitation?id=invitation-1&groupe=Groupe%20test",
+    );
+    const reponse = proxy({ nextUrl: url, url: url.toString() } as never);
+    const destination = new URL(reponse.headers.get("location") as string);
+
+    expect(destination.pathname).toBe("/sign-in");
+    expect(destination.searchParams.get("callbackURL")).toBe(
+      "/invitation?id=invitation-1&groupe=Groupe%20test",
+    );
+    expect(destination.searchParams.get("invitation")).toBe("1");
+    expect(destination.searchParams.get("groupe")).toBe("Groupe test");
+  });
+
   it("redirige les pages vers la maintenance lorsqu'elle est active", async () => {
     process.env.MAINTENANCE_MODE = "true";
     const { default: proxy } = await import("../proxy");

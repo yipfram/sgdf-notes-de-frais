@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { clientAuth } from "@/lib/auth-client";
 
@@ -76,6 +77,12 @@ export default function PageInvitation({
     return (
       <main className="min-h-screen bg-zinc-50 p-6 text-center">
         <p>Redirection vers la connexion…</p>
+        <Link
+          href="/sign-in"
+          className="mt-4 inline-block text-[#1E3A8A] underline"
+        >
+          Accéder à la connexion
+        </Link>
       </main>
     );
   return (

@@ -50,7 +50,7 @@ export function FormulaireConnexionEmail() {
       );
       return;
     }
-    window.location.assign("/");
+    window.location.assign(callbackURL);
   };
 
   const inscrire = async () => {
