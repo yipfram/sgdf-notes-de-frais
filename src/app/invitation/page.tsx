@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { clientAuth } from "@/lib/auth-client";
 
@@ -22,11 +23,13 @@ export default function PageInvitation({
 }: {
   searchParams: Promise<{ id?: string; groupe?: string }>;
 }) {
+  const routeur = useRouter();
   const { data: session, isPending } = clientAuth.useSession();
   const [invitationId, setInvitationId] = useState<string>();
   const [nomGroupe, setNomGroupe] = useState<string>();
   const [invitationPrete, setInvitationPrete] = useState(false);
   const [message, setMessage] = useState("");
+  const [enCours, setEnCours] = useState(false);
   useEffect(() => {
     void searchParams.then(async ({ id, groupe }) => {
       let nom = groupe;
@@ -52,15 +55,24 @@ export default function PageInvitation({
     window.location.replace(`/sign-in?${retour.toString()}`);
   }, [invitationId, invitationPrete, isPending, nomGroupe, session]);
   const accepter = async () => {
-    if (!invitationId) return;
-    const resultat = await clientAuth.organization.acceptInvitation({
-      invitationId,
-    });
-    setMessage(
-      resultat.error
-        ? messageErreurInvitation(resultat.error.code)
-        : "Invitation acceptée.",
-    );
+    if (!invitationId || enCours) return;
+    setEnCours(true);
+    setMessage("");
+    try {
+      const resultat = await clientAuth.organization.acceptInvitation({
+        invitationId,
+      });
+      if (resultat.error) {
+        setMessage(messageErreurInvitation(resultat.error.code));
+        setEnCours(false);
+        return;
+      }
+      setMessage("Invitation acceptée. Redirection…");
+      routeur.replace("/");
+    } catch {
+      setMessage("Impossible d’accepter cette invitation. Réessayez.");
+      setEnCours(false);
+    }
   };
   const refuser = async () => {
     if (!invitationId) return;
@@ -92,15 +104,15 @@ export default function PageInvitation({
         <button
           type="button"
           onClick={() => void accepter()}
-          disabled={!invitationId}
+          disabled={!invitationId || enCours}
           className="mt-5 rounded-lg bg-[#1E3A8A] px-5 py-3 text-white disabled:opacity-50"
         >
-          Accepter l’invitation
+          {enCours ? "Acceptation…" : "Accepter l’invitation"}
         </button>
         <button
           type="button"
           onClick={() => void refuser()}
-          disabled={!invitationId}
+          disabled={!invitationId || enCours}
           className="mt-3 block w-full text-sm text-zinc-600 underline disabled:opacity-50"
         >
           Refuser l’invitation
