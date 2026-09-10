@@ -9,16 +9,35 @@ export default function PageGestionMembres() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const inviter = async () => {
-    if (!organisation || !email.trim()) return;
-    const resultat = await clientAuth.organization.inviteMember({
-      email: email.trim(),
-      role: "member",
-      organizationId: organisation.id,
-    });
-    setMessage(
-      resultat.error ? "Invitation impossible." : "Invitation envoyée.",
+    const emails = email
+      .split(",")
+      .map((adresse) => adresse.trim())
+      .filter(Boolean);
+    if (!organisation || emails.length === 0) return;
+
+    const resultats = await Promise.all(
+      emails.map((adresse) =>
+        clientAuth.organization.inviteMember({
+          email: adresse,
+          role: "member",
+          organizationId: organisation.id,
+        }),
+      ),
     );
-    if (!resultat.error) setEmail("");
+    const nombreEchecs = resultats.filter((resultat) => resultat.error).length;
+    const nombreSucces = emails.length - nombreEchecs;
+    if (nombreEchecs === 0) {
+      setMessage(
+        emails.length === 1 ? "Invitation envoyée." : "Invitations envoyées.",
+      );
+      setEmail("");
+      return;
+    }
+    setMessage(
+      nombreSucces > 0
+        ? `${nombreSucces} invitation${nombreSucces > 1 ? "s" : ""} envoyée${nombreSucces > 1 ? "s" : ""}, ${nombreEchecs} impossible${nombreEchecs > 1 ? "s" : ""}.`
+        : "Invitations impossibles.",
+    );
   };
   if (!organisation) return <main className="p-6">Aucun groupe actif.</main>;
   return (
@@ -27,17 +46,21 @@ export default function PageGestionMembres() {
         <Link href="/" className="text-sm text-[#1E3A8A]">
           ← Retour
         </Link>
-        <h1 className="mt-4 text-2xl font-semibold">Membres</h1>
+        <h1 className="mt-4 text-2xl font-semibold text-zinc-900">
+          Membres
+        </h1>
         <p className="mt-2 text-zinc-600">
           Invitez un membre dans {organisation.name}.
         </p>
         <div className="mt-5 flex gap-2">
           <input
             type="email"
+            multiple
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="adresse@email.fr"
-            className="min-w-0 flex-1 rounded-lg border border-zinc-300 p-3"
+            placeholder="adresse@email.fr, autre@email.fr"
+            aria-label="Adresses e-mail des membres à inviter"
+            className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white p-3 text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20"
           />
           <button
             type="button"

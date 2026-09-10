@@ -32,6 +32,7 @@ export default function Home() {
   const [initialisationGroupeTerminee, setInitialisationGroupeTerminee] =
     useState(false);
   const [choixManuelGroupe, setChoixManuelGroupe] = useState(false);
+  const [administrationOuverte, setAdministrationOuverte] = useState(false);
   const estEnLigne = useStatutEnLigne();
 
   const definirGroupePrincipal = async (identifiantOrganisation: string) => {
@@ -163,24 +164,40 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-zinc-50 p-4">
       <div className="mx-auto max-w-md overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-        <header className="flex items-center justify-between border-b border-zinc-200 p-6">
+        <header className="flex items-start justify-between border-b border-zinc-200 p-6">
           <div>
             <h1 className="text-2xl font-semibold text-zinc-900">Scouticket</h1>
             <p className="mt-2 text-zinc-500">{organisation.name}</p>
           </div>
-          <button
-            type="button"
-            onClick={() =>
-              void clientAuth.signOut({
-                fetchOptions: {
-                  onSuccess: () => window.location.assign("/sign-in"),
-                },
-              })
-            }
-            className="text-sm text-zinc-600 underline"
-          >
-            Déconnexion
-          </button>
+          <div className="flex flex-col items-end gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                void (async () => {
+                  setChoixManuelGroupe(true);
+                  await clientAuth.organization.setActive({
+                    organizationId: null,
+                  });
+                })()
+              }
+              className="text-sm text-zinc-600 underline"
+            >
+              Changer de groupe
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                void clientAuth.signOut({
+                  fetchOptions: {
+                    onSuccess: () => window.location.assign("/sign-in"),
+                  },
+                })
+              }
+              className="text-sm text-zinc-600 underline"
+            >
+              Déconnexion
+            </button>
+          </div>
         </header>
         {!estEnLigne && (
           <p className="bg-amber-50 p-2 text-center text-sm text-amber-800">
@@ -196,29 +213,36 @@ export default function Home() {
             </p>
           ) : (
             <>
-              <div className="flex gap-3 text-sm">
+              <div className="space-y-2">
                 {groupe.isAdmin && (
-                  <Link
-                    href="/gestion-membres"
-                    className="font-medium text-[#1E3A8A]"
-                  >
-                    Gérer les membres
-                  </Link>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setAdministrationOuverte((ouverte) => !ouverte)}
+                      aria-expanded={administrationOuverte}
+                      className="flex w-full items-center justify-between rounded-xl border border-zinc-300 px-4 py-3 font-medium text-[#1E3A8A] transition-colors hover:bg-zinc-50"
+                    >
+                      Administration
+                      <span aria-hidden="true">{administrationOuverte ? "−" : "+"}</span>
+                    </button>
+                    {administrationOuverte && (
+                      <div className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+                        <Link
+                          href="/gestion-membres"
+                          className="block w-full rounded-lg bg-white px-4 py-3 text-center font-medium text-[#1E3A8A] shadow-sm ring-1 ring-zinc-200 transition-colors hover:bg-zinc-100"
+                        >
+                          Gérer les membres
+                        </Link>
+                        <Link
+                          href="/gestion-unites"
+                          className="block w-full rounded-lg bg-white px-4 py-3 text-center font-medium text-[#1E3A8A] shadow-sm ring-1 ring-zinc-200 transition-colors hover:bg-zinc-100"
+                        >
+                          Gérer les unités
+                        </Link>
+                      </div>
+                    )}
+                  </>
                 )}
-                <button
-                  type="button"
-                  onClick={() =>
-                    void (async () => {
-                      setChoixManuelGroupe(true);
-                      await clientAuth.organization.setActive({
-                        organizationId: null,
-                      });
-                    })()
-                  }
-                  className="text-zinc-600 underline"
-                >
-                  Changer de groupe
-                </button>
               </div>
               <CapturePhoto
                 onAttachmentsAdd={(nouvelles) =>

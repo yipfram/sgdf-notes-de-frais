@@ -47,7 +47,7 @@ Better Auth gère les organisations et les invitations dans la base PostgreSQL. 
 
 Dans Google Cloud Console, ajoutez `http://localhost:3000/api/auth/callback/google` en développement et `https://votre-domaine/api/auth/callback/google` en production aux URI de redirection autorisés. `BETTER_AUTH_URL` doit correspondre exactement à l’URL publique de l’application.
 
-Les responsables retrouvent les invitations et la liste des membres dans le menu **Administration** du formulaire.
+Les responsables retrouvent la gestion des membres et des unités dans le panneau **Administration**. Le lien « Changer de groupe » se trouve à droite de l’en-tête. La gestion des membres accepte plusieurs adresses e-mail séparées par des virgules.
 
 ## Unités proposées par défaut
 

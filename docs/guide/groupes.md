@@ -22,20 +22,14 @@ Chaque groupe peut adapter ses unités à son fonctionnement. L’application pr
 - Compagnons — turquoise
 - Groupe — bleu foncé
 
-Vous pouvez renommer ou supprimer une unité, en ajouter une autre et choisir sa couleur. La couleur choisie apparaît dans l’e-mail de justificatif : elle aide la trésorerie à identifier rapidement l’unité concernée.
+Vous pouvez renommer ou supprimer une unité, en ajouter une autre et choisir sa couleur depuis **Administration** puis **Gérer les unités**. Cette page ne modifie pas l’adresse de trésorerie. La couleur choisie apparaît dans l’e-mail de justificatif : elle aide la trésorerie à identifier rapidement l’unité concernée.
 
 Conservez au moins une unité : un justificatif doit toujours être rattaché à une unité du groupe.
 
 ## Inviter les membres
 
-Depuis **Administration**, choisissez **Ajouter un membre** et saisissez son adresse e-mail. Clerk lui envoie une invitation ; après l’avoir acceptée, cette personne rejoint le groupe et peut envoyer ses justificatifs.
+Depuis **Administration**, choisissez **Gérer les membres** et saisissez son adresse e-mail. Better Auth lui envoie une invitation ; après l’avoir acceptée, cette personne rejoint le groupe et peut envoyer ses justificatifs.
 
 Les membres invités n’ont pas accès à la configuration du groupe, à l’adresse de trésorerie ni à la gestion des invitations.
 
-::: info Captures à venir
-
-Ajoutez ici `guide/configuration-groupe.png` : adresse de trésorerie, unités et choix de couleur.
-
-Ajoutez ici `guide/invitation-groupe.png` : invitation d’un membre par le responsable.
-
-:::
+![Menu Administration de Scouticket](/guide/administration-groupe.png)
