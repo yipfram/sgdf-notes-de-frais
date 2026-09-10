@@ -2,6 +2,12 @@
 
 # Scouticket
 
+## Authentification et migration
+
+L’application utilise Better Auth, PostgreSQL et la connexion Google. Configurez `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET`, puis appliquez `pnpm auth:migrate` et `psql "$DATABASE_URL" -f sql/001_scouticket.sql`. Le script lance la CLI autonome officielle `auth` dans la même version que Better Auth.
+
+Pour importer une dernière fois l’environnement Clerk de développement, appliquez d’abord ces migrations puis renseignez `CLERK_SECRET_KEY` et `DATABASE_URL` dans `.env` avant d’exécuter `pnpm migrate:clerk`. Les sessions Clerk et invitations en attente restent volontairement invalidées.
+
 Application web mobile-first pour la gestion des justificatifs et des notes de frais pour votre groupe scout.
 
 Ce repository est sous license MIT, vous pouvez l'utiliser comme bon vous semble ! Réadaptez le, et, si vous voulez, taggez moi :)
@@ -87,11 +93,15 @@ pnpm start
 
 ## Tester avec Docker
 
-Docker Desktop doit être démarré. Renseignez les variables Clerk et SMTP requises dans le fichier local `.env` (voir `.env.example`) ; ce fichier est ignoré par Git et n'est pas copié dans l'image.
+Docker Desktop doit être démarré. Compose démarre aussi PostgreSQL avec un volume persistant `postgres_data`. Renseignez les variables Better Auth, Google et SMTP dans le fichier local `.env` (voir `.env.example`) ; ce fichier est ignoré par Git et n'est pas copié dans l'image.
 
 ```bash
 # Construire, démarrer et attendre que le contrôle de santé réussisse
 docker compose up --build --wait
+
+# Initialiser Better Auth et les tables Scouticket (une seule fois)
+docker compose exec app pnpm auth:migrate
+docker compose exec postgres psql -U scouticket -d scouticket -f /migrations/001_scouticket.sql
 
 # Vérifier la configuration de l'application
 curl http://localhost:3000/api/health

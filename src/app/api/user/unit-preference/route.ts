@@ -1,11 +1,9 @@
-import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import {
-  CLE_UNITE_SELECTIONNEE_PAR_ORGANISATION,
-  lireUnitesSelectionnees,
-} from "@/lib/group";
+import {} from "@/lib/group";
 import { recupererGroupeActif } from "@/lib/groupServer";
+import { recupererContexteGroupe } from "@/lib/sessionServeur";
+import { pool } from "@/lib/baseDeDonnees";
 import {
   reponseRateLimit,
   verifierOrigineRequete,
@@ -22,8 +20,9 @@ const schemaCorps = z.object({
 export async function POST(req: Request) {
   return executerRouteAvecLogs(req, async () => {
     try {
-      const { userId, orgId } = await auth();
-      if (!userId || !orgId) {
+      const { identifiantUtilisateur, identifiantOrganisation } =
+        await recupererContexteGroupe();
+      if (!identifiantUtilisateur || !identifiantOrganisation) {
         return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
       }
 
@@ -37,7 +36,7 @@ export async function POST(req: Request) {
           { status: 400 },
         );
       }
-      if (corps.data.organizationId !== orgId) {
+      if (corps.data.organizationId !== identifiantOrganisation) {
         return NextResponse.json(
           { error: "Accès au groupe refusé" },
           { status: 403 },
@@ -45,7 +44,7 @@ export async function POST(req: Request) {
       }
 
       const limitation = verifierRateLimit(
-        `maj-unite:${userId}:${orgId}`,
+        `maj-unite:${identifiantUtilisateur}:${identifiantOrganisation}`,
         30,
         60 * 1000,
       );
@@ -54,32 +53,24 @@ export async function POST(req: Request) {
       }
 
       const unitId = corps.data.unitId.trim();
-      const groupe = await recupererGroupeActif(orgId);
+      const groupe = await recupererGroupeActif(identifiantOrganisation);
       if (unitId && !groupe.unites.some((unite) => unite.id === unitId)) {
         return NextResponse.json({ error: "Unité invalide" }, { status: 400 });
       }
 
-      const client = await clerkClient();
-      const utilisateur = await client.users.getUser(userId);
-      const metadonnees = {
-        ...(utilisateur.publicMetadata ?? {}),
-      } as Record<string, unknown>;
-      const unitesSelectionnees = lireUnitesSelectionnees(
-        metadonnees[CLE_UNITE_SELECTIONNEE_PAR_ORGANISATION],
-      );
-
       if (unitId) {
-        unitesSelectionnees[orgId] = unitId;
+        await pool.query(
+          `INSERT INTO scouticket_user_unit_preference (user_id, organization_id, unit_id)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (user_id, organization_id) DO UPDATE SET unit_id = EXCLUDED.unit_id`,
+          [identifiantUtilisateur, identifiantOrganisation, unitId],
+        );
       } else {
-        delete unitesSelectionnees[orgId];
+        await pool.query(
+          "DELETE FROM scouticket_user_unit_preference WHERE user_id = $1 AND organization_id = $2",
+          [identifiantUtilisateur, identifiantOrganisation],
+        );
       }
-
-      await client.users.updateUser(userId, {
-        publicMetadata: {
-          ...metadonnees,
-          [CLE_UNITE_SELECTIONNEE_PAR_ORGANISATION]: unitesSelectionnees,
-        },
-      });
 
       return NextResponse.json({ success: true, unitId });
     } catch (erreur) {

@@ -1,6 +1,7 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { recupererGroupeActif } from "@/lib/groupServer";
+import { recupererGroupeActif, recupererRoleMembre } from "@/lib/groupServer";
+import { recupererContexteGroupe } from "@/lib/sessionServeur";
+import { pool } from "@/lib/baseDeDonnees";
 import {
   creerUrlVerificationTresorerie,
   creerValidationTresorerie,
@@ -15,12 +16,20 @@ import { executerRouteAvecLogs } from "@/lib/api/routeAvecLogs";
 
 export async function POST(req: Request) {
   return executerRouteAvecLogs(req, async () => {
-    const { orgId, orgRole } = await auth();
-    if (!orgId || orgRole !== "org:admin")
+    const { identifiantOrganisation, identifiantUtilisateur } =
+      await recupererContexteGroupe();
+    const role =
+      identifiantOrganisation && identifiantUtilisateur
+        ? await recupererRoleMembre(
+            identifiantUtilisateur,
+            identifiantOrganisation,
+          )
+        : null;
+    if (!identifiantOrganisation || (role !== "admin" && role !== "owner"))
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
     const originError = verifierOrigineRequete(req);
     if (originError) return originError;
-    const groupe = await recupererGroupeActif(orgId);
+    const groupe = await recupererGroupeActif(identifiantOrganisation);
     if (!groupe.emailTresorerie)
       return NextResponse.json(
         { error: "Adresse de trésorerie manquante" },
@@ -33,7 +42,7 @@ export async function POST(req: Request) {
       );
 
     const limiteCourte = verifierRateLimit(
-      `renvoi-validation-tresorerie:${orgId}:15-minutes`,
+      `renvoi-validation-tresorerie:${identifiantOrganisation}:15-minutes`,
       1,
       15 * 60 * 1000,
     );
@@ -41,7 +50,7 @@ export async function POST(req: Request) {
       return reponseRateLimit(limiteCourte.attenteSecondes);
 
     const limiteLongue = verifierRateLimit(
-      `renvoi-validation-tresorerie:${orgId}:24-heures`,
+      `renvoi-validation-tresorerie:${identifiantOrganisation}:24-heures`,
       5,
       24 * 60 * 60 * 1000,
     );
@@ -49,10 +58,12 @@ export async function POST(req: Request) {
       return reponseRateLimit(limiteLongue.attenteSecondes);
 
     const { token, verification } = creerValidationTresorerie();
-    await groupe.client.organizations.updateOrganizationMetadata(orgId, {
-      privateMetadata: { treasuryVerification: verification },
-    });
-    const url = creerUrlVerificationTresorerie(orgId, token);
+    await pool.query(
+      `UPDATE scouticket_group_data SET treasury_verification = $2::jsonb
+        WHERE organization_id = $1`,
+      [identifiantOrganisation, JSON.stringify(verification)],
+    );
+    const url = creerUrlVerificationTresorerie(identifiantOrganisation, token);
     await envoyerEmailValidationTresorerie({
       destinataire: groupe.emailTresorerie,
       nomGroupe: groupe.organisation.name,

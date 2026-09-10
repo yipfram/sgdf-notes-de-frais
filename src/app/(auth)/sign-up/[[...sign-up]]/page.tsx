@@ -1,4 +1,4 @@
-import ClerkSignUpClient from "@/components/ClerkSignUpClient";
+import { ConnexionGoogle } from "@/components/ConnexionGoogle";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -29,11 +29,11 @@ export default function Page() {
       <div className="bg-white rounded-lg border border-zinc-200 shadow-sm w-full max-w-lg">
         <div className="bg-white text-zinc-900 p-6 text-center border-b border-zinc-200 rounded-t-lg">
           <h1 className="text-2xl font-semibold">Scouticket</h1>
-          <p className="text-zinc-500 mt-2">Inscription</p>
+          <p className="text-zinc-500 mt-2">Créer un compte</p>
         </div>
         <div className="py-6 flex justify-center items-center">
           <div className="max-w-sm mx-auto">
-            <ClerkSignUpClient />
+            <ConnexionGoogle />
           </div>
         </div>
       </div>

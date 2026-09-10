@@ -1,32 +1,16 @@
 import { render, screen } from "@testing-library/react";
-import type { ComponentType } from "react";
 import { describe, expect, it, vi } from "vitest";
-import ClerkSignInClient from "../components/ClerkSignInClient";
+import { ConnexionGoogle } from "../components/ConnexionGoogle";
 
-vi.mock("next/dynamic", () => ({
-  default: () => {
-    const ComposantDynamique = ({
-      forceRedirectUrl,
-    }: {
-      forceRedirectUrl?: string;
-    }) => (
-      <div
-        data-testid="formulaire-connexion-clerk"
-        data-force-redirect-url={forceRedirectUrl}
-      />
-    );
-
-    return ComposantDynamique as ComponentType<{ forceRedirectUrl?: string }>;
-  },
+vi.mock("@/lib/auth-client", () => ({
+  clientAuth: { signIn: { social: vi.fn() } },
 }));
 
 describe("Redirection de connexion", () => {
-  it("redirige vers l'application principale apres connexion", () => {
-    render(<ClerkSignInClient />);
-
-    expect(screen.getByTestId("formulaire-connexion-clerk")).toHaveAttribute(
-      "data-force-redirect-url",
-      "/",
-    );
+  it("affiche le parcours Google", () => {
+    render(<ConnexionGoogle />);
+    expect(
+      screen.getByRole("button", { name: /continuer avec google/i }),
+    ).toBeInTheDocument();
   });
 });

@@ -1,29 +1,40 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { getSessionCookie } from "better-auth/cookies";
 
-export default clerkMiddleware((_auth, requete) => {
-  if (process.env.MAINTENANCE_MODE !== "true") return;
+export default function proxy(requete: NextRequest) {
+  const chemin = requete.nextUrl.pathname;
 
-  const { pathname } = requete.nextUrl;
-
-  if (pathname === "/maintenance") return;
-
-  if (pathname === "/api/health") {
-    return NextResponse.json(
-      { ok: false, status: "maintenance" },
-      { status: 503 },
-    );
+  if (process.env.MAINTENANCE_MODE === "true") {
+    if (chemin === "/maintenance") return NextResponse.next();
+    if (chemin === "/api/health") {
+      return NextResponse.json(
+        { ok: false, status: "maintenance" },
+        { status: 503 },
+      );
+    }
+    if (chemin.startsWith("/api/")) {
+      return NextResponse.json(
+        { erreur: "Service en maintenance", status: "maintenance" },
+        { status: 503 },
+      );
+    }
+    return NextResponse.redirect(new URL("/maintenance", requete.url));
   }
 
-  if (pathname.startsWith("/api/")) {
-    return NextResponse.json(
-      { erreur: "Service en maintenance", status: "maintenance" },
-      { status: 503 },
-    );
-  }
-
-  return NextResponse.redirect(new URL("/maintenance", requete.url));
-});
+  const estConnecte = Boolean(getSessionCookie(requete));
+  const estRoutePublique =
+    chemin.startsWith("/api/auth") ||
+    chemin === "/api/health" ||
+    chemin === "/sign-in" ||
+    chemin === "/sign-up" ||
+    chemin === "/verify-treasury" ||
+    chemin === "/offline" ||
+    chemin === "/invitation";
+  if (estRoutePublique || estConnecte) return NextResponse.next();
+  if (chemin.startsWith("/api/"))
+    return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+  return NextResponse.redirect(new URL("/sign-in", requete.url));
+}
 
 export const config = {
   matcher: [

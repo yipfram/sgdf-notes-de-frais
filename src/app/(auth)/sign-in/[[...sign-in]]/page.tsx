@@ -1,4 +1,4 @@
-import ClerkSignInClient from "@/components/ClerkSignInClient";
+import { ConnexionGoogle } from "@/components/ConnexionGoogle";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -33,7 +33,7 @@ export default function Page() {
         </div>
         <div className="py-6 flex justify-center items-center">
           <div className="max-w-sm mx-auto">
-            <ClerkSignInClient />
+            <ConnexionGoogle />
           </div>
         </div>
       </div>
