@@ -32,10 +32,9 @@ export function FormulaireConnexionEmail() {
   useEffect(() => {
     if (!callbackURL.startsWith("/invitation?id=")) return;
     window.sessionStorage.setItem("invitation-retour", callbackURL);
-    const identifiantInvitation = new URL(
-      callbackURL,
-      window.location.origin,
-    ).searchParams.get("id");
+    const urlInvitation = new URL(callbackURL, window.location.origin);
+    const identifiantInvitation = urlInvitation.searchParams.get("id");
+    const nomGroupeHistorique = urlInvitation.searchParams.get("groupe");
     if (!identifiantInvitation) return;
     let annule = false;
     void fetch(
@@ -43,10 +42,13 @@ export function FormulaireConnexionEmail() {
     )
       .then((reponse) => (reponse.ok ? reponse.json() : null))
       .then((invitation: { nomGroupe: string } | null) => {
-        if (!annule) setNomGroupeInvite(invitation?.nomGroupe);
+        if (!annule)
+          setNomGroupeInvite(
+            invitation?.nomGroupe || nomGroupeHistorique || undefined,
+          );
       })
       .catch(() => {
-        if (!annule) setNomGroupeInvite(undefined);
+        if (!annule) setNomGroupeInvite(nomGroupeHistorique || undefined);
       });
     return () => {
       annule = true;
