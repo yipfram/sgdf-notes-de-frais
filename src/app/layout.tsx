@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { RegisterServiceWorker } from "@/components/register-sw";
+import { AlerteChangeLog } from "@/components/AlerteChangelog";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -61,6 +62,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans">
         <RegisterServiceWorker />
+        <AlerteChangeLog />
         <div className="min-h-screen">{children}</div>
       </body>
     </html>
