@@ -4,6 +4,8 @@
 
 ## Authentification et migration
 
+Une pop-up informe les utilisateurs du passage à l’authentification interne et propose un lien de signalement des bugs.
+
 L’application utilise Better Auth, PostgreSQL, la connexion e-mail/mot de passe et Google. Le formulaire de connexion permet aussi de créer un compte e-mail, en utilisant l’adresse e-mail comme nom de profil. Configurez `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `APP_URL`, les variables SMTP et, si souhaité, `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`. Appliquez ensuite `pnpm auth:migrate`, puis `pnpm db:migrate`. Cette commande charge le fichier `.env` lorsqu’il existe. La première commande migre les tables Better Auth ; la seconde applique et historise les migrations Scouticket (`sql/*.sql`). Le script lance la CLI autonome officielle `auth` dans la même version que Better Auth.
 
 Pour importer une dernière fois l’environnement Clerk de développement, appliquez d’abord ces migrations puis renseignez `CLERK_SECRET_KEY` et `DATABASE_URL` dans `.env` avant d’exécuter `pnpm migrate:clerk`. Les sessions Clerk et invitations en attente restent volontairement invalidées.

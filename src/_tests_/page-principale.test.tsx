@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Home from "../app/(main)/page";
 
@@ -72,6 +73,9 @@ describe("Page principale", () => {
     expect(
       await screen.findByLabelText("Formulaire depense"),
     ).toHaveTextContent("test@example.test");
+    await userEvent.click(
+      screen.getByRole("button", { name: "Administration" }),
+    );
     expect(
       screen.getByRole("link", { name: "Gérer les membres" }),
     ).toHaveAttribute("href", "/gestion-membres");

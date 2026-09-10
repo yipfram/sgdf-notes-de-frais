@@ -1,6 +1,7 @@
 import { ConnexionGoogle } from "@/components/ConnexionGoogle";
 import { FormulaireConnexionEmail } from "@/components/FormulairesAuthentification";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Connexion",
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
+function ContenuConnexion() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-zinc-50">
       <div className="bg-white rounded-lg border border-zinc-200 shadow-sm w-full max-w-lg mx-auto">
@@ -45,5 +46,13 @@ export default function Page() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense>
+      <ContenuConnexion />
+    </Suspense>
   );
 }

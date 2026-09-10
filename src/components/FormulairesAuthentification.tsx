@@ -17,6 +17,12 @@ const classeChamp =
   "mt-2 w-full rounded-lg border border-zinc-300 bg-white p-3 text-zinc-900 outline-none focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20";
 
 export function FormulaireConnexionEmail() {
+  const recherche = useSearchParams();
+  const retour = recherche?.get("callbackURL");
+  const callbackURL = retour?.startsWith("/") ? retour : "/";
+  const nomGroupeInvite = recherche?.get("invitation")
+    ? recherche.get("groupe")
+    : null;
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [erreur, setErreur] = useState("");
@@ -33,7 +39,7 @@ export function FormulaireConnexionEmail() {
       email,
       password: motDePasse,
       rememberMe: true,
-      callbackURL: "/",
+      callbackURL,
     });
     setEnCours(false);
     if (resultat.error) {
@@ -56,7 +62,7 @@ export function FormulaireConnexionEmail() {
       name: email,
       email,
       password: motDePasse,
-      callbackURL: "/",
+      callbackURL,
     });
     setEnCours(false);
     if (resultat.error) {
@@ -75,6 +81,14 @@ export function FormulaireConnexionEmail() {
 
   return (
     <form ref={referenceFormulaire} onSubmit={connecter} className="space-y-4">
+      {nomGroupeInvite && (
+        <p
+          className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-950"
+          role="status"
+        >
+          Vous avez été invité à rejoindre le groupe {nomGroupeInvite}.
+        </p>
+      )}
       <div>
         <label htmlFor="email" className="text-sm font-medium text-zinc-700">
           Adresse e-mail

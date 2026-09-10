@@ -1,20 +1,55 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { clientAuth } from "@/lib/auth-client";
+
+function messageErreurInvitation(code: string | undefined) {
+  if (code === "YOU_ARE_NOT_THE_RECIPIENT_OF_THE_INVITATION")
+    return "Cette invitation est réservée à une autre adresse e-mail. Connectez-vous avec l’adresse invitée.";
+  if (
+    code ===
+    "EMAIL_VERIFICATION_REQUIRED_BEFORE_ACCEPTING_OR_REJECTING_INVITATION"
+  )
+    return "Confirmez d’abord votre adresse e-mail avant d’accepter cette invitation.";
+  if (code === "ORGANIZATION_MEMBERSHIP_LIMIT_REACHED")
+    return "Ce groupe a atteint son nombre maximal de membres.";
+  return "Invitation invalide ou expirée.";
+}
 
 export default function PageInvitation({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string; groupe?: string }>;
 }) {
-  const { data: session } = clientAuth.useSession();
+  const { data: session, isPending } = clientAuth.useSession();
   const [invitationId, setInvitationId] = useState<string>();
+  const [nomGroupe, setNomGroupe] = useState<string>();
+  const [invitationPrete, setInvitationPrete] = useState(false);
   const [message, setMessage] = useState("");
   useEffect(() => {
-    void searchParams.then(({ id }) => setInvitationId(id));
+    void searchParams.then(async ({ id, groupe }) => {
+      let nom = groupe;
+      if (id && !nom) {
+        const reponse = await fetch(
+          `/api/invitation?id=${encodeURIComponent(id)}`,
+        );
+        if (reponse.ok)
+          nom = ((await reponse.json()) as { nomGroupe: string }).nomGroupe;
+      }
+      setInvitationId(id);
+      setNomGroupe(nom);
+      setInvitationPrete(true);
+    });
   }, [searchParams]);
+  useEffect(() => {
+    if (isPending || session || !invitationId || !invitationPrete) return;
+    const retour = new URLSearchParams({
+      callbackURL: `/invitation?id=${invitationId}${nomGroupe ? `&groupe=${nomGroupe}` : ""}`,
+      invitation: "1",
+    });
+    if (nomGroupe) retour.set("groupe", nomGroupe);
+    window.location.replace(`/sign-in?${retour.toString()}`);
+  }, [invitationId, invitationPrete, isPending, nomGroupe, session]);
   const accepter = async () => {
     if (!invitationId) return;
     const resultat = await clientAuth.organization.acceptInvitation({
@@ -22,20 +57,25 @@ export default function PageInvitation({
     });
     setMessage(
       resultat.error
-        ? "Invitation invalide ou expirée."
+        ? messageErreurInvitation(resultat.error.code)
         : "Invitation acceptée.",
+    );
+  };
+  const refuser = async () => {
+    if (!invitationId) return;
+    const resultat = await clientAuth.organization.rejectInvitation({
+      invitationId,
+    });
+    setMessage(
+      resultat.error
+        ? "Impossible de refuser cette invitation."
+        : "Invitation refusée.",
     );
   };
   if (!session)
     return (
       <main className="min-h-screen bg-zinc-50 p-6 text-center">
-        <p>Connectez-vous avec l’adresse invitée avant de continuer.</p>
-        <Link
-          href="/sign-in"
-          className="mt-4 inline-block text-[#1E3A8A] underline"
-        >
-          Connexion
-        </Link>
+        <p>Redirection vers la connexion…</p>
       </main>
     );
   return (
@@ -49,6 +89,14 @@ export default function PageInvitation({
           className="mt-5 rounded-lg bg-[#1E3A8A] px-5 py-3 text-white disabled:opacity-50"
         >
           Accepter l’invitation
+        </button>
+        <button
+          type="button"
+          onClick={() => void refuser()}
+          disabled={!invitationId}
+          className="mt-3 block w-full text-sm text-zinc-600 underline disabled:opacity-50"
+        >
+          Refuser l’invitation
         </button>
         {message && <p className="mt-4 text-zinc-600">{message}</p>}
       </section>

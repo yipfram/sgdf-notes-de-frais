@@ -64,12 +64,25 @@ export const auth = betterAuth({
         typeof retour === "object" && retour !== null && "code" in retour
           ? retour.code
           : undefined;
+      const statutErreur =
+        typeof retour === "object" && retour !== null && "statusCode" in retour
+          ? retour.statusCode
+          : undefined;
       journaliserAuditAuthentification({
         chemin: contexte.path,
-        resultat: typeof codeErreur === "string" ? "echec" : "succes",
+        resultat:
+          typeof codeErreur === "string" ||
+          (typeof statutErreur === "number" && statutErreur >= 400)
+            ? "echec"
+            : "succes",
         contexte: contexte.context,
         corps: contexte.body,
-        codeErreur,
+        codeErreur:
+          typeof codeErreur === "string"
+            ? codeErreur
+            : typeof statutErreur === "number"
+              ? `HTTP_${statutErreur}`
+              : undefined,
       });
     }),
   },
