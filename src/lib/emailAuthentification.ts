@@ -1,12 +1,19 @@
 import { creerTransporteurEmail, echapperHtml } from "@/lib/email";
 
 function expediteur() {
+  const expediteurConfigure = process.env.SMTP_FROM?.trim();
   const adresse =
-    process.env.SMTP_FROM ||
+    expediteurConfigure ||
     process.env.SMTP_FROM_EMAIL ||
     process.env.SMTP_USER;
   if (!adresse) throw new Error("SMTP_FROM_UNDEFINED");
-  return adresse;
+  if (expediteurConfigure?.includes("<") || expediteurConfigure?.includes(">"))
+    return expediteurConfigure;
+
+  return {
+    name: process.env.SMTP_FROM_NAME || "Scouticket",
+    address: adresse,
+  };
 }
 
 async function envoyerEmailAuthentification(parametres: {
