@@ -1,6 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
+function urlPublique(chemin: string, requete: NextRequest) {
+  return new URL(chemin, process.env.APP_URL?.trim() || requete.url);
+}
+
 export default function proxy(requete: NextRequest) {
   const chemin = requete.nextUrl.pathname;
 
@@ -18,12 +22,12 @@ export default function proxy(requete: NextRequest) {
         { status: 503 },
       );
     }
-    return NextResponse.redirect(new URL("/maintenance", requete.url));
+    return NextResponse.redirect(urlPublique("/maintenance", requete));
   }
 
   const estConnecte = Boolean(getSessionCookie(requete));
   if (chemin === "/invitation" && !estConnecte) {
-    const urlConnexion = new URL("/sign-in", requete.url);
+    const urlConnexion = urlPublique("/sign-in", requete);
     urlConnexion.searchParams.set(
       "callbackURL",
       `${chemin}${requete.nextUrl.search}`,
@@ -47,7 +51,7 @@ export default function proxy(requete: NextRequest) {
   if (estRoutePublique || estConnecte) return NextResponse.next();
   if (chemin.startsWith("/api/"))
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-  return NextResponse.redirect(new URL("/sign-in", requete.url));
+  return NextResponse.redirect(urlPublique("/sign-in", requete));
 }
 
 export const config = {

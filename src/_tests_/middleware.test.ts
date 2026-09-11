@@ -18,6 +18,7 @@ describe("Proxy Better Auth", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     delete process.env.MAINTENANCE_MODE;
+    delete process.env.APP_URL;
   });
 
   it.each(["/", "/api/send-expense", "/api/user/unit-preference"])(
@@ -50,6 +51,20 @@ describe("Proxy Better Auth", () => {
     );
     expect(destination.searchParams.get("invitation")).toBe("1");
     expect(destination.searchParams.get("groupe")).toBe("Groupe test");
+  });
+
+  it("utilise APP_URL pour une redirection derrière un proxy HTTP", async () => {
+    process.env.APP_URL = "https://app.scouticket.fr";
+    mocks.cookieSession.mockReturnValue(null);
+    const { default: proxy } = await import("../proxy");
+    const reponse = proxy({
+      nextUrl: new URL("http://app.scouticket.fr/invitation?id=invitation-1"),
+      url: "http://app.scouticket.fr/invitation?id=invitation-1",
+    } as never);
+
+    expect(reponse.headers.get("location")).toContain(
+      "https://app.scouticket.fr/sign-in",
+    );
   });
 
   it("redirige les pages vers la maintenance lorsqu'elle est active", async () => {
