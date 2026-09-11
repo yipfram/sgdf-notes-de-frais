@@ -95,7 +95,7 @@ export default defineConfig({
       "link",
       {
         rel: "icon",
-        href: "https://treso.romain-rochas.fr/favicon.ico",
+        href: "https://scouticket.fr/favicon.ico",
       },
     ],
   ],
