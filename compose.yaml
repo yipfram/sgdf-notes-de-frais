@@ -1,3 +1,5 @@
+name: scouticket
+
 services:
   postgres:
     image: postgres:17-alpine
@@ -17,6 +19,7 @@ services:
       retries: 10
 
   app:
+    image: ghcr.io/yipfram/scouticket:0.1
     build:
       context: .
     environment:

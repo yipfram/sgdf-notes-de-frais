@@ -29,6 +29,10 @@ FROM node:22-bookworm-slim AS execution
 
 WORKDIR /app
 
+LABEL org.opencontainers.image.source="https://github.com/yipfram/scouticket"
+LABEL org.opencontainers.image.description="Application de gestion de justificatifs et de notes de frais pour les scouts"
+LABEL org.opencontainers.image.licenses="MIT"
+
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
