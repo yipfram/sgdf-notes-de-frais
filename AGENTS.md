@@ -34,8 +34,7 @@ src/
 3. **Utiliser des conventions françaises** – nommer les variables, fonctions, types, composants, commentaires et messages utilisateur en français lorsque cela reste compatible avec les conventions ou API externes. Exemple : préférer `montantTotal`, `envoyerFacture` et `FactureFormulaire` à `totalAmount`, `sendInvoice` et `InvoiceForm`, tout en conservant les termes imposés ou conventionnels comme `useState`, `onClick`, `className` et les types d'une bibliothèque externe.
 4. **Préserver l'expérience utilisateur** – toute modification d'interface doit respecter l'esthétique dark mode / glassmorphisme déjà en place.
 5. **Garantir sécurité et confidentialité** – ne jamais stocker les images uploadées sur le serveur ; les transmettre uniquement par e-mail.
-6. **Rédiger une documentation complète** – mettre à jour `README.md` ou `SETUP.md` lors de l'ajout de fonctionnalités.
-7. **Rédiger les commits en français** – utiliser les préfixes conventionnels (`feat:`, `fix:`, `chore:`…) suivis d’un message concis en français.
+6. **Rédiger les commits en français** – utiliser les préfixes conventionnels (`feat:`, `fix:`, `chore:`…) suivis d’un message concis en français.
 
 ## 🛠️ Workflow de développement
 
@@ -49,8 +48,8 @@ src/
 - **`src/app/layout.tsx`** – encapsule toutes les pages, injecte les styles globaux Tailwind et configure le provider Clerk.
 - **`src/app/api/`** – contient les gestionnaires de routes côté serveur (endpoints `POST`) pour l'envoi d'e-mails.
 - **`src/components/`** – blocs de construction UI (ex. : `CaptureButton`, `InvoiceForm`).
-- **`src/lib/`** – utilitaires comme `formatFileName.ts`, `emailSender.ts`.
-- **`middleware.ts`** – protège les routes, redirige les utilisateurs non authentifiés vers la page de connexion Clerk.
+- **`src/lib/`** – logiques métiers partagées, validations, transformations de données et utilitaires comme `formatFileName.ts` ou `emailSender.ts`.
+- **`proxy.ts`** – protège les routes, redirige les utilisateurs non authentifiés vers la page de connexion Clerk.
 - **`public/`** – assets statiques (icônes, manifest PWA).
 - **`tailwind.config.js`** – palette de couleurs personnalisée et configuration du dark mode.
 
@@ -77,6 +76,5 @@ src/
 
 À chaque modification de fonctionnalité :
 
-1. Ajouter une courte description dans `README.md` sous la section appropriée.
-2. Mettre à jour `SETUP.md` si de nouvelles variables d'environnement sont nécessaires.
-3. Si les modifications d'UI affectent le parcours utilisateur, ajouter une capture d'écran (générée via `generate_image`) et l'intégrer dans la documentation.
+- Mettre à jour `SETUP.md` si de nouvelles variables d'environnement sont nécessaires. Et dans la docs technique ('docs/technical')
+- Si les modifications d'UI affectent le parcours utilisateur, ajouter une capture d'écran (générée via `generate_image`) et l'intégrer dans la documentation.
