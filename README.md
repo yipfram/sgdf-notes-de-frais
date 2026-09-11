@@ -1,4 +1,5 @@
 # Scouticket
+
 Scouticket est une application gratuite (et open-source) destinée aux groupes scouts pour envoyer plus facilement les justificatifs aux trésorier·e.
 l'appication est disponible ici: https://scouticket.fr
 
