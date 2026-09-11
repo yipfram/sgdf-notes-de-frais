@@ -1,5 +1,3 @@
-[![Deploy with Vercel](https://vercel.com/button)](<https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais&env=NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,CLERK_SECRET_KEY,NEXT_PUBLIC_CLERK_SIGN_IN_URL,NEXT_PUBLIC_CLERK_SIGN_UP_URL,APP_URL,SMTP_HOST,SMTP_PORT,SMTP_SECURE,SMTP_USER,SMTP_PASSWORD,SMTP_FROM,SMTP_FROM_NAME,MAINTENANCE_MODE&envDescription=Variables%20n%C3%A9cessaires%20pour%20le%20d%C3%A9ploiement%20(Clerk%20%2B%20SMTP)&envLink=https%3A%2F%2Fgithub.com%2Fyipfram%2Fsgdf-notes-de-frais%2Fblob%2Fmain%2FSETUP.md&project-name=scouticket&repository-name=scouticket>)
-
 # Scouticket
 
 ## Authentification et migration
@@ -34,7 +32,7 @@ Pour savoir comment l'utiliser avec [la documentation](https://scouticket.fr)
 - 🔔 **Bannière d'installation** : Invitation A2HS personnalisée
 - 🛠️ **Mode maintenance** : une variable d’environnement permet d’afficher une page dédiée et de désactiver temporairement les API
 - 🌙 **Affichage plein écran** : Expérience proche d'une application native
-- 📋 **Logs techniques structurés** : erreurs serveur et réponses API rejetées, consultables dans Vercel sans contenir de données personnelles ou de justificatifs
+- 📋 **Logs techniques structurés** : erreurs serveur et réponses API rejetées, sans contenir de données personnelles ou de justificatifs
 - 🔎 **Audit Better Auth** : les actions d’authentification et de groupes sont journalisées en JSON sur stdout ; OpenObserve peut les ingérer depuis les logs Docker, avec des identifiants pseudonymisés
 - 📈 **RUM OpenObserve optionnel** : mesure les performances réelles et les erreurs côté navigateur ; le rejeu de session est limité à 50 % et les saisies sont masquées
 

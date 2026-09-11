@@ -10,9 +10,8 @@ Ce guide explique **pas à pas** comment installer et déployer l'application, q
 4. [Guide détaillé pas à pas](#guide-détaillé-pas-à-pas)
    - [Étape 1 : Configuration SMTP (Email)](#étape-1--configuration-smtp-email)
    - [Étape 2 : Configuration Better Auth](#étape-2--configuration-better-auth)
-   - [Étape 3 : Déploiement sur Vercel](#étape-3--déploiement-sur-vercel)
-   - [Étape 4 : Configuration des variables d'environnement](#étape-4--configuration-des-variables-denvironnement)
-   - [Étape 5 : Finalisation et tests](#étape-5--finalisation-et-tests)
+   - [Étape 3 : Configuration des variables d'environnement](#étape-3--configuration-des-variables-denvironnement)
+   - [Étape 4 : Finalisation et tests](#étape-4--finalisation-et-tests)
 5. [Résolution de problèmes](#résolution-de-problèmes)
 
 ---
@@ -38,7 +37,6 @@ Avant de commencer :
 - ✅ Un compte **Email** avec accès SMTP pour envoyer les emails (Gmail, Outlook, Office 365, ou serveur personnalisé - gratuit)
 - ✅ Un compte **GitHub** pour accéder au code source (gratuit)
 - ✅ Une base PostgreSQL et les variables **Better Auth** pour l'authentification
-- ✅ Un compte **Vercel** pour héberger l'application (gratuit pour projets associatifs)
 
 **Tout est gratuit !** Aucun frais n'est requis pour une utilisation associative normale.
 
@@ -52,7 +50,7 @@ Si vous êtes développeur et que vous connaissez déjà ces outils :
 2. Configurez PostgreSQL et Better Auth dans `.env.local`
 3. Configurez vos identifiants SMTP (voir `.env.example` pour exemples Gmail/Outlook/Office365)
 4. Copiez `.env.example` → `.env.local` et remplissez les variables SMTP + Better Auth
-5. Déployez sur Vercel et ajoutez les variables d'environnement
+5. Déployez l’application chez l’hébergeur de votre choix et ajoutez les variables d’environnement
 6. Ajoutez les URL de production dans `BETTER_AUTH_URL` et `APP_URL`
 
 Pour plus de détails, voir le [Guide détaillé pas à pas](#guide-détaillé-pas-à-pas) ci-dessous.
@@ -201,40 +199,11 @@ Si Google est activé, configurez dans Google Cloud Console l’URI `http://loca
 
 ---
 
-### Étape 3 : Déploiement sur Vercel
-
-Vercel hébergera votre application gratuitement.
-
-#### 3.1 Créer un compte Vercel
-
-1. Allez sur [https://vercel.com/signup](https://vercel.com/signup)
-2. Cliquez sur **"Continue with GitHub"**
-3. Si besoin, créez d'abord un compte GitHub sur [github.com/signup](https://github.com/signup)
-4. Autorisez Vercel à accéder à votre compte GitHub
-
-#### 3.2 Forker le projet sur GitHub
-
-1. Allez sur [https://github.com/yipfram/sgdf-notes-de-frais](https://github.com/yipfram/sgdf-notes-de-frais)
-2. Cliquez sur **"Fork"** en haut à droite
-3. Cliquez sur **"Create fork"**
-4. Vous avez maintenant votre propre copie du projet
-
-#### 3.3 Importer sur Vercel
-
-1. Retournez sur [https://vercel.com/dashboard](https://vercel.com/dashboard)
-2. Cliquez sur **"Add New..."** → **"Project"**
-3. Trouvez **sgdf-notes-de-frais** dans la liste
-4. Cliquez sur **"Import"**
-
-> ⚠️ **Ne cliquez pas encore sur "Deploy"** ! Nous devons d'abord configurer les variables.
-
----
-
-### Étape 4 : Configuration des variables d'environnement
+### Étape 3 : Configuration des variables d'environnement
 
 Les variables d'environnement sont les "réglages secrets" de l'application.
 
-#### 4.1 Tableau récapitulatif des variables
+#### 3.1 Tableau récapitulatif des variables
 
 | Variable             | Requis | Description                                     | Exemple                     |
 | -------------------- | :----: | ----------------------------------------------- | --------------------------- |
@@ -265,21 +234,7 @@ Pour interrompre temporairement le service, définissez `MAINTENANCE_MODE=true`,
 | Office 365      | `smtp.office365.com`    | `587`     | `false`     |
 | SSL (port 465)  | `smtp.gmail.com`        | `465`     | `true`      |
 
-#### 4.2 Ajouter les variables sur Vercel
-
-Sur la page de configuration du projet dans Vercel, descendez jusqu'à **"Environment Variables"**.
-
-Si vous avez déjà déployé :
-
-1. Allez sur votre projet → **"Settings"** → **"Environment Variables"**
-
-Pour chaque variable du tableau ci-dessus :
-
-1. Entrez le **nom** dans "Key"
-2. Entrez la **valeur** dans "Value"
-3. Cliquez sur **"Add"**
-
-#### 4.3 Vérification
+#### 3.2 Vérification
 
 Vérifiez que :
 
@@ -287,41 +242,19 @@ Vérifiez que :
 - ✅ Les noms sont **exactement** comme indiqué
 - ✅ Aucune valeur n'a d'espace au début/fin
 
-#### 4.4 Déployer
-
-Maintenant, cliquez sur **"Deploy"** !
-
-Vercel va :
-
-1. Construire l'application (2-3 minutes)
-2. La déployer automatiquement
-3. Vous donner une URL (ex: `https://sgdf-notes-de-frais-xxx.vercel.app`)
-
 ---
 
-### Étape 5 : Finalisation et tests
+### Étape 4 : Finalisation et tests
 
-#### 5.1 Configurer le domaine dans Clerk
+#### 4.1 Tester l'application
 
-1. Copiez votre URL Vercel (ex: `sgdf-notes-de-frais-xxx.vercel.app`)
-2. Retournez sur [https://dashboard.clerk.com](https://dashboard.clerk.com)
-3. Sélectionnez votre application
-4. Menu de gauche → **"Domains"**
-5. Cliquez sur **"Add domain"**
-6. Collez votre domaine Vercel (⚠️ sans le `https://`, juste `sgdf-notes-de-frais-xxx.vercel.app`)
-7. Cliquez sur **"Add"**
-
-Clerk détecte automatiquement que c'est un domaine Vercel.
-
-#### 5.2 Tester l'application
-
-1. Allez sur votre URL Vercel
+1. Allez sur l’URL publique de l’application
 2. Vous voyez la page de connexion ✅
 3. Cliquez sur **"Sign up"** et créez un compte test
 4. Confirmez votre email
 5. Connectez-vous
 
-#### 5.3 Tester l'envoi d'une facture
+#### 4.2 Tester l'envoi d'une facture
 
 1. Cliquez sur **"Prendre photo"** ou **"Importer fichier"**
 2. Choisissez un ou plusieurs justificatifs de test (image(s) et/ou PDF)
@@ -474,14 +407,6 @@ Frontend (React + Better Auth) → API Route (/api/send-expense) → Gmail SMTP 
 
 ## 📱 Déploiement
 
-### Vercel (Recommandé)
-
-1. Connectez le repo GitHub à Vercel
-2. Ajoutez les variables d'environnement dans Vercel Dashboard
-3. Déployez (build automatique)
-
-### Autres plateformes
-
 - Assurez-vous que les variables d'environnement sont configurées
 - La plateforme doit supporter les API routes Next.js
 - HTTPS requis pour l'accès caméra
@@ -501,7 +426,7 @@ Frontend (React + Better Auth) → API Route (/api/send-expense) → Gmail SMTP 
 **Logs & debug**
 
 - Console navigateur pour erreurs frontend
-- Logs Vercel / serveur pour erreurs backend
+- Logs du serveur pour erreurs backend
 - Tester l'API `/api/send-expense` en local avec des données minimales
 
 ---
@@ -514,12 +439,12 @@ Frontend (React + Better Auth) → API Route (/api/send-expense) → Gmail SMTP 
 
 **Solution** :
 
-1. Vérifiez `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` dans Vercel
+1. Vérifiez `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` dans l’environnement de déploiement
 2. Vérifiez qu'il n'y a pas d'espaces au début/fin des valeurs
 3. Pour Gmail : Vérifiez que vous utilisez un mot de passe d'application (16 caractères)
 4. Pour Outlook/Office365 : Vérifiez que votre mot de passe est correct
 5. Vérifiez que `SMTP_SECURE` correspond au port (`false` pour 587, `true` pour 465)
-6. Mettez à jour les variables dans Vercel → Redéployez
+6. Mettez à jour les variables puis redéployez
 
 ### Problème : "Non autorisé" ou impossible de se connecter
 
@@ -527,8 +452,8 @@ Frontend (React + Better Auth) → API Route (/api/send-expense) → Gmail SMTP 
 
 **Solution** :
 
-1. Vérifiez `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` et `CLERK_SECRET_KEY` dans Vercel
-2. Vérifiez que votre domaine Vercel est dans Clerk → Domains
+1. Vérifiez `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` et `CLERK_SECRET_KEY` dans l’environnement de déploiement
+2. Vérifiez que votre domaine est configuré dans Clerk → Domains
 3. Redéployez l'application
 
 ### Problème : Les emails ne sont pas reçus
@@ -543,7 +468,7 @@ Frontend (React + Better Auth) → API Route (/api/send-expense) → Gmail SMTP 
 
 1. Vérifiez les spams et les dossiers courrier indésirable
 2. Connectez-vous à votre compte email et vérifiez les alertes de sécurité
-3. Vérifiez les logs Vercel pour des erreurs d'envoi
+3. Vérifiez les logs du serveur pour des erreurs d'envoi
 
 ### Problème : "Invalid login" ou erreur d'authentification SMTP
 
@@ -554,14 +479,14 @@ Frontend (React + Better Auth) → API Route (/api/send-expense) → Gmail SMTP 
 1. Allez sur [https://myaccount.google.com/security](https://myaccount.google.com/security)
 2. Supprimez l'ancien mot de passe d'application
 3. Créez-en un nouveau
-4. Mettez à jour `SMTP_PASSWORD` dans Vercel
+4. Mettez à jour `SMTP_PASSWORD` dans l’environnement de déploiement
 5. Redéployez
 
 **Solution Outlook/Office365** :
 
 1. Vérifiez que votre mot de passe est correct
 2. Vérifiez que la 2FA n'est pas activée (ou utilisez un mot de passe d'application si disponible)
-3. Mettez à jour `SMTP_PASSWORD` dans Vercel
+3. Mettez à jour `SMTP_PASSWORD` dans l’environnement de déploiement
 4. Redéployez
 
 ### Problème : L'appareil photo ne fonctionne pas
@@ -578,7 +503,7 @@ Frontend (React + Better Auth) → API Route (/api/send-expense) → Gmail SMTP 
 
 **Solutions** :
 
-1. Vercel → Settings → Environment Variables
+1. Vérifiez les variables d’environnement de votre hébergeur.
 2. Vérifiez que les **10 variables minimum** sont présentes :
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
    - `CLERK_SECRET_KEY`
@@ -589,12 +514,12 @@ Frontend (React + Better Auth) → API Route (/api/send-expense) → Gmail SMTP 
    - `SMTP_SECURE`
    - `SMTP_USER`
    - `SMTP_PASSWORD`
-3. Vercel → Deployments → cliquez sur le dernier → vérifiez les logs
+3. Consultez les logs du dernier déploiement
 4. Redéployez si nécessaire
 
 ### Besoin d'aide supplémentaire ?
 
-1. **Consultez les logs** : Vercel → Deployments → Runtime Logs
+1. **Consultez les logs** de votre hébergeur
 2. **Ouvrez une issue** : [GitHub Issues](https://github.com/yipfram/sgdf-notes-de-frais/issues)
 3. Décrivez votre problème avec le message d'erreur et les étapes suivies
 

@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
-const versionDeploiement =
-  process.env.VERCEL_GIT_COMMIT_SHA ||
-  process.env.GITHUB_SHA ||
-  Date.now().toString();
+const versionDeploiement = process.env.GITHUB_SHA || Date.now().toString();
 
 const nextConfig = {
   env: {

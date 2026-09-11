@@ -50,11 +50,6 @@ const metadonneesPages: Record<string, { titre: string; description: string }> =
       description:
         "Référence des variables d’environnement nécessaires pour configurer Scouticket en toute sécurité.",
     },
-    "technical/vercel.md": {
-      titre: "Déploiement Vercel",
-      description:
-        "Déployez Scouticket sur Vercel et configurez les variables nécessaires au bon fonctionnement du service.",
-    },
     "technical/docker.md": {
       titre: "Déploiement Docker",
       description:
@@ -164,7 +159,6 @@ export default defineConfig({
             text: "Variables d'environnement",
             link: "/technical/environment-variables",
           },
-          { text: "Déploiement Vercel", link: "/technical/vercel" },
           { text: "Déploiement Docker", link: "/technical/docker" },
           { text: "Dépannage", link: "/technical/troubleshooting" },
           {

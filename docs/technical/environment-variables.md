@@ -27,7 +27,7 @@ Les événements `auth.audit.*` sont des lignes JSON sur stdout. OpenObserve doi
 | ------------------ | :-------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `MAINTENANCE_MODE` | Optionnel | `true` affiche la page de maintenance, bloque les API avec un statut `503` et fait répondre `/api/health` avec `{ "ok": false, "status": "maintenance" }`. Toute autre valeur, dont `false`, désactive ce mode. |
 
-Après avoir modifié cette variable dans Vercel ou dans l’environnement de production, redéployez ou redémarrez l’application.
+Après avoir modifié cette variable dans l’environnement de production, redéployez ou redémarrez l’application.
 
 ## E-mail SMTP
 

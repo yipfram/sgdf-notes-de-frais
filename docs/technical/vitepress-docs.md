@@ -15,7 +15,6 @@ docs/
     local-installation.md
     configuration.md
     environment-variables.md
-    vercel.md
     docker.md
     troubleshooting.md
     vitepress-docs.md
