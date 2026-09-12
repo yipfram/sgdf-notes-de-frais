@@ -31,7 +31,7 @@ export default function PageInvitation({
   const [message, setMessage] = useState("");
   const [enCours, setEnCours] = useState(false);
   useEffect(() => {
-    void searchParams.then(async ({ id }) => {
+    void searchParams.then(({ id }) => {
       let identifiant = id;
       if (!identifiant) {
         const retour = window.sessionStorage.getItem("invitation-retour");
@@ -40,17 +40,19 @@ export default function PageInvitation({
           identifiant = urlRetour.searchParams.get("id") || undefined;
         }
       }
-      let nom: string | undefined;
-      if (identifiant) {
-        const reponse = await fetch(
-          `/api/invitation?id=${encodeURIComponent(identifiant)}`,
-        );
-        if (reponse.ok)
-          nom = ((await reponse.json()) as { nomGroupe: string }).nomGroupe;
-      }
+
       setInvitationId(identifiant);
-      setNomGroupe(nom);
       setInvitationPrete(true);
+
+      if (!identifiant) return;
+      void fetch(`/api/invitation?id=${encodeURIComponent(identifiant)}`)
+        .then((reponse) => (reponse.ok ? reponse.json() : null))
+        .then((invitation: { nomGroupe: string } | null) => {
+          setNomGroupe(invitation?.nomGroupe);
+        })
+        .catch(() => {
+          // Le nom du groupe est informatif : l’invitation reste actionnable.
+        });
     });
   }, [searchParams]);
   useEffect(() => {
@@ -76,7 +78,7 @@ export default function PageInvitation({
       }
       setMessage("Invitation acceptée. Redirection…");
       window.sessionStorage.removeItem("invitation-retour");
-      const identifiantOrganisation = resultat.data?.invitation.organizationId;
+      const identifiantOrganisation = resultat.data?.invitation?.organizationId;
       if (identifiantOrganisation) {
         try {
           await clientAuth.organization.setActive({
