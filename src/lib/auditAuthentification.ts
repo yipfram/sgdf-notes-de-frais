@@ -1,6 +1,9 @@
 import { journaliserAuditAuthentification as ecrireAuditAuthentification } from "@/lib/logger/audit";
 
-export { pseudonymiserIdentifiant } from "@/lib/logger/audit";
+export {
+  dechiffrerIdentifiant,
+  pseudonymiserIdentifiant,
+} from "@/lib/logger/audit";
 
 type ValeurObjet = Record<string, unknown>;
 

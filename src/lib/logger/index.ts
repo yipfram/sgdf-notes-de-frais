@@ -56,7 +56,6 @@ function ecrireJournal(
   contexte: ContexteJournal = {},
 ) {
   const entree = JSON.stringify({
-    horodatage: new Date().toISOString(),
     niveau,
     evenement,
     contexte: nettoyerValeur(contexte),

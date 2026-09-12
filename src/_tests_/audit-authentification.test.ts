@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   actionAuditAuthentification,
+  dechiffrerIdentifiant,
   journaliserAuditAuthentification,
   pseudonymiserIdentifiant,
 } from "@/lib/auditAuthentification";
@@ -10,13 +11,11 @@ describe("audit Better Auth", () => {
     vi.restoreAllMocks();
   });
 
-  it("pseudonymise les identifiants de façon stable", () => {
-    expect(pseudonymiserIdentifiant("user_123")).toBe(
-      pseudonymiserIdentifiant("user_123"),
-    );
-    expect(pseudonymiserIdentifiant("user_123")).not.toBe(
-      pseudonymiserIdentifiant("user_456"),
-    );
+  it("chiffre les identifiants de façon déchiffrable", () => {
+    const identifiantChiffre = pseudonymiserIdentifiant("user_123");
+
+    expect(identifiantChiffre).not.toBe("user_123");
+    expect(dechiffrerIdentifiant(identifiantChiffre)).toBe("user_123");
   });
 
   it("reconnaît les actions d’authentification et d’organisation", () => {
@@ -43,10 +42,12 @@ describe("audit Better Auth", () => {
     const entree = JSON.parse(espion.mock.calls[0][0] as string) as {
       contexte: Record<string, unknown>;
     };
-    expect(entree.contexte).toMatchObject({
-      utilisateur: pseudonymiserIdentifiant("user_123"),
-      organisation: pseudonymiserIdentifiant("org_456"),
-    });
+    expect(dechiffrerIdentifiant(entree.contexte.utilisateur as string)).toBe(
+      "user_123",
+    );
+    expect(dechiffrerIdentifiant(entree.contexte.organisation as string)).toBe(
+      "org_456",
+    );
   });
 
   it("utilise une nouvelle session lors de la connexion", () => {
@@ -60,8 +61,8 @@ describe("audit Better Auth", () => {
     const entree = JSON.parse(espion.mock.calls[0][0] as string) as {
       contexte: Record<string, unknown>;
     };
-    expect(entree.contexte.utilisateur).toBe(
-      pseudonymiserIdentifiant("user_123"),
+    expect(dechiffrerIdentifiant(entree.contexte.utilisateur as string)).toBe(
+      "user_123",
     );
     expect(entree.contexte.organisation).toBeNull();
   });
@@ -85,9 +86,13 @@ describe("audit Better Auth", () => {
     expect(entree.contexte).toMatchObject({
       resultat: "echec",
       codeErreur: "FORBIDDEN",
-      utilisateur: pseudonymiserIdentifiant("user_123"),
-      organisation: pseudonymiserIdentifiant("org_456"),
     });
+    expect(dechiffrerIdentifiant(entree.contexte.utilisateur as string)).toBe(
+      "user_123",
+    );
+    expect(dechiffrerIdentifiant(entree.contexte.organisation as string)).toBe(
+      "org_456",
+    );
     expect(sortie).not.toContain("user_123");
     expect(sortie).not.toContain("org_456");
     expect(sortie).not.toContain("membre@example.test");
@@ -108,11 +113,11 @@ describe("audit Better Auth", () => {
     const entree = JSON.parse(espion.mock.calls[0][0] as string) as {
       contexte: Record<string, unknown>;
     };
-    expect(entree.contexte.utilisateur).toBe(
-      pseudonymiserIdentifiant("user_123"),
+    expect(dechiffrerIdentifiant(entree.contexte.utilisateur as string)).toBe(
+      "user_123",
     );
-    expect(entree.contexte.organisation).toBe(
-      pseudonymiserIdentifiant("org_456"),
+    expect(dechiffrerIdentifiant(entree.contexte.organisation as string)).toBe(
+      "org_456",
     );
   });
 

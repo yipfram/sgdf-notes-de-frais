@@ -4,13 +4,13 @@ Copiez `.env.example` vers `.env.local`, puis renseignez les variables suivantes
 
 ## Better Auth
 
-| Variable             | Requis | Description                                                             |
-| -------------------- | :----: | ----------------------------------------------------------------------- |
-| `BETTER_AUTH_SECRET` |   ✅   | Secret Better Auth pour les sessions et signatures                      |
-| `BETTER_AUTH_URL`    |   ✅   | URL publique de l’application                                           |
-| `AUDIT_LOG_SECRET`   |   ✅   | Secret distinct, utilisé pour pseudonymiser les audits envoyés à stdout |
+| Variable             | Requis | Description                                                                 |
+| -------------------- | :----: | --------------------------------------------------------------------------- |
+| `BETTER_AUTH_SECRET` |   ✅   | Secret Better Auth pour les sessions et signatures                          |
+| `BETTER_AUTH_URL`    |   ✅   | URL publique de l’application                                               |
+| `AUDIT_LOG_SECRET`   |   ✅   | Secret distinct, utilisé pour chiffrer les identifiants des audits des logs |
 
-Les événements `auth.audit.*` sont des lignes JSON sur stdout. OpenObserve doit ingérer les logs du conteneur applicatif ; ils ne contiennent ni e-mail, ni identifiant Better Auth brut, ni secret.
+Les événements `auth.audit.*` sont des lignes JSON sur stdout. OpenObserve doit ingérer les logs du conteneur applicatif ; ils ne contiennent ni e-mail, ni identifiant Better Auth brut, ni secret. Les champs `utilisateur` et `organisation` sont chiffrés avec AES-256-GCM et peuvent être déchiffrés avec `dechiffrerIdentifiant` et la même valeur de `AUDIT_LOG_SECRET`.
 
 ## Ancienne configuration Clerk
 
