@@ -1,5 +1,6 @@
-import { createHmac } from "node:crypto";
-import { journal } from "@/lib/logger";
+import { journaliserAuditAuthentification as ecrireAuditAuthentification } from "@/lib/logger/audit";
+
+export { pseudonymiserIdentifiant } from "@/lib/logger/audit";
 
 type ValeurObjet = Record<string, unknown>;
 
@@ -33,35 +34,45 @@ function lireChaine(valeur: unknown, cle: string) {
     : null;
 }
 
-function secretAudit() {
-  const secret = process.env.AUDIT_LOG_SECRET;
-  if (secret) return secret;
-  if (process.env.NODE_ENV === "test") return "secret-audit-test";
-  throw new Error("AUDIT_LOG_SECRET est requis pour les journaux d'audit.");
-}
-
-export function pseudonymiserIdentifiant(identifiant: string | null) {
-  if (!identifiant) return null;
-  return createHmac("sha256", secretAudit()).update(identifiant).digest("hex");
-}
-
 export function actionAuditAuthentification(chemin: string | undefined) {
   return chemin ? (actionsParChemin[chemin] ?? null) : null;
 }
 
-function identifiantsContexte(contexte: unknown) {
+function lireChaineImbriquee(valeur: unknown, cles: string[]) {
+  const resultat = cles.reduce<unknown>(
+    (resultat, cle) => (estObjet(resultat) ? resultat[cle] : null),
+    valeur,
+  );
+  return typeof resultat === "string" ? resultat : null;
+}
+
+function identifiantsAudit(contexte: unknown, corps: unknown, retour: unknown) {
   const contexteAuth = estObjet(contexte) ? contexte : {};
   const session = estObjet(contexteAuth.session) ? contexteAuth.session : {};
   const nouvelleSession = estObjet(contexteAuth.newSession)
     ? contexteAuth.newSession
     : {};
-  const sessionUtilisateur = lireChaine(session, "userId");
-  const utilisateurNouvelleSession = lireChaine(nouvelleSession, "userId");
-  const organisationSession = lireChaine(session, "activeOrganizationId");
+  const utilisateurSession = lireChaine(session.user, "id");
+  const utilisateurNouvelleSession = lireChaine(nouvelleSession.user, "id");
+  const organisationSession = lireChaine(
+    session.session,
+    "activeOrganizationId",
+  );
+  const utilisateurRetour =
+    lireChaineImbriquee(retour, ["user", "id"]) ??
+    lireChaine(retour, "inviterId") ??
+    lireChaine(retour, "actorId");
+  const organisationRetour =
+    lireChaine(retour, "organizationId") ??
+    lireChaineImbriquee(retour, ["organization", "id"]);
 
   return {
-    utilisateur: sessionUtilisateur ?? utilisateurNouvelleSession,
-    organisation: organisationSession,
+    utilisateur:
+      utilisateurSession ?? utilisateurNouvelleSession ?? utilisateurRetour,
+    organisation:
+      organisationSession ??
+      lireChaine(corps, "organizationId") ??
+      organisationRetour,
   };
 }
 
@@ -70,28 +81,24 @@ export function journaliserAuditAuthentification({
   resultat,
   contexte,
   corps,
+  retour,
   codeErreur,
 }: {
   chemin: string | undefined;
   resultat: "succes" | "echec";
   contexte: unknown;
   corps?: unknown;
+  retour?: unknown;
   codeErreur?: unknown;
 }) {
   const action = actionAuditAuthentification(chemin);
   if (!action) return;
 
-  const identifiants = identifiantsContexte(contexte);
-  const organisationCorps = lireChaine(corps, "organizationId");
-  const entree = {
+  const identifiants = identifiantsAudit(contexte, corps, retour);
+  ecrireAuditAuthentification({
+    evenement: `auth.audit.${action}`,
     resultat,
-    utilisateur: pseudonymiserIdentifiant(identifiants.utilisateur),
-    organisation: pseudonymiserIdentifiant(
-      identifiants.organisation ?? organisationCorps,
-    ),
+    ...identifiants,
     ...(typeof codeErreur === "string" ? { codeErreur } : {}),
-  };
-
-  if (resultat === "succes") journal.info(`auth.audit.${action}`, entree);
-  else journal.avertissement(`auth.audit.${action}`, entree);
+  });
 }

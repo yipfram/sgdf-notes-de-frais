@@ -62,10 +62,20 @@ export const auth = betterAuth({
   hooks: {
     after: createAuthMiddleware(async (contexte) => {
       const retour = contexte.context.returned;
-      const codeErreur =
+      let codeErreur =
         typeof retour === "object" && retour !== null && "code" in retour
           ? retour.code
           : undefined;
+      if (retour instanceof Response && retour.status >= 400) {
+        const corps = (await retour
+          .clone()
+          .json()
+          .catch(() => null)) as unknown;
+        codeErreur =
+          typeof corps === "object" && corps !== null && "code" in corps
+            ? corps.code
+            : undefined;
+      }
       const statutErreur =
         typeof retour === "object" && retour !== null && "statusCode" in retour
           ? retour.statusCode
@@ -79,6 +89,8 @@ export const auth = betterAuth({
             : "succes",
         contexte: contexte.context,
         corps: contexte.body,
+        // La réponse Better Auth sert de repli si la session est absente du hook.
+        retour,
         codeErreur:
           typeof codeErreur === "string"
             ? codeErreur

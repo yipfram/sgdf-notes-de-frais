@@ -1,3 +1,4 @@
+// Point d’entrée unique des journaux applicatifs.
 type NiveauJournal = "info" | "warn" | "error";
 
 export type ContexteJournal = Record<string, unknown>;
