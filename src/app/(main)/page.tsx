@@ -22,6 +22,48 @@ type Groupe = {
   unitPreference: string;
 };
 
+type InvitationEnAttente = {
+  id: string;
+  organizationName?: string | null;
+};
+
+function BandeauInvitationEnAttente({
+  invitations,
+}: {
+  invitations: InvitationEnAttente[];
+}) {
+  if (invitations.length === 0) return null;
+  return (
+    <aside
+      className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-zinc-900"
+      aria-label="Invitations en attente"
+    >
+      <p className="font-medium">
+        Vous avez {invitations.length} invitation
+        {invitations.length > 1 ? "s" : ""} en attente
+      </p>
+      <ul className="mt-2 space-y-2">
+        {invitations.map((invitation) => (
+          <li
+            key={invitation.id}
+            className="flex flex-wrap items-center justify-between gap-2"
+          >
+            <span className="text-zinc-600">
+              {invitation.organizationName || "Un groupe scout"}
+            </span>
+            <Link
+              href={`/invitation?id=${encodeURIComponent(invitation.id)}`}
+              className="font-medium text-[#1E3A8A] underline"
+            >
+              Voir l’invitation
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
+
 export default function Home() {
   const { data: session, isPending } = clientAuth.useSession();
   const { data: organisation } = clientAuth.useActiveOrganization();
@@ -33,7 +75,35 @@ export default function Home() {
     useState(false);
   const [choixManuelGroupe, setChoixManuelGroupe] = useState(false);
   const [administrationOuverte, setAdministrationOuverte] = useState(false);
+  const [invitations, setInvitations] = useState<InvitationEnAttente[]>([]);
   const estEnLigne = useStatutEnLigne();
+
+  useEffect(() => {
+    setInvitations([]);
+    if (!session?.user.emailVerified) {
+      return;
+    }
+    let annule = false;
+    void clientAuth.organization
+      .listUserInvitations()
+      .then(({ data, error }) => {
+        if (annule || error || !data) return;
+        const maintenant = Date.now();
+        setInvitations(
+          data.filter(
+            (invitation) =>
+              invitation.status === "pending" &&
+              new Date(invitation.expiresAt).getTime() > maintenant,
+          ),
+        );
+      })
+      .catch(() => {
+        // La recherche d’invitations ne doit pas bloquer l’accueil.
+      });
+    return () => {
+      annule = true;
+    };
+  }, [session?.user.id, session?.user.emailVerified]);
 
   const definirGroupePrincipal = async (identifiantOrganisation: string) => {
     await fetch("/api/user/default-group", {
@@ -124,6 +194,11 @@ export default function Home() {
           <p className="mt-2 text-zinc-600">
             Choisissez ou créez votre groupe scout.
           </p>
+          {invitations.length > 0 && (
+            <div className="mt-5">
+              <BandeauInvitationEnAttente invitations={invitations} />
+            </div>
+          )}
           <div className="mt-5 space-y-2">
             {organisations?.map((item) => (
               <button
@@ -199,6 +274,11 @@ export default function Home() {
             </button>
           </div>
         </header>
+        {invitations.length > 0 && (
+          <div className="px-6 pt-6">
+            <BandeauInvitationEnAttente invitations={invitations} />
+          </div>
+        )}
         {!estEnLigne && (
           <p className="bg-amber-50 p-2 text-center text-sm text-amber-800">
             Hors ligne - certaines fonctionnalités sont limitées
