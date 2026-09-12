@@ -71,29 +71,43 @@ export default function PageInvitation({
     }).catch(() => {});
   };
   useEffect(() => {
-    void searchParams.then(({ id }) => {
-      let identifiant = id;
-      if (!identifiant) {
-        const retour = window.sessionStorage.getItem("invitation-retour");
-        if (retour) {
-          const urlRetour = new URL(retour, window.location.origin);
-          identifiant = urlRetour.searchParams.get("id") || undefined;
+    let annule = false;
+    void searchParams
+      .then(({ id }) => {
+        let identifiant =
+          new URLSearchParams(window.location.search).get("id") || id;
+        if (!identifiant) {
+          const retour = window.sessionStorage.getItem("invitation-retour");
+          if (retour) {
+            const urlRetour = new URL(retour, window.location.origin);
+            if (
+              urlRetour.origin === window.location.origin &&
+              urlRetour.pathname === "/invitation"
+            )
+              identifiant = urlRetour.searchParams.get("id") || undefined;
+          }
         }
-      }
 
-      setInvitationId(identifiant);
-      setInvitationPrete(true);
+        if (annule) return;
+        setInvitationId(identifiant);
+        setInvitationPrete(true);
 
-      if (!identifiant) return;
-      void fetch(`/api/invitation?id=${encodeURIComponent(identifiant)}`)
-        .then((reponse) => (reponse.ok ? reponse.json() : null))
-        .then((invitation: { nomGroupe: string } | null) => {
-          setNomGroupe(invitation?.nomGroupe);
-        })
-        .catch(() => {
-          // Le nom du groupe est informatif : l’invitation reste actionnable.
-        });
-    });
+        if (!identifiant) return;
+        void fetch(`/api/invitation?id=${encodeURIComponent(identifiant)}`)
+          .then((reponse) => (reponse.ok ? reponse.json() : null))
+          .then((invitation: { nomGroupe: string } | null) => {
+            if (!annule) setNomGroupe(invitation?.nomGroupe);
+          })
+          .catch(() => {
+            // Le nom du groupe est informatif : l’invitation reste actionnable.
+          });
+      })
+      .catch(() => {
+        if (!annule) setInvitationPrete(true);
+      });
+    return () => {
+      annule = true;
+    };
   }, [searchParams]);
   useEffect(() => {
     if (isPending || session || !invitationId || !invitationPrete) return;
@@ -192,6 +206,29 @@ export default function PageInvitation({
     );
     if (!resultat.error) window.sessionStorage.removeItem("invitation-retour");
   };
+  if (!invitationPrete)
+    return (
+      <main className="min-h-screen bg-zinc-50 p-6 text-center text-zinc-600">
+        Chargement de l’invitation…
+      </main>
+    );
+  if (!invitationId)
+    return (
+      <main className="min-h-screen bg-zinc-50 p-6 flex items-center justify-center">
+        <section className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 text-center">
+          <h1 className="text-xl font-semibold text-[#1E3A8A]">
+            Invitation introuvable
+          </h1>
+          <p className="mt-2 text-zinc-600">
+            Le lien ne contient pas d’invitation. Retrouvez vos invitations en
+            attente sur l’accueil.
+          </p>
+          <Link href="/" className="mt-4 inline-block text-[#1E3A8A] underline">
+            Retour à l’accueil
+          </Link>
+        </section>
+      </main>
+    );
   if (!session)
     return (
       <main className="min-h-screen bg-zinc-50 p-6 text-center">
@@ -216,7 +253,7 @@ export default function PageInvitation({
         <button
           type="button"
           onClick={() => void accepter()}
-          disabled={!invitationId || enCours}
+          disabled={enCours}
           className="mt-5 rounded-lg bg-[#1E3A8A] px-5 py-3 text-white disabled:opacity-50"
         >
           {enCours ? "Acceptation…" : "Accepter l’invitation"}
@@ -224,7 +261,7 @@ export default function PageInvitation({
         <button
           type="button"
           onClick={() => void refuser()}
-          disabled={!invitationId || enCours}
+          disabled={enCours}
           className="mt-3 block w-full text-sm text-zinc-600 underline disabled:opacity-50"
         >
           Refuser l’invitation

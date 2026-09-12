@@ -3,15 +3,22 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Home from "../app/(main)/page";
 
+const mocks = vi.hoisted(() => ({
+  session: vi.fn(),
+  organisation: vi.fn(),
+  listerInvitations: vi.fn(),
+}));
+
 vi.mock("@/lib/auth-client", () => ({
   clientAuth: {
-    useSession: () => ({
-      data: { user: { email: "test@example.test" } },
-      isPending: false,
-    }),
-    useActiveOrganization: () => ({ data: { id: "org_test", name: "Test" } }),
+    useSession: () => ({ data: mocks.session(), isPending: false }),
+    useActiveOrganization: () => ({ data: mocks.organisation() }),
     useListOrganizations: () => ({ data: [] }),
-    organization: { setActive: vi.fn(), create: vi.fn() },
+    organization: {
+      setActive: vi.fn(),
+      create: vi.fn(),
+      listUserInvitations: mocks.listerInvitations,
+    },
     signOut: vi.fn(),
   },
 }));
@@ -47,6 +54,16 @@ vi.mock("@/lib/useOnlineStatus", () => ({
 
 describe("Page principale", () => {
   beforeEach(() => {
+    mocks.session.mockReturnValue({
+      user: {
+        id: "user_test",
+        email: "test@example.test",
+        emailVerified: true,
+      },
+    });
+    mocks.organisation.mockReturnValue({ id: "org_test", name: "Test" });
+    mocks.listerInvitations.mockReset();
+    mocks.listerInvitations.mockResolvedValue({ data: [], error: null });
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -100,5 +117,71 @@ describe("Page principale", () => {
 
     await screen.findByLabelText("Formulaire depense");
     expect(screen.queryByText("Administration")).not.toBeInTheDocument();
+  });
+
+  it("montre les invitations sur l’écran Bienvenue sans les confondre avec les groupes rejoints", async () => {
+    mocks.organisation.mockReturnValue(null);
+    mocks.listerInvitations.mockResolvedValue({
+      data: [
+        {
+          id: "invit_1",
+          organizationName: "Groupe des Éclaireurs",
+          status: "pending",
+          expiresAt: new Date(Date.now() + 60_000),
+        },
+      ],
+      error: null,
+    });
+
+    render(<Home />);
+
+    expect(
+      await screen.findByRole("heading", { name: "Bienvenue" }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText("Groupe des Éclaireurs"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Voir l’invitation" }),
+    ).toHaveAttribute("href", "/invitation?id=invit_1");
+    expect(
+      screen.queryByRole("button", { name: "Groupe des Éclaireurs" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("affiche le groupe établi avant la réponse de recherche d’invitations", async () => {
+    mocks.listerInvitations.mockReturnValue(new Promise(() => {}));
+
+    render(<Home />);
+
+    expect(
+      await screen.findByLabelText("Formulaire depense"),
+    ).toBeInTheDocument();
+    expect(mocks.listerInvitations).toHaveBeenCalledOnce();
+  });
+
+  it("masque les invitations expirées et affiche les autres dans un groupe actif", async () => {
+    mocks.listerInvitations.mockResolvedValue({
+      data: [
+        {
+          id: "expiree",
+          organizationName: "Ancien groupe",
+          status: "pending",
+          expiresAt: new Date(Date.now() - 60_000),
+        },
+        {
+          id: "valide",
+          organizationName: "Nouveau groupe",
+          status: "pending",
+          expiresAt: new Date(Date.now() + 60_000),
+        },
+      ],
+      error: null,
+    });
+
+    render(<Home />);
+
+    expect(await screen.findByText("Nouveau groupe")).toBeInTheDocument();
+    expect(screen.queryByText("Ancien groupe")).not.toBeInTheDocument();
   });
 });
