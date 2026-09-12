@@ -27,6 +27,7 @@ type InvitationEnAttente = {
   organizationName?: string | null;
 };
 
+/** Affiche les invitations en attente avec un lien vers chacune. */
 function BandeauInvitationEnAttente({
   invitations,
 }: {
@@ -64,6 +65,7 @@ function BandeauInvitationEnAttente({
   );
 }
 
+/** Affiche l’accueil du groupe et les invitations de l’utilisateur connecté. */
 export default function Home() {
   const { data: session, isPending } = clientAuth.useSession();
   const { data: organisation } = clientAuth.useActiveOrganization();

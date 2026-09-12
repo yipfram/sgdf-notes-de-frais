@@ -41,6 +41,7 @@ function avecDelai<T>(promesse: Promise<T>, delaiMs: number) {
   ]);
 }
 
+/** Affiche une invitation de groupe et permet d’y répondre. */
 export default function PageInvitation({
   searchParams,
 }: {
