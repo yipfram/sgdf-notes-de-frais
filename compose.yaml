@@ -4,9 +4,9 @@ services:
   postgres:
     image: postgres:17-alpine
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-scouticket}
-      POSTGRES_USER: ${POSTGRES_USER:-scouticket}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-scouticket}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -19,7 +19,7 @@ services:
       retries: 10
 
   app:
-    image: ghcr.io/yipfram/scouticket:0.1
+    image: ghcr.io/yipfram/scouticket:latest
     build:
       context: .
     environment:
