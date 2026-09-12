@@ -77,6 +77,28 @@ describe("Page d’invitation", () => {
     expect(
       await screen.findByText(/confirmez d’abord votre adresse e-mail/i),
     ).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "EMAIL_VERIFICATION_REQUIRED_BEFORE_ACCEPTING_OR_REJECTING_INVITATION",
+    );
+  });
+
+  it("affiche une erreur et libère les actions si l’acceptation échoue", async () => {
+    mocks.accepterInvitation.mockRejectedValue(
+      new Error("Réseau indisponible"),
+    );
+    const utilisateur = userEvent.setup();
+    afficherInvitation();
+
+    await utilisateur.click(
+      await screen.findByRole("button", { name: "Accepter l’invitation" }),
+    );
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Impossible d’accepter cette invitation",
+    );
+    expect(
+      screen.getByRole("button", { name: "Accepter l’invitation" }),
+    ).toBeEnabled();
   });
 
   it("retrouve l’invitation mémorisée après le retour de vérification", async () => {

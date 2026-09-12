@@ -18,6 +18,29 @@ function messageErreurInvitation(code: string | undefined) {
   return "Invitation invalide ou expirée.";
 }
 
+type ErreurInvitation = {
+  code?: string;
+  statut?: number;
+};
+
+function extraireErreurInvitation(erreur: unknown): ErreurInvitation {
+  if (typeof erreur !== "object" || erreur === null) return {};
+  const valeur = erreur as Record<string, unknown>;
+  return {
+    ...(typeof valeur.code === "string" ? { code: valeur.code } : {}),
+    ...(typeof valeur.status === "number" ? { statut: valeur.status } : {}),
+  };
+}
+
+function avecDelai<T>(promesse: Promise<T>, delaiMs: number) {
+  return Promise.race([
+    promesse,
+    new Promise<never>((_, rejeter) => {
+      window.setTimeout(() => rejeter(new Error("DELAI_DEPASSE")), delaiMs);
+    }),
+  ]);
+}
+
 export default function PageInvitation({
   searchParams,
 }: {
@@ -30,6 +53,23 @@ export default function PageInvitation({
   const [invitationPrete, setInvitationPrete] = useState(false);
   const [message, setMessage] = useState("");
   const [enCours, setEnCours] = useState(false);
+  const journaliserEchec = (
+    etape: "acceptation" | "activation_groupe" | "groupe_principal",
+    erreur: ErreurInvitation,
+    dureeMs: number,
+  ) => {
+    console.error("Échec lors de l’acceptation d’invitation", {
+      etape,
+      ...erreur,
+      dureeMs,
+    });
+    void fetch("/api/observabilite/echec-invitation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ etape, ...erreur, dureeMs }),
+      keepalive: true,
+    }).catch(() => {});
+  };
   useEffect(() => {
     void searchParams.then(({ id }) => {
       let identifiant = id;
@@ -67,12 +107,18 @@ export default function PageInvitation({
     if (!invitationId || enCours) return;
     setEnCours(true);
     setMessage("");
+    const debut = Date.now();
     try {
-      const resultat = await clientAuth.organization.acceptInvitation({
-        invitationId,
-      });
+      const resultat = await avecDelai(
+        clientAuth.organization.acceptInvitation({ invitationId }),
+        15_000,
+      );
       if (resultat.error) {
-        setMessage(messageErreurInvitation(resultat.error.code));
+        const erreur = extraireErreurInvitation(resultat.error);
+        journaliserEchec("acceptation", erreur, Date.now() - debut);
+        setMessage(
+          `${messageErreurInvitation(erreur.code)}${erreur.code ? ` (code : ${erreur.code})` : ""}`,
+        );
         setEnCours(false);
         return;
       }
@@ -81,21 +127,56 @@ export default function PageInvitation({
       const identifiantOrganisation = resultat.data?.invitation?.organizationId;
       if (identifiantOrganisation) {
         try {
-          await clientAuth.organization.setActive({
-            organizationId: identifiantOrganisation,
-          });
-          await fetch("/api/user/default-group", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ organizationId: identifiantOrganisation }),
-          });
-        } catch {
-          // Better Auth rattache déjà le membre et active le groupe côté serveur.
+          await avecDelai(
+            clientAuth.organization.setActive({
+              organizationId: identifiantOrganisation,
+            }),
+            5_000,
+          );
+        } catch (erreur) {
+          journaliserEchec(
+            "activation_groupe",
+            extraireErreurInvitation(erreur),
+            Date.now() - debut,
+          );
         }
+        void fetch("/api/user/default-group", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ organizationId: identifiantOrganisation }),
+          keepalive: true,
+        })
+          .then((reponse) => {
+            if (!reponse.ok)
+              journaliserEchec(
+                "groupe_principal",
+                { statut: reponse.status },
+                Date.now() - debut,
+              );
+          })
+          .catch((erreur) => {
+            journaliserEchec(
+              "groupe_principal",
+              extraireErreurInvitation(erreur),
+              Date.now() - debut,
+            );
+          });
       }
       routeur.replace("/");
-    } catch {
-      setMessage("Impossible d’accepter cette invitation. Réessayez.");
+    } catch (erreur) {
+      const details = extraireErreurInvitation(erreur);
+      const estDelaiDepasse =
+        erreur instanceof Error && erreur.message === "DELAI_DEPASSE";
+      journaliserEchec(
+        "acceptation",
+        { ...details, ...(estDelaiDepasse ? { code: "DELAI_DEPASSE" } : {}) },
+        Date.now() - debut,
+      );
+      setMessage(
+        estDelaiDepasse
+          ? "L’acceptation prend trop de temps. Vérifiez votre connexion puis réessayez. (code : DELAI_DEPASSE)"
+          : "Impossible d’accepter cette invitation. Réessayez.",
+      );
       setEnCours(false);
     }
   };
@@ -148,7 +229,11 @@ export default function PageInvitation({
         >
           Refuser l’invitation
         </button>
-        {message && <p className="mt-4 text-zinc-600">{message}</p>}
+        {message && (
+          <p role="alert" className="mt-4 text-zinc-600">
+            {message}
+          </p>
+        )}
       </section>
     </main>
   );
