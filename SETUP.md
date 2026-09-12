@@ -217,8 +217,8 @@ Les variables d'environnement sont les "réglages secrets" de l'application.
 | `SMTP_PASSWORD`      |   ✅   | Mot de passe SMTP                               | `motdepasse16caracteres`    |
 | `APP_URL`            |   ✅   | URL publique utilisée dans les liens par e-mail | `https://app.scouticket.fr` |
 | `MAINTENANCE_MODE`   |   ♠️   | Active la page de maintenance et bloque les API | `false`                     |
-| `SMTP_FROM`          |   ♠️   | Email expéditeur personnalisé                   | `noreply@mondomaine.fr`     |
-| `SMTP_FROM_NAME`     |   ♠️   | Nom de l'expéditeur                             | `Scouticket`                |
+| `SMTP_FROM`          |   ♠️   | Adresse e-mail expéditrice personnalisée        | `noreply@mondomaine.fr`     |
+| `SMTP_FROM_NAME`     |   ♠️   | Nom utilisé pour tous les e-mails expédiés      | `Scouticket`                |
 | `SMTP_FROM_EMAIL`    |   ♠️   | Email expéditeur de repli                       | `expediteur@email.fr`       |
 
 > ✅ = Requis • ♠️ = Optionnel
