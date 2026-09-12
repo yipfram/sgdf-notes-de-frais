@@ -1,4 +1,4 @@
-import { creerTransporteurEmail, echapperHtml } from "@/lib/email";
+import { echapperHtml, envoyerMail } from "@/lib/email";
 
 export async function envoyerEmailInvitation(parametres: {
   destinataire: string;
@@ -10,20 +10,7 @@ export async function envoyerEmailInvitation(parametres: {
   if (!urlApplication) throw new Error("APP_URL_UNDEFINED");
   const url = new URL("/invitation", urlApplication);
   url.searchParams.set("id", parametres.invitationId);
-  const transport = creerTransporteurEmail();
-  const nomExpediteur = process.env.SMTP_FROM_NAME || "Scouticket";
-  const expediteurConfigure = process.env.SMTP_FROM?.trim();
-  const adresseExpediteur =
-    expediteurConfigure || process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
-  if (!adresseExpediteur) throw new Error("SMTP_FROM_UNDEFINED");
-
-  const from =
-    expediteurConfigure?.includes("<") || expediteurConfigure?.includes(">")
-      ? expediteurConfigure
-      : { name: nomExpediteur, address: adresseExpediteur };
-
-  await transport.sendMail({
-    from,
+  await envoyerMail({
     to: parametres.destinataire,
     subject: `Invitation à rejoindre ${parametres.nomGroupe} sur Scouticket`,
     text: `Bonjour,\n\n${parametres.nomInvitant} vous invite à rejoindre le groupe ${parametres.nomGroupe} sur Scouticket. Connectez-vous avec l’adresse invitée, puis acceptez l’invitation :\n${url}\n\nCe lien expire dans 48 heures. Si cette invitation ne vous concerne pas, ignorez cet e-mail.`,

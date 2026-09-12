@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { envoyerEmail } from "@/lib/email";
+import { envoyerEmailDepense } from "@/lib/email";
 import { jsonError, verifierErreurSmtp } from "@/lib/api/utils";
 import { validerCorpsRequete } from "@/lib/api/validateBody";
 import { recupererGroupeActif } from "@/lib/groupServer";
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
       donneesEmail.couleur = unit.color;
       donneesEmail.emailTresorerie = group.emailTresorerie;
 
-      const resultat = await envoyerEmail(donneesEmail);
+      const resultat = await envoyerEmailDepense(donneesEmail);
       return NextResponse.json({
         success: true,
         message: "Email envoyé avec succès",

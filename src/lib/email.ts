@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import type { SendMailOptions } from "nodemailer";
 import { z } from "zod";
 import { estTypeMimePieceJointeAutorise } from "./attachments";
 import {
@@ -7,7 +8,7 @@ import {
 } from "@/constants/piecesJointes";
 import { journal } from "@/lib/logger";
 
-export interface DonneesEmail {
+export interface DonneesEmailDepense {
   emailUtilisateur: string;
   date: string;
   branche: string;
@@ -49,11 +50,26 @@ export const creerTransporteurEmail = () => {
   });
 };
 
-// Fonction pour envoyer un email avec pièce jointe
-export const envoyerEmail = async (donnees: DonneesEmail) => {
+function creerExpediteurEmail() {
+  const adresseConfiguree = process.env.SMTP_FROM?.trim();
+  const adresse =
+    adresseConfiguree ||
+    process.env.SMTP_FROM_EMAIL?.trim() ||
+    process.env.SMTP_USER?.trim();
+
+  if (!adresse) throw new Error("SMTP_FROM_UNDEFINED");
+
+  const adresseDepuisFormatComplet = adresse.match(/<\s*([^<>\s]+)\s*>$/)?.[1];
+
+  return {
+    name: process.env.SMTP_FROM_NAME || "Scouticket",
+    address: adresseDepuisFormatComplet || adresse,
+  };
+}
+
+export async function envoyerMail(optionsEmail: Omit<SendMailOptions, "from">) {
   const transporteur = creerTransporteurEmail();
 
-  // Vérifier la connexion SMTP
   try {
     await transporteur.verify();
     journal.info("smtp.connexion_verifiee");
@@ -62,6 +78,21 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
     throw new Error("Configuration SMTP invalide");
   }
 
+  try {
+    const info = await transporteur.sendMail({
+      from: creerExpediteurEmail(),
+      ...optionsEmail,
+    });
+    journal.info("smtp.email_envoye");
+    return info;
+  } catch (error) {
+    journal.erreur("smtp.envoi_email_echoue", { erreur: error });
+    throw error;
+  }
+}
+
+// Compose et envoie l'e-mail de note de frais avec ses pièces jointes.
+export const envoyerEmailDepense = async (donnees: DonneesEmailDepense) => {
   const {
     emailUtilisateur,
     date,
@@ -143,31 +174,6 @@ export const envoyerEmail = async (donnees: DonneesEmail) => {
       throw e;
     }
   });
-  const nomExpediteurDefaut = process.env.SMTP_FROM_NAME || "Scouticket";
-  const fromRaw = process.env.SMTP_FROM?.trim();
-  const adresseRepli = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
-
-  if (!fromRaw && !adresseRepli) {
-    throw new Error("SMTP_FROM_UNDEFINED");
-  }
-
-  const from = (() => {
-    if (fromRaw) {
-      // Allow full "Name <email>" syntax or simple email override
-      if (fromRaw.includes("<") || fromRaw.includes(">")) {
-        return fromRaw;
-      }
-      return {
-        name: nomExpediteurDefaut,
-        address: fromRaw,
-      };
-    }
-    return {
-      name: nomExpediteurDefaut,
-      address: adresseRepli!,
-    };
-  })();
-
   if (!emailTresorerie) throw new Error("TREASURY_EMAIL_UNDEFINED");
   const sujet = `Scouticket - ${groupe} - ${branche} - ${date}`;
   const resultatCouleur = schemaCouleurHtml.safeParse(couleur);
@@ -285,7 +291,6 @@ Email envoyé automatiquement par Scouticket.
   `;
 
   const optionsEmail = {
-    from,
     to: emailTresorerie,
     cc: emailUtilisateur,
     subject: sujet,
@@ -301,14 +306,6 @@ Email envoyé automatiquement par Scouticket.
     attachments: piecesJointesAnalysees,
   };
 
-  try {
-    // Some nodemailer typings present overloads that make the return type awkward;
-    // cast to any so we can access messageId reliably at runtime.
-    const info: any = await transporteur.sendMail(optionsEmail);
-    journal.info("smtp.email_envoye");
-    return { success: true, messageId: info?.messageId };
-  } catch (error) {
-    journal.erreur("smtp.envoi_email_echoue", { erreur: error });
-    throw error;
-  }
+  const info = await envoyerMail(optionsEmail);
+  return { success: true, messageId: info.messageId };
 };

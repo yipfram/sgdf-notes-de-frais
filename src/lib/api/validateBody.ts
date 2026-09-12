@@ -10,14 +10,14 @@ import {
   MAX_TOTAL_ATTACHMENTS_SIZE_BYTES,
 } from "@/constants/piecesJointes";
 
-import type { DonneesEmail } from "@/lib/email";
+import type { DonneesEmailDepense } from "@/lib/email";
 import type { NextResponse } from "next/server";
 import { z } from "zod";
 import { TYPES_DEPENSES } from "@/constants/configDepenses";
 import { journal } from "@/lib/logger";
 
 export function validerCorpsRequete(body: unknown): {
-  donneesEmail?: DonneesEmail;
+  donneesEmail?: DonneesEmailDepense;
   error?: NextResponse;
 } {
   const bodyParsed = z

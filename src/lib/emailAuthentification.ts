@@ -1,18 +1,4 @@
-import { creerTransporteurEmail, echapperHtml } from "@/lib/email";
-
-function expediteur() {
-  const expediteurConfigure = process.env.SMTP_FROM?.trim();
-  const adresse =
-    expediteurConfigure || process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
-  if (!adresse) throw new Error("SMTP_FROM_UNDEFINED");
-  if (expediteurConfigure?.includes("<") || expediteurConfigure?.includes(">"))
-    return expediteurConfigure;
-
-  return {
-    name: process.env.SMTP_FROM_NAME || "Scouticket",
-    address: adresse,
-  };
-}
+import { echapperHtml, envoyerMail } from "@/lib/email";
 
 async function envoyerEmailAuthentification(parametres: {
   destinataire: string;
@@ -22,8 +8,7 @@ async function envoyerEmailAuthentification(parametres: {
   url: string;
   libelleLien: string;
 }) {
-  await creerTransporteurEmail().sendMail({
-    from: expediteur(),
+  await envoyerMail({
     to: parametres.destinataire,
     subject: parametres.sujet,
     text: `${parametres.message}\n\n${parametres.libelleLien} : ${parametres.url}\n\nSi vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail.`,

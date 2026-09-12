@@ -14,7 +14,7 @@ vi.mock("nodemailer", () => ({
   },
 }));
 
-import { envoyerEmail } from "@/lib/email";
+import { envoyerEmailDepense, envoyerMail } from "@/lib/email";
 import { envoyerEmailValidationTresorerie } from "@/lib/treasuryEmail";
 
 const texteDangereux = `<img src=x onerror="alerte()"> & 'test'`;
@@ -24,10 +24,30 @@ describe("templates HTML des e-mails", () => {
     envoyerMailSimule.mockClear();
     verifierSimule.mockClear();
     process.env.SMTP_FROM = "expediteur@example.test";
+    process.env.SMTP_FROM_NAME = "Expéditeur Scouticket";
+  });
+
+  it("utilise toujours le nom d’expéditeur SMTP configuré", async () => {
+    process.env.SMTP_FROM = "Ancien nom <expediteur@example.test>";
+
+    await envoyerMail({
+      to: "destinataire@example.test",
+      subject: "Sujet de test",
+      text: "Contenu de test",
+    });
+
+    expect(envoyerMailSimule).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: {
+          name: "Expéditeur Scouticket",
+          address: "expediteur@example.test",
+        },
+      }),
+    );
   });
 
   it("échappe toutes les valeurs textuelles de l’e-mail de note de frais", async () => {
-    await envoyerEmail({
+    await envoyerEmailDepense({
       emailUtilisateur: texteDangereux,
       date: texteDangereux,
       branche: texteDangereux,
