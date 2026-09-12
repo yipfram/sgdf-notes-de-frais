@@ -6,6 +6,31 @@ import { clientAuth } from "@/lib/auth-client";
 
 type Invitation = { id: string; email: string };
 
+function traduireMessageErreurInvitation(erreur: unknown) {
+  const code =
+    typeof erreur === "object" &&
+    erreur !== null &&
+    "code" in erreur &&
+    typeof erreur.code === "string"
+      ? erreur.code
+      : undefined;
+
+  switch (code) {
+    case "USER_IS_ALREADY_A_MEMBER_OF_THIS_ORGANIZATION":
+      return "Cette adresse est déjà membre de ce groupe.";
+    case "USER_IS_ALREADY_INVITED_TO_THIS_ORGANIZATION":
+      return "Cette adresse possède déjà une invitation en attente.";
+    case "INVALID_EMAIL":
+      return "Une adresse e-mail est invalide.";
+    case "MEMBER_NOT_FOUND":
+      return "Votre compte n’est pas membre de ce groupe.";
+    case "ORGANIZATION_NOT_FOUND":
+      return "Ce groupe est introuvable.";
+    default:
+      return "Impossible d'envoyer cette invitation.";
+  }
+}
+
 export default function PageGestionMembres() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -60,10 +85,12 @@ export default function PageGestionMembres() {
       ]);
       return;
     }
+    const premiereErreur = resultats.find((resultat) => resultat.error)?.error;
+    const detailErreur = traduireMessageErreurInvitation(premiereErreur);
     setMessage(
       nombreSucces > 0
-        ? `${nombreSucces} invitation${nombreSucces > 1 ? "s" : ""} envoyée${nombreSucces > 1 ? "s" : ""}, ${nombreEchecs} impossible${nombreEchecs > 1 ? "s" : ""}.`
-        : "Invitations impossibles.",
+        ? `${nombreSucces} invitation${nombreSucces > 1 ? "s" : ""} envoyée${nombreSucces > 1 ? "s" : ""}. ${detailErreur}`
+        : detailErreur,
     );
   };
   const annulerInvitation = async (invitationId: string) => {
