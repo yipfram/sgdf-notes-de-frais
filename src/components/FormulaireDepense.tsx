@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import Image from "next/image";
 import {
   ClipboardDocumentListIcon,
@@ -60,6 +60,8 @@ export function FormulaireDepense({
   );
 
   const [envoiEnCours, setEnvoiEnCours] = useState(false);
+  const [afficherErreursValidation, setAfficherErreursValidation] =
+    useState(false);
   const [statutEnvoi, setStatutEnvoi] = useState<{
     type: "succes" | "erreur" | null;
     message: string;
@@ -134,6 +136,41 @@ export function FormulaireDepense({
         Number.isFinite(detail.montant) &&
         detail.montant > 0,
     );
+  const erreurJustificatif =
+    afficherErreursValidation && piecesJointes.length === 0;
+  const erreurDate = afficherErreursValidation && !formulaire.date;
+  const erreurUniteObligatoire =
+    afficherErreursValidation && !formulaire.branche;
+  const erreurTypeDepense =
+    afficherErreursValidation && !plusieursDepenses && !formulaire.typeDepense;
+  const erreurMontant =
+    afficherErreursValidation &&
+    !plusieursDepenses &&
+    (!formulaire.montant || Number(formulaire.montant) <= 0);
+  const champsManquants = [
+    ...(piecesJointes.length === 0 ? ["un justificatif"] : []),
+    ...(!formulaire.date ? ["la date"] : []),
+    ...(!formulaire.branche ? ["l’unité"] : []),
+    ...(!plusieursDepenses && !formulaire.typeDepense
+      ? ["le type de dépense"]
+      : []),
+    ...(!plusieursDepenses &&
+    (!formulaire.montant || Number(formulaire.montant) <= 0)
+      ? ["un montant valide"]
+      : []),
+    ...(plusieursDepenses
+      ? detailsDepenses.flatMap((detail, index) => [
+          ...(!detail.typeDepense
+            ? [`la catégorie du justificatif ${index + 1}`]
+            : []),
+          ...(!Number.isFinite(detail.montant) || detail.montant <= 0
+            ? [`le montant du justificatif ${index + 1}`]
+            : []),
+        ])
+      : []),
+  ];
+  const alerteValidationRef = useRef<HTMLDivElement>(null);
+  const formulaireRef = useRef<HTMLFormElement>(null);
 
   const genererNomsFichiers = () => {
     if (piecesJointes.length === 0) return [];
@@ -164,6 +201,8 @@ export function FormulaireDepense({
   const envoyerDepense = async (evenement: FormEvent) => {
     evenement.preventDefault();
 
+    setAfficherErreursValidation(true);
+
     if (plusieursDepenses && detailsDepenses.length !== piecesJointes.length) {
       setStatutEnvoi({
         type: "erreur",
@@ -173,17 +212,13 @@ export function FormulaireDepense({
       return;
     }
 
-    if (
-      piecesJointes.length === 0 ||
-      !formulaire.branche ||
-      (plusieursDepenses
-        ? !detailsDepensesValides
-        : !formulaire.typeDepense || !formulaire.montant)
-    ) {
-      setStatutEnvoi({
-        type: "erreur",
-        message:
-          "Veuillez remplir tous les champs obligatoires et ajouter au moins un justificatif.",
+    if (!formulaireEstValide) {
+      requestAnimationFrame(() => {
+        const premierChampInvalide =
+          formulaireRef.current?.querySelector<HTMLElement>(
+            '[aria-invalid="true"]',
+          );
+        (premierChampInvalide ?? alerteValidationRef.current)?.focus();
       });
       return;
     }
@@ -253,6 +288,7 @@ export function FormulaireDepense({
           montant: "",
           description: "",
         }));
+        setAfficherErreursValidation(false);
         setDetailsDepenses([]);
         onCreerNouvelleNote?.();
       } else {
@@ -320,12 +356,18 @@ export function FormulaireDepense({
       description: "",
     }));
     setStatutEnvoi({ type: null, message: "" });
+    setAfficherErreursValidation(false);
     setDetailsDepenses([]);
     if (onCreerNouvelleNote) onCreerNouvelleNote();
   };
 
   return (
-    <form onSubmit={envoyerDepense} className="space-y-6">
+    <form
+      ref={formulaireRef}
+      noValidate
+      onSubmit={envoyerDepense}
+      className="space-y-6"
+    >
       <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
         <ClipboardDocumentListIcon
           className="w-5 h-5 text-zinc-700"
@@ -333,6 +375,29 @@ export function FormulaireDepense({
         />
         Informations de la dépense
       </h2>
+
+      {afficherErreursValidation && champsManquants.length > 0 && (
+        <div
+          ref={alerteValidationRef}
+          tabIndex={-1}
+          role="alert"
+          className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800"
+        >
+          <p className="font-medium">
+            Il manque des informations pour envoyer la facture :
+          </p>
+          <ul className="mt-2 list-inside list-disc">
+            {champsManquants.map((champ) => (
+              <li key={champ}>{champ}</li>
+            ))}
+          </ul>
+          {erreurJustificatif && (
+            <p className="mt-2">
+              Ajoutez un justificatif avec le module ci-dessus.
+            </p>
+          )}
+        </div>
+      )}
 
       {piecesJointes.length > 0 && (
         <div className="space-y-2">
@@ -384,8 +449,22 @@ export function FormulaireDepense({
                               e.target.value,
                             )
                           }
-                          className="p-2 border border-zinc-300 rounded-md bg-white text-sm text-zinc-900"
-                          required
+                          aria-invalid={
+                            afficherErreursValidation &&
+                            !detailsDepenses[index]?.typeDepense
+                          }
+                          aria-describedby={
+                            afficherErreursValidation &&
+                            !detailsDepenses[index]?.typeDepense
+                              ? `erreur-categorie-${index}`
+                              : undefined
+                          }
+                          className={`p-2 border rounded-md bg-white text-sm text-zinc-900 ${
+                            afficherErreursValidation &&
+                            !detailsDepenses[index]?.typeDepense
+                              ? "border-rose-500"
+                              : "border-zinc-300"
+                          }`}
                         >
                           <option value="">Catégorie *</option>
                           {TYPES_DEPENSES.map((type) => (
@@ -412,9 +491,52 @@ export function FormulaireDepense({
                               e.target.value,
                             )
                           }
-                          className="p-2 border border-zinc-300 rounded-md bg-white text-sm text-zinc-900"
-                          required
+                          aria-invalid={
+                            afficherErreursValidation &&
+                            (!Number.isFinite(
+                              detailsDepenses[index]?.montant,
+                            ) ||
+                              detailsDepenses[index]?.montant <= 0)
+                          }
+                          aria-describedby={
+                            afficherErreursValidation &&
+                            (!Number.isFinite(
+                              detailsDepenses[index]?.montant,
+                            ) ||
+                              detailsDepenses[index]?.montant <= 0)
+                              ? `erreur-montant-${index}`
+                              : undefined
+                          }
+                          className={`p-2 border rounded-md bg-white text-sm text-zinc-900 ${
+                            afficherErreursValidation &&
+                            (!Number.isFinite(
+                              detailsDepenses[index]?.montant,
+                            ) ||
+                              detailsDepenses[index]?.montant <= 0)
+                              ? "border-rose-500"
+                              : "border-zinc-300"
+                          }`}
                         />
+                        {afficherErreursValidation &&
+                          (!detailsDepenses[index]?.typeDepense ||
+                            !Number.isFinite(detailsDepenses[index]?.montant) ||
+                            detailsDepenses[index]?.montant <= 0) && (
+                            <div className="sm:col-span-2 space-y-1 text-sm text-rose-700">
+                              {!detailsDepenses[index]?.typeDepense && (
+                                <p id={`erreur-categorie-${index}`}>
+                                  Sélectionnez une catégorie.
+                                </p>
+                              )}
+                              {(!Number.isFinite(
+                                detailsDepenses[index]?.montant,
+                              ) ||
+                                detailsDepenses[index]?.montant <= 0) && (
+                                <p id={`erreur-montant-${index}`}>
+                                  Saisissez un montant supérieur à 0 €.
+                                </p>
+                              )}
+                            </div>
+                          )}
                       </div>
                     )}
                   </div>
@@ -454,8 +576,13 @@ export function FormulaireDepense({
             id="typeDepense"
             value={formulaire.typeDepense}
             onChange={(e) => modifierChamp("typeDepense", e.target.value)}
-            className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
-            required
+            aria-invalid={erreurTypeDepense}
+            aria-describedby={
+              erreurTypeDepense ? "erreur-type-depense" : undefined
+            }
+            className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900 ${
+              erreurTypeDepense ? "border-rose-500" : "border-zinc-300"
+            }`}
           >
             <option value="">Sélectionner un type</option>
             {TYPES_DEPENSES.map((type) => (
@@ -464,6 +591,11 @@ export function FormulaireDepense({
               </option>
             ))}
           </select>
+          {erreurTypeDepense && (
+            <p id="erreur-type-depense" className="text-sm text-rose-700">
+              Sélectionnez un type de dépense.
+            </p>
+          )}
         </div>
       )}
 
@@ -479,9 +611,17 @@ export function FormulaireDepense({
           type="date"
           value={formulaire.date}
           onChange={(e) => modifierChamp("date", e.target.value)}
-          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
-          required
+          aria-invalid={erreurDate}
+          aria-describedby={erreurDate ? "erreur-date" : undefined}
+          className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900 ${
+            erreurDate ? "border-rose-500" : "border-zinc-300"
+          }`}
         />
+        {erreurDate && (
+          <p id="erreur-date" className="text-sm text-rose-700">
+            Saisissez une date.
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -495,8 +635,11 @@ export function FormulaireDepense({
           id="branche"
           value={formulaire.branche}
           onChange={(e) => modifierChamp("branche", e.target.value)}
-          className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
-          required
+          aria-invalid={erreurUniteObligatoire}
+          aria-describedby={erreurUniteObligatoire ? "erreur-unite" : undefined}
+          className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900 ${
+            erreurUniteObligatoire ? "border-rose-500" : "border-zinc-300"
+          }`}
         >
           <option value="">Sélectionner une unité</option>
           {units.map((unit) => (
@@ -505,6 +648,11 @@ export function FormulaireDepense({
             </option>
           ))}
         </select>
+        {erreurUniteObligatoire && (
+          <p id="erreur-unite" className="text-sm text-rose-700">
+            Sélectionnez une unité.
+          </p>
+        )}
         {uniteSelectionnee && (
           <div
             className="mt-2 h-1.5 rounded-full"
@@ -544,9 +692,17 @@ export function FormulaireDepense({
             placeholder="0.00"
             value={formulaire.montant}
             onChange={(e) => modifierChamp("montant", e.target.value)}
-            className="w-full p-3 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900"
-            required
+            aria-invalid={erreurMontant}
+            aria-describedby={erreurMontant ? "erreur-montant" : undefined}
+            className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900 ${
+              erreurMontant ? "border-rose-500" : "border-zinc-300"
+            }`}
           />
+          {erreurMontant && (
+            <p id="erreur-montant" className="text-sm text-rose-700">
+              Saisissez un montant supérieur à 0 €.
+            </p>
+          )}
         </div>
       )}
 
@@ -659,17 +815,9 @@ export function FormulaireDepense({
 
         <button
           type="submit"
-          disabled={
-            !formulaireEstValide ||
-            envoiEnCours ||
-            !estEnLigne ||
-            !treasuryVerified
-          }
+          disabled={envoiEnCours || !estEnLigne || !treasuryVerified}
           className={`w-full p-4 rounded-lg font-semibold text-white transition-colors focus:outline-none ${
-            formulaireEstValide &&
-            !envoiEnCours &&
-            estEnLigne &&
-            treasuryVerified
+            !envoiEnCours && estEnLigne && treasuryVerified
               ? "bg-zinc-900 hover:bg-zinc-800 focus:ring-2 focus:ring-zinc-400"
               : "bg-zinc-300 cursor-not-allowed"
           }`}

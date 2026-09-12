@@ -28,26 +28,32 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     revokeSessionsOnPasswordReset: true,
     async sendResetPassword({ user, url }) {
-      void envoyerEmailReinitialisationMotDePasse({
-        destinataire: user.email,
-        url,
-      }).catch((erreur) => {
+      try {
+        await envoyerEmailReinitialisationMotDePasse({
+          destinataire: user.email,
+          url,
+        });
+      } catch (erreur) {
         journal.erreur("auth.reinitialisation_mot_de_passe_non_envoyee", {
           erreur,
         });
-      });
+        throw erreur;
+      }
     },
   },
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     async sendVerificationEmail({ user, url }) {
-      void envoyerEmailVerificationCompte({
-        destinataire: user.email,
-        url,
-      }).catch((erreur) => {
+      try {
+        await envoyerEmailVerificationCompte({
+          destinataire: user.email,
+          url,
+        });
+      } catch (erreur) {
         journal.erreur("auth.verification_email_non_envoyee", { erreur });
-      });
+        throw erreur;
+      }
     },
   },
   socialProviders: {
