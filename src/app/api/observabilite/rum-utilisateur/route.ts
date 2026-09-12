@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pseudonymiserIdentifiant } from "@/lib/auditAuthentification";
+import { pseudonymiserIdentifiant } from "@/lib/logger/audit";
 import { recupererSession } from "@/lib/sessionServeur";
 
 export async function GET() {

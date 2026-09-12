@@ -131,7 +131,7 @@ NEXT_PUBLIC_OPENOBSERVE_CLIENT_TOKEN=votre-jeton-rum
 NEXT_PUBLIC_OPENOBSERVE_ORGANISATION=default
 ```
 
-Sans `NEXT_PUBLIC_OPENOBSERVE_SITE` ou `NEXT_PUBLIC_OPENOBSERVE_CLIENT_TOKEN`, le SDK ne se charge pas. Scouticket collecte les performances, ressources, tâches longues, interactions et erreurs de toutes les sessions ; le rejeu est échantillonné à 50 %, sans contexte utilisateur et avec les champs de saisie masqués.
+Sans `NEXT_PUBLIC_OPENOBSERVE_SITE` ou `NEXT_PUBLIC_OPENOBSERVE_CLIENT_TOKEN`, le SDK ne se charge pas. Scouticket collecte les performances, ressources, tâches longues, interactions et erreurs de toutes les sessions ; le rejeu est échantillonné à 50 % et les champs de saisie sont masqués. Lorsqu’un utilisateur est connecté, son identifiant envoyé à OpenObserve est chiffré en AES-256-GCM avec `AUDIT_LOG_SECRET` : aucun identifiant Better Auth brut ni e-mail n’est transmis.
 
 ## Mode maintenance
 

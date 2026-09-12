@@ -12,6 +12,16 @@ Copiez `.env.example` vers `.env.local`, puis renseignez les variables suivantes
 
 Les événements `auth.audit.*` sont des lignes JSON sur stdout. OpenObserve doit ingérer les logs du conteneur applicatif ; ils ne contiennent ni e-mail, ni identifiant Better Auth brut, ni secret. Les champs `utilisateur` et `organisation` sont chiffrés avec AES-256-GCM et peuvent être déchiffrés avec `dechiffrerIdentifiant` et la même valeur de `AUDIT_LOG_SECRET`.
 
+## OpenObserve RUM
+
+| Variable                               |  Requis   | Description                                    |
+| -------------------------------------- | :-------: | ---------------------------------------------- |
+| `NEXT_PUBLIC_OPENOBSERVE_SITE`         | Optionnel | URL de l’instance OpenObserve                  |
+| `NEXT_PUBLIC_OPENOBSERVE_CLIENT_TOKEN` | Optionnel | Jeton navigateur OpenObserve                   |
+| `NEXT_PUBLIC_OPENOBSERVE_ORGANISATION` | Optionnel | Organisation OpenObserve, `default` par défaut |
+
+Lorsque le RUM est configuré et qu’un utilisateur est connecté, son identifiant est chiffré avec AES-256-GCM et `AUDIT_LOG_SECRET` avant d’être transmis à OpenObserve. Aucun e-mail ni identifiant Better Auth brut n’est envoyé.
+
 ## Ancienne configuration Clerk
 
 | Variable                            | Requis | Description                                  |
