@@ -22,6 +22,18 @@ Les événements `auth.audit.*` sont des lignes JSON sur stdout. OpenObserve doi
 
 Lorsque le RUM est configuré et qu’un utilisateur est connecté, son identifiant est chiffré avec AES-256-GCM et `AUDIT_LOG_SECRET` avant d’être transmis à OpenObserve. Aucun e-mail ni identifiant Better Auth brut n’est envoyé.
 
+## Publication des cartes sources OpenObserve
+
+La publication GitHub Actions envoie automatiquement les cartes sources de chaque commit sur `main`, avant de publier l’image Docker. Configurez ces **secrets de dépôt GitHub** (et non des variables de l’application) :
+
+| Secret               | Description                                                                    |
+| -------------------- | ------------------------------------------------------------------------------ |
+| `OPENOBSERVE_URL`    | URL HTTPS de l’instance OpenObserve, sans chemin d’API                         |
+| `OPENOBSERVE_ORG_ID` | Identifiant de l’organisation OpenObserve                                      |
+| `OPENOBSERVE_AUTH`   | Valeur complète de l’en-tête d’autorisation (`Basic …` ou `Bearer …`) de l’API |
+
+Les cartes sont associées à `service=scouticket-web`, `env=production` et au SHA complet du commit. Ces trois valeurs doivent correspondre exactement aux métadonnées RUM. Les fichiers `.map` ne sont jamais inclus dans l’image de production ni accessibles par les navigateurs.
+
 ## Ancienne configuration Clerk
 
 | Variable                            | Requis | Description                                  |
