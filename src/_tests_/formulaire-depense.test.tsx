@@ -87,6 +87,9 @@ describe("FormulaireDepense", () => {
     expect(
       screen.getByText("Sélectionnez un type de dépense."),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText("Sélectionnez un mode de paiement."),
+    ).toBeInTheDocument();
     expect(screen.getByText("Sélectionnez une unité.")).toBeInTheDocument();
     expect(
       screen.getByText("Saisissez un montant supérieur à 0 €."),
@@ -111,6 +114,10 @@ describe("FormulaireDepense", () => {
     await utilisateur.selectOptions(
       screen.getByLabelText("Type de dépense *"),
       "Autres",
+    );
+    await utilisateur.selectOptions(
+      screen.getByLabelText("Mode de paiement *"),
+      "Carte bancaire",
     );
 
     expect(
@@ -147,5 +154,8 @@ describe("FormulaireDepense", () => {
       "le montant du justificatif 2",
     );
     expect(screen.getAllByText("Sélectionnez une catégorie.")).toHaveLength(2);
+    expect(
+      screen.getAllByText("Sélectionnez un mode de paiement."),
+    ).toHaveLength(2);
   });
 });

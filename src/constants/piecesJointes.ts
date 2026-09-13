@@ -26,5 +26,6 @@ export interface PieceJointeDepense {
 
 export interface DetailDepense {
   typeDepense: string;
+  modePaiement: string;
   montant: number;
 }

@@ -37,14 +37,18 @@ export function construireNomBasePieceJointe(parametres: {
   date: string;
   branch: string;
   expenseType: string;
+  paymentMethod: string;
   amount: string;
 }): string {
   const typeCourt = parametres.expenseType
     ? parametres.expenseType.replace(/\s+/g, " ").trim()
     : "";
   const montantFormate = parametres.amount.replace(",", ".");
+  const modePaiementCourt = parametres.paymentMethod
+    ? parametres.paymentMethod.replace(/\s+/g, " ").trim()
+    : "";
   return assainirSegmentNomFichier(
-    `${parametres.date} - ${parametres.branch}${typeCourt ? " - " + typeCourt : ""} - ${montantFormate}`,
+    `${parametres.date} - ${parametres.branch}${typeCourt ? " - " + typeCourt : ""}${modePaiementCourt ? " - " + modePaiementCourt : ""} - ${montantFormate}`,
   );
 }
 
@@ -56,6 +60,7 @@ export function construireNomsFichiersNormalises(
     date: string;
     branch: string;
     expenseType: string;
+    paymentMethod: string;
     amount: string;
   },
 ): string[] {

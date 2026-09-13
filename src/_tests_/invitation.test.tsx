@@ -7,6 +7,8 @@ import { FormulaireConnexionEmail } from "@/components/FormulairesAuthentificati
 const mocks = vi.hoisted(() => ({
   accepterInvitation: vi.fn(),
   refuserInvitation: vi.fn(),
+  activerGroupe: vi.fn(),
+  rafraichirSession: vi.fn(),
   remplacer: vi.fn(),
   connecterEmail: vi.fn(),
 }));
@@ -24,10 +26,12 @@ vi.mock("@/lib/auth-client", () => ({
     useSession: () => ({
       data: { user: { id: "utilisateur-test" } },
       isPending: false,
+      refetch: mocks.rafraichirSession,
     }),
     organization: {
       acceptInvitation: mocks.accepterInvitation,
       rejectInvitation: mocks.refuserInvitation,
+      setActive: mocks.activerGroupe,
     },
     signIn: { email: mocks.connecterEmail },
   },
@@ -48,6 +52,8 @@ describe("Page d’invitation", () => {
   beforeEach(() => {
     mocks.accepterInvitation.mockReset();
     mocks.refuserInvitation.mockReset();
+    mocks.activerGroupe.mockReset();
+    mocks.rafraichirSession.mockReset();
     mocks.remplacer.mockReset();
     mocks.connecterEmail.mockReset();
     window.sessionStorage.clear();
@@ -67,8 +73,27 @@ describe("Page d’invitation", () => {
       expect(mocks.accepterInvitation).toHaveBeenCalledWith({
         invitationId: "invitation-test",
       });
+      expect(mocks.rafraichirSession).toHaveBeenCalledOnce();
       expect(mocks.remplacer).toHaveBeenCalledWith("/");
     });
+  });
+
+  it("laisse Better Auth activer le groupe lors de l’acceptation", async () => {
+    mocks.accepterInvitation.mockResolvedValue({
+      data: { invitation: { organizationId: "groupe-test" } },
+    });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
+    const utilisateur = userEvent.setup();
+    afficherInvitation();
+
+    await utilisateur.click(
+      await screen.findByRole("button", { name: "Accepter l’invitation" }),
+    );
+
+    await waitFor(() => {
+      expect(mocks.remplacer).toHaveBeenCalledWith("/");
+    });
+    expect(mocks.activerGroupe).not.toHaveBeenCalled();
   });
 
   it("affiche l’erreur renvoyée par l’acceptation", async () => {

@@ -19,7 +19,7 @@ import {
   type PieceJointeDepense,
   type DetailDepense,
 } from "@/constants/piecesJointes";
-import { TYPES_DEPENSES } from "@/constants/configDepenses";
+import { MODES_PAIEMENT, TYPES_DEPENSES } from "@/constants/configDepenses";
 import type { UniteGroupe } from "@/lib/group";
 
 interface FormulaireDepenseProps {
@@ -50,6 +50,7 @@ export function FormulaireDepense({
     date: new Date().toISOString().split("T")[0],
     branche: uniteInitiale || "",
     typeDepense: "",
+    modePaiement: "",
     montant: "",
     description: "",
   });
@@ -68,7 +69,13 @@ export function FormulaireDepense({
   }>({ type: null, message: "" });
 
   const modifierChamp = (
-    champ: "date" | "branche" | "typeDepense" | "montant" | "description",
+    champ:
+      | "date"
+      | "branche"
+      | "typeDepense"
+      | "modePaiement"
+      | "montant"
+      | "description",
     valeur: string,
   ) => {
     if (
@@ -100,7 +107,11 @@ export function FormulaireDepense({
     setDetailsDepenses((precedents) =>
       piecesJointes.map(
         (_, index) =>
-          precedents[index] ?? { typeDepense: "", montant: Number.NaN },
+          precedents[index] ?? {
+            typeDepense: "",
+            modePaiement: "",
+            montant: Number.NaN,
+          },
       ),
     );
   }, [piecesJointes]);
@@ -133,6 +144,7 @@ export function FormulaireDepense({
     detailsDepenses.every(
       (detail) =>
         detail.typeDepense &&
+        detail.modePaiement &&
         Number.isFinite(detail.montant) &&
         detail.montant > 0,
     );
@@ -143,6 +155,8 @@ export function FormulaireDepense({
     afficherErreursValidation && !formulaire.branche;
   const erreurTypeDepense =
     afficherErreursValidation && !plusieursDepenses && !formulaire.typeDepense;
+  const erreurModePaiement =
+    afficherErreursValidation && !plusieursDepenses && !formulaire.modePaiement;
   const erreurMontant =
     afficherErreursValidation &&
     !plusieursDepenses &&
@@ -154,6 +168,9 @@ export function FormulaireDepense({
     ...(!plusieursDepenses && !formulaire.typeDepense
       ? ["le type de dépense"]
       : []),
+    ...(!plusieursDepenses && !formulaire.modePaiement
+      ? ["le mode de paiement"]
+      : []),
     ...(!plusieursDepenses &&
     (!formulaire.montant || Number(formulaire.montant) <= 0)
       ? ["un montant valide"]
@@ -162,6 +179,9 @@ export function FormulaireDepense({
       ? detailsDepenses.flatMap((detail, index) => [
           ...(!detail.typeDepense
             ? [`la catégorie du justificatif ${index + 1}`]
+            : []),
+          ...(!detail.modePaiement
+            ? [`le mode de paiement du justificatif ${index + 1}`]
             : []),
           ...(!Number.isFinite(detail.montant) || detail.montant <= 0
             ? [`le montant du justificatif ${index + 1}`]
@@ -181,6 +201,7 @@ export function FormulaireDepense({
           date: formulaire.date,
           branch: uniteSelectionnee?.label ?? "",
           expenseType: detail?.typeDepense ?? "",
+          paymentMethod: detail?.modePaiement ?? "",
           amount: String(detail?.montant ?? ""),
         });
         const suffixe = ` - ${String(index + 1).padStart(2, "0")}`;
@@ -194,6 +215,7 @@ export function FormulaireDepense({
       date: formulaire.date,
       branch: uniteSelectionnee?.label ?? "",
       expenseType: formulaire.typeDepense,
+      paymentMethod: formulaire.modePaiement,
       amount: normaliserMontant(formulaire.montant),
     });
   };
@@ -249,6 +271,9 @@ export function FormulaireDepense({
           date: formulaire.date,
           unitId: formulaire.branche,
           expenseType: plusieursDepenses ? undefined : formulaire.typeDepense,
+          paymentMethod: plusieursDepenses
+            ? undefined
+            : formulaire.modePaiement,
           amount: plusieursDepenses
             ? undefined
             : normaliserMontant(formulaire.montant),
@@ -257,6 +282,7 @@ export function FormulaireDepense({
           expenseDetails: plusieursDepenses
             ? detailsDepenses.map((detail) => ({
                 expenseType: detail.typeDepense,
+                paymentMethod: detail.modePaiement,
                 amount: detail.montant,
               }))
             : undefined,
@@ -285,6 +311,7 @@ export function FormulaireDepense({
           date: new Date().toISOString().split("T")[0],
           branche: prev.branche,
           typeDepense: "",
+          modePaiement: "",
           montant: "",
           description: "",
         }));
@@ -342,7 +369,9 @@ export function FormulaireDepense({
     formulaire.branche &&
     (plusieursDepenses
       ? detailsDepensesValides
-      : formulaire.typeDepense && formulaire.montant),
+      : formulaire.typeDepense &&
+        formulaire.modePaiement &&
+        formulaire.montant),
   );
   const nomsFichiersApercu = formulaireEstValide ? genererNomsFichiers() : [];
 
@@ -352,6 +381,7 @@ export function FormulaireDepense({
       date: new Date().toISOString().split("T")[0],
       branche: prev.branche,
       typeDepense: "",
+      modePaiement: "",
       montant: "",
       description: "",
     }));
@@ -438,7 +468,7 @@ export function FormulaireDepense({
                         : "Image"}
                     </p>
                     {plusieursDepenses && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <select
                           aria-label={`Catégorie pour ${pieceJointe.nomAffiche}`}
                           value={detailsDepenses[index]?.typeDepense ?? ""}
@@ -470,6 +500,40 @@ export function FormulaireDepense({
                           {TYPES_DEPENSES.map((type) => (
                             <option key={type} value={type}>
                               {type}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          aria-label={`Mode de paiement pour ${pieceJointe.nomAffiche}`}
+                          value={detailsDepenses[index]?.modePaiement ?? ""}
+                          onChange={(e) =>
+                            modifierDetailDepense(
+                              index,
+                              "modePaiement",
+                              e.target.value,
+                            )
+                          }
+                          aria-invalid={
+                            afficherErreursValidation &&
+                            !detailsDepenses[index]?.modePaiement
+                          }
+                          aria-describedby={
+                            afficherErreursValidation &&
+                            !detailsDepenses[index]?.modePaiement
+                              ? `erreur-mode-paiement-${index}`
+                              : undefined
+                          }
+                          className={`p-2 border rounded-md bg-white text-sm text-zinc-900 ${
+                            afficherErreursValidation &&
+                            !detailsDepenses[index]?.modePaiement
+                              ? "border-rose-500"
+                              : "border-zinc-300"
+                          }`}
+                        >
+                          <option value="">Mode de paiement *</option>
+                          {MODES_PAIEMENT.map((mode) => (
+                            <option key={mode} value={mode}>
+                              {mode}
                             </option>
                           ))}
                         </select>
@@ -519,12 +583,18 @@ export function FormulaireDepense({
                         />
                         {afficherErreursValidation &&
                           (!detailsDepenses[index]?.typeDepense ||
+                            !detailsDepenses[index]?.modePaiement ||
                             !Number.isFinite(detailsDepenses[index]?.montant) ||
                             detailsDepenses[index]?.montant <= 0) && (
-                            <div className="sm:col-span-2 space-y-1 text-sm text-rose-700">
+                            <div className="sm:col-span-3 space-y-1 text-sm text-rose-700">
                               {!detailsDepenses[index]?.typeDepense && (
                                 <p id={`erreur-categorie-${index}`}>
                                   Sélectionnez une catégorie.
+                                </p>
+                              )}
+                              {!detailsDepenses[index]?.modePaiement && (
+                                <p id={`erreur-mode-paiement-${index}`}>
+                                  Sélectionnez un mode de paiement.
                                 </p>
                               )}
                               {(!Number.isFinite(
@@ -565,37 +635,67 @@ export function FormulaireDepense({
       )}
 
       {!plusieursDepenses && (
-        <div className="space-y-2">
-          <label
-            htmlFor="typeDepense"
-            className="block text-sm font-medium text-zinc-700"
-          >
-            Type de dépense *
-          </label>
-          <select
-            id="typeDepense"
-            value={formulaire.typeDepense}
-            onChange={(e) => modifierChamp("typeDepense", e.target.value)}
-            aria-invalid={erreurTypeDepense}
-            aria-describedby={
-              erreurTypeDepense ? "erreur-type-depense" : undefined
-            }
-            className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900 ${
-              erreurTypeDepense ? "border-rose-500" : "border-zinc-300"
-            }`}
-          >
-            <option value="">Sélectionner un type</option>
-            {TYPES_DEPENSES.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-          {erreurTypeDepense && (
-            <p id="erreur-type-depense" className="text-sm text-rose-700">
-              Sélectionnez un type de dépense.
-            </p>
-          )}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label
+              htmlFor="typeDepense"
+              className="block text-sm font-medium text-zinc-700"
+            >
+              Type de dépense *
+            </label>
+            <select
+              id="typeDepense"
+              value={formulaire.typeDepense}
+              onChange={(e) => modifierChamp("typeDepense", e.target.value)}
+              aria-invalid={erreurTypeDepense}
+              aria-describedby={
+                erreurTypeDepense ? "erreur-type-depense" : undefined
+              }
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900 ${erreurTypeDepense ? "border-rose-500" : "border-zinc-300"}`}
+            >
+              <option value="">Sélectionner un type</option>
+              {TYPES_DEPENSES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+            {erreurTypeDepense && (
+              <p id="erreur-type-depense" className="text-sm text-rose-700">
+                Sélectionnez un type de dépense.
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label
+              htmlFor="modePaiement"
+              className="block text-sm font-medium text-zinc-700"
+            >
+              Mode de paiement *
+            </label>
+            <select
+              id="modePaiement"
+              value={formulaire.modePaiement}
+              onChange={(e) => modifierChamp("modePaiement", e.target.value)}
+              aria-invalid={erreurModePaiement}
+              aria-describedby={
+                erreurModePaiement ? "erreur-mode-paiement" : undefined
+              }
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-zinc-400 focus:border-zinc-400 bg-white text-zinc-900 ${erreurModePaiement ? "border-rose-500" : "border-zinc-300"}`}
+            >
+              <option value="">Sélectionner un mode</option>
+              {MODES_PAIEMENT.map((mode) => (
+                <option key={mode} value={mode}>
+                  {mode}
+                </option>
+              ))}
+            </select>
+            {erreurModePaiement && (
+              <p id="erreur-mode-paiement" className="text-sm text-rose-700">
+                Sélectionnez un mode de paiement.
+              </p>
+            )}
+          </div>
         </div>
       )}
 

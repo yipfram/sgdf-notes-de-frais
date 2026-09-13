@@ -52,6 +52,7 @@ describe("templates HTML des e-mails", () => {
       date: texteDangereux,
       branche: texteDangereux,
       typeDepense: texteDangereux,
+      modePaiement: texteDangereux,
       description: texteDangereux,
       groupe: texteDangereux,
       couleur: `#123456; background-image: url("${texteDangereux}")`,
@@ -73,6 +74,7 @@ describe("templates HTML des e-mails", () => {
       "&lt;img src=x onerror=&quot;alerte()&quot;&gt; &amp; &#39;test&#39;",
     );
     expect(html).not.toContain('<img src=x onerror="alerte()">');
+    expect(html).toContain("Mode de paiement :");
     expect(html).toContain("background-color: #1E3A8A");
   });
 

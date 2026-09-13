@@ -15,3 +15,12 @@ export const TYPES_DEPENSES = [
 ] as const;
 
 export type TypeDepense = (typeof TYPES_DEPENSES)[number];
+
+export const MODES_PAIEMENT = [
+  "Carte bancaire",
+  "Chèque",
+  "Virement",
+  "Espèces",
+] as const;
+
+export type ModePaiement = (typeof MODES_PAIEMENT)[number];

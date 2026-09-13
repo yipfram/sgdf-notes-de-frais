@@ -13,7 +13,7 @@ import {
 import type { DonneesEmailDepense } from "@/lib/email";
 import type { NextResponse } from "next/server";
 import { z } from "zod";
-import { TYPES_DEPENSES } from "@/constants/configDepenses";
+import { MODES_PAIEMENT, TYPES_DEPENSES } from "@/constants/configDepenses";
 import { journal } from "@/lib/logger";
 
 export function validerCorpsRequete(body: unknown): {
@@ -26,12 +26,14 @@ export function validerCorpsRequete(body: unknown): {
       date: z.string(),
       unitId: z.string().min(1),
       expenseType: z.string().optional(),
+      paymentMethod: z.string().optional(),
       amount: z.union([z.string(), z.number()]).optional(),
       description: z.string().optional(),
       expenseDetails: z
         .array(
           z.object({
             expenseType: z.string(),
+            paymentMethod: z.string(),
             amount: z.union([z.string(), z.number()]),
           }),
         )
@@ -183,8 +185,11 @@ export function validerCorpsRequete(body: unknown): {
 
   const estTypeDepenseValide = (typeDepense: string) =>
     TYPES_DEPENSES.includes(typeDepense as (typeof TYPES_DEPENSES)[number]);
+  const estModePaiementValide = (modePaiement: string) =>
+    MODES_PAIEMENT.includes(modePaiement as (typeof MODES_PAIEMENT)[number]);
   let montant: number;
   let typeDepense: string;
+  let modePaiement: string;
   let detailsDepenses: DetailDepense[] | undefined;
 
   if (b.expenseDetails && piecesJointesNormalisees.length < 2) {
@@ -210,6 +215,7 @@ export function validerCorpsRequete(body: unknown): {
       const montantDetail = Number(detail.amount);
       if (
         !estTypeDepenseValide(detail.expenseType) ||
+        !estModePaiementValide(detail.paymentMethod) ||
         !Number.isFinite(montantDetail) ||
         montantDetail <= 0
       ) {
@@ -217,6 +223,7 @@ export function validerCorpsRequete(body: unknown): {
       }
       detailsDepenses.push({
         typeDepense: detail.expenseType,
+        modePaiement: detail.paymentMethod,
         montant: montantDetail,
       });
     }
@@ -225,14 +232,19 @@ export function validerCorpsRequete(body: unknown): {
       0,
     );
     typeDepense = "Dépenses multiples";
+    modePaiement = "Modes de paiement multiples";
   } else {
     montant = Number(b.amount);
     typeDepense = b.expenseType?.trim() ?? "";
+    modePaiement = b.paymentMethod?.trim() ?? "";
     if (!Number.isFinite(montant) || montant <= 0) {
       return { error: jsonError("Montant invalide", 400) };
     }
     if (!estTypeDepenseValide(typeDepense)) {
       return { error: jsonError("Type de dépense invalide", 400) };
+    }
+    if (!estModePaiementValide(modePaiement)) {
+      return { error: jsonError("Mode de paiement invalide", 400) };
     }
   }
 
@@ -242,6 +254,7 @@ export function validerCorpsRequete(body: unknown): {
       date: b.date,
       branche: b.unitId,
       typeDepense,
+      modePaiement,
       montant,
       description: b.description ?? "",
       piecesJointes: piecesJointesNormalisees,

@@ -13,6 +13,7 @@ export interface DonneesEmailDepense {
   date: string;
   branche: string;
   typeDepense: string;
+  modePaiement: string;
   montant: number;
   description?: string;
   piecesJointes: PieceJointeDepense[];
@@ -98,6 +99,7 @@ export const envoyerEmailDepense = async (donnees: DonneesEmailDepense) => {
     date,
     branche,
     typeDepense,
+    modePaiement,
     montant,
     description,
     piecesJointes,
@@ -213,7 +215,7 @@ export const envoyerEmailDepense = async (donnees: DonneesEmailDepense) => {
               .map(
                 (detail, index) => `
             <tr>
-              <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151;">${echapperHtml(piecesJointesAnalysees[index].filename)} — ${echapperHtml(detail.typeDepense)}</td>
+              <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151;">${echapperHtml(piecesJointesAnalysees[index].filename)} — ${echapperHtml(detail.typeDepense)} — ${echapperHtml(detail.modePaiement)}</td>
               <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #374151; text-align: right;">${echapperHtml(String(detail.montant))} €</td>
             </tr>`,
               )
@@ -228,6 +230,14 @@ export const envoyerEmailDepense = async (donnees: DonneesEmailDepense) => {
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Type :</td>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${echapperHtml(typeDepense)}</td>
             </tr>
+            ${
+              plusieursDepenses
+                ? ""
+                : `<tr>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: #374151;">Mode de paiement :</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: #374151;">${echapperHtml(modePaiement)}</td>
+            </tr>`
+            }
             <tr>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; font-weight: bold; color: ${couleurPrincipale};">Montant :</td>
               <td style="padding: 10px 0; border-bottom: 1px solid #eee; color: ${couleurPrincipale}; font-weight: bold; font-size: 18px;">${echapperHtml(String(montant))} €</td>
@@ -269,13 +279,13 @@ Nouvelle facture
 
 Date : ${date}
 Branche : ${branche}
-${plusieursDepenses ? "Dépenses :" : `Type : ${typeDepense}`}
+${plusieursDepenses ? "Dépenses :" : `Type : ${typeDepense}\nMode de paiement : ${modePaiement}`}
 ${
   plusieursDepenses
     ? detailsDepenses!
         .map(
           (detail, index) =>
-            `- ${piecesJointesAnalysees[index].filename} — ${detail.typeDepense} : ${detail.montant} €`,
+            `- ${piecesJointesAnalysees[index].filename} — ${detail.typeDepense} — ${detail.modePaiement} : ${detail.montant} €`,
         )
         .join("\n")
     : ""

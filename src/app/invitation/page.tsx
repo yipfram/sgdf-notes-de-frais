@@ -48,7 +48,11 @@ export default function PageInvitation({
   searchParams: Promise<{ id?: string }>;
 }) {
   const routeur = useRouter();
-  const { data: session, isPending } = clientAuth.useSession();
+  const {
+    data: session,
+    isPending,
+    refetch: rafraichirSession,
+  } = clientAuth.useSession();
   const [invitationId, setInvitationId] = useState<string>();
   const [nomGroupe, setNomGroupe] = useState<string>();
   const [invitationPrete, setInvitationPrete] = useState(false);
@@ -111,13 +115,14 @@ export default function PageInvitation({
     };
   }, [searchParams]);
   useEffect(() => {
-    if (isPending || session || !invitationId || !invitationPrete) return;
+    if (isPending || session || enCours || !invitationId || !invitationPrete)
+      return;
     const retour = new URLSearchParams({
       callbackURL: `/invitation?id=${invitationId}`,
       invitation: "1",
     });
     window.location.replace(`/sign-in?${retour.toString()}`);
-  }, [invitationId, invitationPrete, isPending, session]);
+  }, [enCours, invitationId, invitationPrete, isPending, session]);
   const accepter = async () => {
     if (!invitationId || enCours) return;
     setEnCours(true);
@@ -141,20 +146,6 @@ export default function PageInvitation({
       window.sessionStorage.removeItem("invitation-retour");
       const identifiantOrganisation = resultat.data?.invitation?.organizationId;
       if (identifiantOrganisation) {
-        try {
-          await avecDelai(
-            clientAuth.organization.setActive({
-              organizationId: identifiantOrganisation,
-            }),
-            5_000,
-          );
-        } catch (erreur) {
-          journaliserEchec(
-            "activation_groupe",
-            extraireErreurInvitation(erreur),
-            Date.now() - debut,
-          );
-        }
         void fetch("/api/user/default-group", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -176,6 +167,11 @@ export default function PageInvitation({
               Date.now() - debut,
             );
           });
+      }
+      try {
+        await rafraichirSession?.();
+      } catch {
+        // La session déjà active reste exploitable si son rafraîchissement échoue.
       }
       routeur.replace("/");
     } catch (erreur) {

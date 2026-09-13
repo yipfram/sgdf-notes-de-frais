@@ -7,9 +7,9 @@
 | Élément            | Contenu                                                                                     |
 | ------------------ | ------------------------------------------------------------------------------------------- |
 | Objet              | Groupe, unité et date de la dépense                                                         |
-| Informations       | Date, unité, type, montant, demandeur et description éventuelle                             |
+| Informations       | Date, unité, type, mode de paiement, montant, demandeur et description éventuelle           |
 | Plusieurs dépenses | Le détail de chaque pièce et le total lorsque plusieurs justificatifs sont envoyés ensemble |
-| Pièces jointes     | Les photos et PDF envoyés, avec des noms de fichier normalisés                              |
+| Pièces jointes     | Les photos et PDF envoyés, avec des noms incluant type, mode de paiement et montant         |
 | Couleur            | La couleur de l’unité choisie dans la configuration du groupe                               |
 
 Vous pouvez ensuite rechercher le nom du groupe, une unité, une date ou un mot de la description dans votre boîte e-mail pour retrouver un justificatif.

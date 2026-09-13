@@ -11,8 +11,12 @@
 1. Connectez-vous et vérifiez que le bon groupe est sélectionné dans l’en-tête.
 2. Prenez une photo ou importez un fichier. Les formats pris en charge sont JPG, PNG, WEBP et PDF.
 3. Ajoutez si besoin d’autres justificatifs : jusqu’à 6 fichiers peuvent être envoyés ensemble.
-4. Renseignez la date, l’unité, le type, le montant et une description si elle est utile.
+4. Renseignez la date, l’unité, le type, le mode de paiement, le montant et une description si elle est utile.
 5. Envoyez la note de frais.
+
+Le mode de paiement est obligatoire. Choisissez entre carte bancaire, chèque, virement et espèces. Lors de l’envoi de plusieurs justificatifs, indiquez le mode de paiement de chacun.
+
+![Formulaire de dépense avec le mode de paiement](/guide/mode-paiement.png)
 
 La trésorerie reçoit l’e-mail avec les pièces jointes et vous recevez une copie pour assurer votre suivi.
 

@@ -21,8 +21,12 @@ describe("validerCorpsRequete avec plusieurs dépenses", () => {
       ...baseBody,
       attachments: [attachment("ticket-1.jpg"), attachment("ticket-2.jpg")],
       expenseDetails: [
-        { expenseType: "Alimentation, Intendance", amount: "12.50" },
-        { expenseType: "Carburants", amount: 30 },
+        {
+          expenseType: "Alimentation, Intendance",
+          paymentMethod: "Carte bancaire",
+          amount: "12.50",
+        },
+        { expenseType: "Carburants", paymentMethod: "Espèces", amount: 30 },
       ],
     });
 
@@ -31,8 +35,12 @@ describe("validerCorpsRequete avec plusieurs dépenses", () => {
       typeDepense: "Dépenses multiples",
       montant: 42.5,
       detailsDepenses: [
-        { typeDepense: "Alimentation, Intendance", montant: 12.5 },
-        { typeDepense: "Carburants", montant: 30 },
+        {
+          typeDepense: "Alimentation, Intendance",
+          modePaiement: "Carte bancaire",
+          montant: 12.5,
+        },
+        { typeDepense: "Carburants", modePaiement: "Espèces", montant: 30 },
       ],
     });
   });
@@ -41,14 +49,20 @@ describe("validerCorpsRequete avec plusieurs dépenses", () => {
     const detailManquant = validerCorpsRequete({
       ...baseBody,
       attachments: [attachment("ticket-1.jpg"), attachment("ticket-2.jpg")],
-      expenseDetails: [{ expenseType: "Carburants", amount: 20 }],
+      expenseDetails: [
+        { expenseType: "Carburants", paymentMethod: "Espèces", amount: 20 },
+      ],
     });
     const categorieInvalide = validerCorpsRequete({
       ...baseBody,
       attachments: [attachment("ticket-1.jpg"), attachment("ticket-2.jpg")],
       expenseDetails: [
-        { expenseType: "Catégorie inconnue", amount: 20 },
-        { expenseType: "Carburants", amount: 30 },
+        {
+          expenseType: "Catégorie inconnue",
+          paymentMethod: "Espèces",
+          amount: 20,
+        },
+        { expenseType: "Carburants", paymentMethod: "Espèces", amount: 30 },
       ],
     });
 
@@ -61,8 +75,8 @@ describe("validerCorpsRequete avec plusieurs dépenses", () => {
       ...baseBody,
       attachments: [attachment("ticket.jpg")],
       expenseDetails: [
-        { expenseType: "Carburants", amount: 22 },
-        { expenseType: "Carburants", amount: 222 },
+        { expenseType: "Carburants", paymentMethod: "Espèces", amount: 22 },
+        { expenseType: "Carburants", paymentMethod: "Espèces", amount: 222 },
       ],
     });
 
@@ -73,14 +87,35 @@ describe("validerCorpsRequete avec plusieurs dépenses", () => {
     const resultat = validerCorpsRequete({
       ...baseBody,
       expenseType: "Carburants",
+      paymentMethod: "Carte bancaire",
       amount: "18.40",
       attachments: [attachment("ticket.jpg")],
     });
 
     expect(resultat.donneesEmail).toMatchObject({
       typeDepense: "Carburants",
+      modePaiement: "Carte bancaire",
       montant: 18.4,
       detailsDepenses: undefined,
     });
+  });
+
+  it("refuse un mode de paiement absent ou inconnu", () => {
+    const absent = validerCorpsRequete({
+      ...baseBody,
+      expenseType: "Carburants",
+      amount: 18,
+      attachments: [attachment("ticket.jpg")],
+    });
+    const inconnu = validerCorpsRequete({
+      ...baseBody,
+      expenseType: "Carburants",
+      paymentMethod: "Crypto-monnaie",
+      amount: 18,
+      attachments: [attachment("ticket.jpg")],
+    });
+
+    expect(absent.error?.status).toBe(400);
+    expect(inconnu.error?.status).toBe(400);
   });
 });
