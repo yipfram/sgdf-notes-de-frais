@@ -37,7 +37,16 @@ function lireChaine(valeur: unknown, cle: string) {
     : null;
 }
 
-export function actionAuditAuthentification(chemin: string | undefined) {
+export function actionAuditAuthentification(
+  chemin: string | undefined,
+  corps?: unknown,
+) {
+  if (
+    chemin === "/organization/invite-member" &&
+    estObjet(corps) &&
+    corps.resend === true
+  )
+    return "membre_reinvite";
   return chemin ? (actionsParChemin[chemin] ?? null) : null;
 }
 
@@ -94,7 +103,7 @@ export function journaliserAuditAuthentification({
   retour?: unknown;
   codeErreur?: unknown;
 }) {
-  const action = actionAuditAuthentification(chemin);
+  const action = actionAuditAuthentification(chemin, corps);
   if (!action) return;
 
   const identifiants = identifiantsAudit(contexte, corps, retour);

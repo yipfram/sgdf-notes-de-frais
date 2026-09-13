@@ -1,10 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { clientAuth } from "@/lib/auth-client";
 
-type Invitation = { id: string; email: string };
+type Invitation = {
+  id: string;
+  email: string;
+  role: string;
+  expiresAt: string | Date;
+  expiree: boolean;
+};
 type Membre = { id: string; nom: string; email: string; role: string };
 
 function traduireMessageErreurInvitation(erreur: unknown) {
@@ -42,21 +48,26 @@ export default function PageGestionMembres() {
   }>();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [membres, setMembres] = useState<Membre[]>([]);
+  const [renvoiEnCours, setRenvoiEnCours] = useState<string>();
   const chargementLance = useRef(false);
+  const chargerMembres = useCallback(async () => {
+    try {
+      const reponse = await fetch("/api/group/members");
+      const corps = await reponse.json();
+      setAutorise(reponse.ok);
+      if (!reponse.ok) return;
+      setOrganisation(corps.organisation);
+      setMembres(corps.membres);
+      setInvitations(corps.invitations);
+    } catch {
+      setAutorise(false);
+    }
+  }, []);
   useEffect(() => {
     if (chargementLance.current) return;
     chargementLance.current = true;
-    void fetch("/api/group/members")
-      .then(async (reponse) => ({ reponse, corps: await reponse.json() }))
-      .then(({ reponse, corps }) => {
-        setAutorise(reponse.ok);
-        if (!reponse.ok) return;
-        setOrganisation(corps.organisation);
-        setMembres(corps.membres);
-        setInvitations(corps.invitations);
-      })
-      .catch(() => setAutorise(false));
-  }, []);
+    void chargerMembres();
+  }, [chargerMembres]);
   const inviter = async () => {
     const emails = email
       .split(",")
@@ -83,7 +94,11 @@ export default function PageGestionMembres() {
       setInvitations((precedentes) => [
         ...(resultats
           .map((resultat) => resultat.data)
-          .filter(Boolean) as Invitation[]),
+          .filter(Boolean)
+          .map((invitation) => ({
+            ...invitation,
+            expiree: false,
+          })) as Invitation[]),
         ...precedentes,
       ]);
       return;
@@ -109,6 +124,34 @@ export default function PageGestionMembres() {
       setInvitations((precedentes) =>
         precedentes.filter((invitation) => invitation.id !== invitationId),
       );
+  };
+  const renvoyerInvitation = async (invitationId: string) => {
+    setRenvoiEnCours(invitationId);
+    try {
+      const reponse = await fetch("/api/group/resend-invitation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invitationId }),
+      });
+      const corps = (await reponse.json().catch(() => null)) as {
+        error?: string;
+      } | null;
+      if (!reponse.ok) {
+        const attente = Number(reponse.headers.get("Retry-After"));
+        setMessage(
+          reponse.status === 429 && Number.isFinite(attente)
+            ? `Trop de tentatives. Réessayez dans ${Math.ceil(attente / 60)} minute${Math.ceil(attente / 60) > 1 ? "s" : ""}.`
+            : (corps?.error ?? "Impossible de renvoyer cette invitation."),
+        );
+        return;
+      }
+      setMessage("Invitation renvoyée.");
+      await chargerMembres();
+    } catch {
+      setMessage("Impossible de renvoyer cette invitation.");
+    } finally {
+      setRenvoiEnCours(undefined);
+    }
   };
   if (autorise === false)
     return (
@@ -153,7 +196,14 @@ export default function PageGestionMembres() {
             Inviter
           </button>
         </div>
-        {message && <p className="mt-3 text-sm text-zinc-600">{message}</p>}
+        {message && (
+          <p
+            role="status"
+            className="mt-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-950"
+          >
+            {message}
+          </p>
+        )}
         <h2 className="mt-8 text-lg font-semibold text-zinc-900">
           Utilisateurs
         </h2>
@@ -188,11 +238,33 @@ export default function PageGestionMembres() {
                 key={invitation.id}
                 className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-3 text-sm"
               >
-                <span className="min-w-0 truncate text-zinc-700">
-                  {invitation.email}
+                <span className="min-w-0">
+                  <span className="block truncate text-zinc-700">
+                    {invitation.email}
+                  </span>
+                  <span className="block text-xs text-zinc-500">
+                    {invitation.expiree
+                      ? "Expirée"
+                      : ` Expire le ${new Intl.DateTimeFormat("fr-FR", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        }).format(new Date(invitation.expiresAt))}`}
+                  </span>
                 </span>
                 <span className="flex shrink-0 items-center gap-3">
-                  <span className="text-zinc-500">En attente</span>
+                  <span className="text-zinc-500">
+                    {invitation.expiree ? "Expirée" : "En attente"}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={renvoiEnCours === invitation.id}
+                    onClick={() => void renvoyerInvitation(invitation.id)}
+                    className="text-[#1E3A8A] underline disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {renvoiEnCours === invitation.id
+                      ? "Renvoi…"
+                      : "Renvoyer l’invitation"}
+                  </button>
                   <button
                     type="button"
                     onClick={() => void annulerInvitation(invitation.id)}

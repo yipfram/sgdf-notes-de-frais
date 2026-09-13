@@ -31,8 +31,13 @@ export async function GET(requete: Request) {
           ORDER BY "user".name ASC, "user".email ASC`,
         [identifiantOrganisation],
       ),
-      pool.query<{ id: string; email: string }>(
-        'SELECT id, email FROM invitation WHERE "organizationId" = $1 AND status = $2 ORDER BY "createdAt" DESC',
+      pool.query<{
+        id: string;
+        email: string;
+        role: string;
+        expiresAt: Date;
+      }>(
+        'SELECT id, email, role, "expiresAt" FROM invitation WHERE "organizationId" = $1 AND status = $2 ORDER BY "createdAt" DESC',
         [identifiantOrganisation, "pending"],
       ),
     ]);
@@ -43,7 +48,10 @@ export async function GET(requete: Request) {
         name: organisation.rows[0]?.name ?? "",
       },
       membres: membres.rows,
-      invitations: invitations.rows,
+      invitations: invitations.rows.map((invitation) => ({
+        ...invitation,
+        expiree: invitation.expiresAt <= new Date(),
+      })),
     });
   });
 }
