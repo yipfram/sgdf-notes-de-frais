@@ -8,7 +8,7 @@ hero:
   actions:
     - theme: brand
       text: Je suis responsable de groupe
-      link: https://app.scouticket.fr/sign-up
+      link: https://app.scouticket.fr
     - theme: alt
       text: Je suis membre du groupe
       link: "#rejoindre-un-groupe"

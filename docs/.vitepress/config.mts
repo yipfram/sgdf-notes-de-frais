@@ -8,7 +8,7 @@ const metadonneesPages: Record<string, { titre: string; description: string }> =
     "index.md": {
       titre: "Envoyez vos justificatifs dès que vous les avez",
       description:
-        "Scouticket aide les groupes scouts à envoyer leurs justificatifs à la trésorerie, simplement et sans les perdre.",
+        "Scouticket aide les groupes scouts à centraliser leurs justificatifs et notes de frais : photos ou PDF envoyés immédiatement à la trésorerie, avec une copie pour chaque membre.",
     },
     "about.md": {
       titre: "À propos",
