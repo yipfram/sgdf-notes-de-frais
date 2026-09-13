@@ -15,6 +15,19 @@ const nextConfig = {
     // 20 Mo de fichiers encodés en Base64 représentent environ 27 Mo de JSON.
     proxyClientMaxBodySize: "30mb",
   },
+  async headers() {
+    return [
+      {
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+        ],
+      },
+    ];
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
