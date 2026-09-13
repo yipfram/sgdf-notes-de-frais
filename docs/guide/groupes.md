@@ -28,7 +28,9 @@ Conservez au moins une unité : un justificatif doit toujours être rattaché à
 
 ## Inviter les membres
 
-Depuis **Administration**, choisissez **Gérer les membres** et saisissez son adresse e-mail. Better Auth lui envoie une invitation ; après l’avoir acceptée, cette personne rejoint le groupe et peut envoyer ses justificatifs.
+Depuis **Administration**, choisissez **Gérer les membres** et saisissez son adresse e-mail. Better Auth lui envoie une invitation ; après l’avoir acceptée, cette personne rejoint le groupe et peut envoyer ses justificatifs. La liste **Utilisateurs** réunit les membres du groupe et les invitations encore en attente d’acceptation. Une invitation en attente peut être annulée.
+
+![Liste des utilisateurs et invitations en attente](/guide/gestion-membres-utilisateurs.png)
 
 La personne invitée se connecte avec l’adresse e-mail qui a reçu l’invitation. Si elle crée son compte, elle confirme d’abord cette adresse depuis le lien reçu par e-mail. Sur l’accueil, un bandeau **« invitation en attente »** indique le nom du groupe et propose **Voir l’invitation**. Il apparaît sur l’écran **Bienvenue**, même avant que la personne ne rejoigne son premier groupe, et reste visible si elle utilise déjà un autre groupe. Elle doit accepter l’invitation pour rejoindre le nouveau groupe.
 

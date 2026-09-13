@@ -56,7 +56,7 @@ src/
 ## 🧭 Conseils de navigation pour les agents IA
 
 - **Pour étendre l'UI** : placer les nouveaux composants dans `src/components/` et les exporter via un fichier barrel `index.ts` si nécessaire.
-- **Pour ajouter de la logique serveur** : utiliser le dossier `src/app/api/` ; garder tout le code serveur hors du bundle client.
+- **Pour ajouter de la logique serveur** : utiliser le dossier `src/app/api/` ; garder tout le code serveur hors du bundle client. Toute nouvelle route API doit envelopper son gestionnaire avec `executerRouteAvecLogs` depuis `@/lib/api/routeAvecLogs` afin d’uniformiser les journaux et l’identifiant de requête.
 - **Pour modifier les styles** : modifier directement les classes Tailwind dans le JSX ; éviter les fichiers CSS personnalisés sauf absolue nécessité.
 
 ## 📦 Build & Déploiement

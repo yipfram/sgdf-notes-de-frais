@@ -5,6 +5,7 @@ import Link from "next/link";
 import { clientAuth } from "@/lib/auth-client";
 
 type Invitation = { id: string; email: string };
+type Membre = { id: string; nom: string; email: string; role: string };
 
 function traduireMessageErreurInvitation(erreur: unknown) {
   const code =
@@ -40,6 +41,7 @@ export default function PageGestionMembres() {
     name: string;
   }>();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [membres, setMembres] = useState<Membre[]>([]);
   const chargementLance = useRef(false);
   useEffect(() => {
     if (chargementLance.current) return;
@@ -50,6 +52,7 @@ export default function PageGestionMembres() {
         setAutorise(reponse.ok);
         if (!reponse.ok) return;
         setOrganisation(corps.organisation);
+        setMembres(corps.membres);
         setInvitations(corps.invitations);
       })
       .catch(() => setAutorise(false));
@@ -78,9 +81,9 @@ export default function PageGestionMembres() {
       );
       setEmail("");
       setInvitations((precedentes) => [
-        ...((resultats
+        ...(resultats
           .map((resultat) => resultat.data)
-          .filter(Boolean) as Invitation[]) ?? []),
+          .filter(Boolean) as Invitation[]),
         ...precedentes,
       ]);
       return;
@@ -152,14 +155,34 @@ export default function PageGestionMembres() {
         </div>
         {message && <p className="mt-3 text-sm text-zinc-600">{message}</p>}
         <h2 className="mt-8 text-lg font-semibold text-zinc-900">
-          Invitations en attente
+          Utilisateurs
         </h2>
-        {invitations.length === 0 ? (
+        {membres.length === 0 && invitations.length === 0 ? (
           <p className="mt-2 text-sm text-zinc-600">
-            Aucune invitation en attente.
+            Aucun utilisateur dans ce groupe.
           </p>
         ) : (
           <ul className="mt-3 space-y-2">
+            {membres.map((membre) => (
+              <li
+                key={membre.id}
+                className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 p-3 text-sm"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate font-medium text-zinc-700">
+                    {membre.nom || membre.email}
+                  </span>
+                  {membre.nom && (
+                    <span className="block truncate text-zinc-500">
+                      {membre.email}
+                    </span>
+                  )}
+                </span>
+                <span className="shrink-0 text-zinc-600">
+                  {membre.role === "owner" ? "Responsable" : "Membre"}
+                </span>
+              </li>
+            ))}
             {invitations.map((invitation) => (
               <li
                 key={invitation.id}
@@ -168,13 +191,16 @@ export default function PageGestionMembres() {
                 <span className="min-w-0 truncate text-zinc-700">
                   {invitation.email}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => void annulerInvitation(invitation.id)}
-                  className="shrink-0 text-[#1E3A8A] underline"
-                >
-                  Annuler
-                </button>
+                <span className="flex shrink-0 items-center gap-3">
+                  <span className="text-zinc-500">En attente</span>
+                  <button
+                    type="button"
+                    onClick={() => void annulerInvitation(invitation.id)}
+                    className="text-[#1E3A8A] underline"
+                  >
+                    Annuler
+                  </button>
+                </span>
               </li>
             ))}
           </ul>
