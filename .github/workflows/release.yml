@@ -1,0 +1,70 @@
+name: Publier l’application
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRE: ghcr.io
+  IMAGE: ${{ github.repository }}
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publication-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Préparer Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Exporter les cartes sources
+        run: |
+          docker buildx build \
+            --target cartes-sources \
+            --build-arg GITHUB_SHA="${{ github.sha }}" \
+            --output type=local,dest=cartes-sources \
+            .
+
+      - name: Envoyer les cartes sources à OpenObserve
+        env:
+          OPENOBSERVE_URL: ${{ secrets.OPENOBSERVE_URL }}
+          OPENOBSERVE_ORG_ID: ${{ secrets.OPENOBSERVE_ORG_ID }}
+          OPENOBSERVE_AUTH: ${{ secrets.OPENOBSERVE_AUTH }}
+        run: |
+          test -n "$OPENOBSERVE_URL"
+          test -n "$OPENOBSERVE_ORG_ID"
+          test -n "$OPENOBSERVE_AUTH"
+          curl --fail --show-error --silent \
+            --request POST "${OPENOBSERVE_URL%/}/api/${OPENOBSERVE_ORG_ID}/sourcemaps" \
+            --header "Authorization: ${OPENOBSERVE_AUTH}" \
+            --form "service=scouticket-web" \
+            --form "env=production" \
+            --form "version=${{ github.sha }}" \
+            --form "file=@cartes-sources/cartes-sources.zip"
+
+      - name: Se connecter au registre GitHub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRE }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construire et publier l’image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: |
+            GITHUB_SHA=${{ github.sha }}
+          tags: |
+            ${{ env.REGISTRE }}/${{ env.IMAGE }}:latest
+            ${{ env.REGISTRE }}/${{ env.IMAGE }}:sha-${{ github.sha }}
