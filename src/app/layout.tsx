@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { RegisterServiceWorker } from "@/components/register-sw";
-import { AlerteChangeLog } from "@/components/AlerteChangelog";
 import { OpenObserveRum } from "@/components/OpenObserveRum";
 import "./globals.css";
 
@@ -64,7 +63,6 @@ export default function RootLayout({
       <body className="font-sans">
         <RegisterServiceWorker />
         <OpenObserveRum />
-        <AlerteChangeLog />
         <div className="min-h-screen">{children}</div>
       </body>
     </html>
