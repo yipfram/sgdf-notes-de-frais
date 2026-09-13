@@ -61,10 +61,8 @@ src/
 
 ## 📦 Build & Déploiement
 
-- Développement : `pnpm dev`
-- Build de production : `pnpm build`
-- Démarrer le serveur de production : `pnpm start`
-- Déploiement sur Vercel – s'assurer que toutes les variables d'environnement listées dans `SETUP.md` sont bien renseignées.
+- Toujours lancer un 'pnpm run format' ainsi que 'pnpm type' et `pnpm build` pour la fin d'une tâche, avant le commit.
+- s'assurer que toutes les variables d'environnement listées dans `SETUP.md` sont bien renseignées.
 
 ### Mises à jour PWA
 
