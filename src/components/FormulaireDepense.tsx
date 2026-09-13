@@ -846,18 +846,6 @@ export function FormulaireDepense({
             )}
             <span>{statutEnvoi.message}</span>
           </p>
-          {statutEnvoi.type === "succes" && (
-            <button
-              type="button"
-              onClick={creerNouvelleNote}
-              className="w-full p-3 rounded-lg font-medium bg-zinc-900 text-white hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
-            >
-              <span className="inline-flex items-center justify-center gap-2">
-                <PlusCircleIcon className="w-5 h-5" aria-hidden="true" />{" "}
-                Nouvelle facture
-              </span>
-            </button>
-          )}
         </div>
       )}
 
