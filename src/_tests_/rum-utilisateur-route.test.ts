@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { dechiffrerIdentifiant } from "@/lib/logger/audit";
 
 const mocks = vi.hoisted(() => ({ recupererSession: vi.fn() }));
 
@@ -14,15 +13,16 @@ describe("GET /api/observabilite/rum-utilisateur", () => {
     vi.clearAllMocks();
   });
 
-  it("transmet un identifiant chiffré à OpenObserve", async () => {
-    mocks.recupererSession.mockResolvedValue({ user: { id: "user_123" } });
+  it("transmet l'e-mail à OpenObserve", async () => {
+    mocks.recupererSession.mockResolvedValue({
+      user: { email: "membre@exemple.fr" },
+    });
 
     const reponse = await GET();
-    const corps = (await reponse.json()) as { id: string };
+    const corps = (await reponse.json()) as { email: string };
 
     expect(reponse.status).toBe(200);
-    expect(corps.id).not.toBe("user_123");
-    expect(dechiffrerIdentifiant(corps.id)).toBe("user_123");
+    expect(corps).toEqual({ email: "membre@exemple.fr" });
   });
 
   it("refuse les demandes sans session", async () => {

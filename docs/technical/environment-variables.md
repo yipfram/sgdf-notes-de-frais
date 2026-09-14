@@ -20,7 +20,7 @@ Les événements `auth.audit.*` sont des lignes JSON sur stdout. OpenObserve doi
 | `NEXT_PUBLIC_OPENOBSERVE_CLIENT_TOKEN` | Optionnel | Jeton navigateur OpenObserve                   |
 | `NEXT_PUBLIC_OPENOBSERVE_ORGANISATION` | Optionnel | Organisation OpenObserve, `default` par défaut |
 
-Lorsque le RUM est configuré et qu’un utilisateur est connecté, son identifiant est chiffré avec AES-256-GCM et `AUDIT_LOG_SECRET` avant d’être transmis à OpenObserve. Aucun e-mail ni identifiant Better Auth brut n’est envoyé.
+Lorsque le RUM est configuré et qu’un utilisateur est connecté, son adresse e-mail est transmise en clair à OpenObserve dans les contextes utilisateur RUM et Browser Logs. Les replays sont enregistrés pour 100 % des sessions. Cette configuration est réservée au mode test et ne prévoit pas de recueil de consentement.
 
 ## Publication des cartes sources OpenObserve
 

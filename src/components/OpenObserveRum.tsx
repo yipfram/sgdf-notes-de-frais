@@ -33,7 +33,7 @@ export function OpenObserveRum() {
           apiVersion: "v1",
           defaultPrivacyLevel: "mask-user-input",
           sessionSampleRate: 100,
-          sessionReplaySampleRate: 50,
+          sessionReplaySampleRate: 100,
           telemetrySampleRate: 5,
         });
         openobserveRum.startSessionReplayRecording();
@@ -67,16 +67,22 @@ export function OpenObserveRum() {
       import("@openobserve/browser-logs"),
     ])
       .then(([utilisateur, { openobserveRum }, { openobserveLogs }]) => {
-        if (utilisateur?.id) {
-          openobserveRum.setUser({ id: utilisateur.id });
-          openobserveLogs.setUser({ id: utilisateur.id });
+        if (utilisateur?.email) {
+          openobserveRum.setUser({
+            id: utilisateur.email,
+            email: utilisateur.email,
+          });
+          openobserveLogs.setUser({
+            id: utilisateur.email,
+            email: utilisateur.email,
+          });
         } else {
           openobserveRum.clearUser();
           openobserveLogs.clearUser();
         }
       })
       .catch(() => {});
-  }, [session?.user.id]);
+  }, [session?.user.email]);
 
   return null;
 }
